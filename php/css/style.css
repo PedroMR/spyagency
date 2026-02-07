@@ -1,0 +1,279 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+h1, h2, h3, h4 { color: #ffd700; }
+button {
+    background: #2d5a8a;
+    color: #fff;
+    border: 1px solid #3a7bc8;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+button:hover { background: #3a7bc8; }
+input[type="text"] {
+    background: #2a2a4a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Lobby */
+.lobby-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+}
+.lobby-container h1 { text-align: center; margin-bottom: 30px; font-size: 2em; }
+.player-setup, .create-room { margin-bottom: 20px; }
+.player-setup label { display: block; margin-bottom: 6px; }
+.player-setup input { margin-right: 8px; }
+.create-room { display: flex; gap: 8px; align-items: flex-end; }
+.create-room h3 { width: 100%; margin-bottom: 6px; }
+.create-room { flex-wrap: wrap; }
+.room-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #2a2a4a;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+}
+.room-name { font-weight: bold; }
+.room-players { color: #aaa; font-size: 13px; }
+.muted { color: #888; font-style: italic; }
+
+#waiting-room {
+    background: #2a2a4a;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+#waiting-room ul { list-style: none; padding: 10px; }
+#waiting-room li { padding: 4px 0; }
+#btn-start { margin-top: 12px; background: #1a8a2d; border-color: #2dbc45; font-size: 16px; padding: 10px 30px; }
+#waiting-msg { color: #aaa; margin-top: 10px; }
+
+/* Game */
+.game-container { padding: 10px 16px; max-width: 1400px; margin: 0 auto; }
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.game-header h2 { margin: 0; font-size: 1.3em; }
+.turn-info { display: flex; gap: 16px; align-items: center; font-size: 16px; }
+.your-turn { color: #4cff4c; font-weight: bold; animation: pulse 1s infinite; }
+.other-turn { color: #aaa; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.game-header-actions { display: flex; gap: 8px; }
+#btn-end-turn { background: #8b0000; border-color: #c00; font-size: 14px; padding: 8px 20px; }
+#btn-end-turn:hover { background: #c00; }
+
+.final-round-banner {
+    background: #8b0000;
+    color: #ffd700;
+    text-align: center;
+    padding: 8px;
+    font-weight: bold;
+    font-size: 18px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    animation: pulse 1.5s infinite;
+}
+
+/* Board layout */
+.game-board { display: flex; flex-direction: column; gap: 12px; }
+.board-top { display: flex; gap: 12px; flex-wrap: wrap; }
+.board-top > .section { flex: 1; min-width: 300px; }
+.board-bottom { display: flex; gap: 12px; flex-wrap: wrap; }
+.board-bottom > .section { flex: 1; min-width: 250px; }
+
+.section {
+    background: #222244;
+    border-radius: 8px;
+    padding: 10px;
+}
+.section h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+}
+
+/* Cards */
+.card {
+    background: #2a2a3a;
+    border: 2px solid #555;
+    border-radius: 6px;
+    padding: 6px 8px;
+    min-width: 100px;
+    max-width: 130px;
+    font-size: 11px;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    vertical-align: top;
+    cursor: default;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.card-name { font-weight: bold; font-size: 12px; color: #ffd700; }
+.card-cost { color: #4cff4c; font-weight: bold; }
+.card-type { color: #888; text-transform: uppercase; font-size: 9px; }
+.card-desc { color: #bbb; font-size: 10px; }
+.card-req { font-size: 16px; }
+.card-reward { color: #4cff4c; font-size: 12px; }
+.card-empty { color: #555; border-style: dashed; justify-content: center; align-items: center; min-height: 60px; }
+
+.card-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.hand-card.playable {
+    cursor: pointer;
+    border-color: #4cff4c;
+}
+.hand-card.playable:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(76, 255, 76, 0.3);
+}
+
+.market-card { cursor: pointer; }
+.market-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
+}
+
+.mission-card { cursor: pointer; border-color: #8b0000; }
+.mission-card:hover { box-shadow: 0 2px 8px rgba(139, 0, 0, 0.4); }
+
+.played-card { opacity: 0.7; }
+
+/* Mission grid */
+.mission-grid { display: flex; flex-direction: column; gap: 8px; }
+.mission-tier h4 { font-size: 12px; margin-bottom: 4px; }
+.mission-tier-cards { display: flex; gap: 6px; flex-wrap: wrap; }
+.fundraising-row { margin-top: 8px; border-top: 1px solid #444; padding-top: 8px; }
+
+/* Market actions */
+.market-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.market-actions button { font-size: 11px; padding: 4px 8px; }
+
+/* Bases */
+.bases-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.base-slot {
+    background: #1a1a3a;
+    border: 2px solid #555;
+    border-radius: 6px;
+    padding: 8px;
+    min-width: 140px;
+    max-width: 180px;
+}
+.base-header { font-weight: bold; color: #ffd700; font-size: 12px; margin-bottom: 4px; }
+.base-agent { font-size: 12px; }
+.agent-name { color: #7ec8e3; font-weight: bold; }
+.agent-icons { font-size: 14px; }
+.base-tech { margin-top: 4px; }
+.tech-badge {
+    display: inline-block;
+    background: #5c3a1a;
+    color: #ffd700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    margin: 1px;
+}
+.base-empty { color: #666; font-style: italic; font-size: 12px; }
+.base-actions { margin-top: 4px; }
+.btn-sm { font-size: 10px; padding: 2px 6px; }
+
+/* Opponents */
+.opponent {
+    background: #1a1a3a;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+.opponent h4 { font-size: 13px; margin-bottom: 4px; }
+.opponent.active-player { border: 1px solid #ffd700; }
+.opponent-stats { display: flex; gap: 12px; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+.opponent-bases { display: flex; gap: 4px; flex-wrap: wrap; }
+.opponent-bases .base-slot { min-width: 110px; max-width: 140px; font-size: 10px; }
+
+/* Game log */
+.game-log {
+    background: #111128;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+.game-log h4 { margin-bottom: 6px; font-size: 13px; }
+.log-entry { font-size: 12px; color: #aaa; padding: 2px 0; border-bottom: 1px solid #1a1a3a; }
+
+/* Deck count */
+.deck-count { color: #888; font-weight: normal; font-size: 11px; }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal {
+    background: #2a2a4a;
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+.modal h2, .modal h3 { margin-bottom: 12px; }
+.modal p { margin-bottom: 8px; color: #ccc; }
+.btn-modal {
+    display: block;
+    width: 100%;
+    margin-bottom: 6px;
+    padding: 10px;
+    font-size: 14px;
+    text-align: left;
+}
+.btn-modal:hover { background: #3a7bc8; }
+.btn-cancel { background: #555; border-color: #777; }
+.btn-cancel:hover { background: #777; }
+.btn-icon-choice { font-size: 18px; text-align: center; }
+
+/* Scores */
+.scores { margin: 16px 0; }
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #444;
+    font-size: 16px;
+}
+.score-row.winner {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 20px;
+    background: #2a2a2a;
+    border-radius: 6px;
+}
