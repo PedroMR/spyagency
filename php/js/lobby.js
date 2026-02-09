@@ -37,17 +37,90 @@ function showLobby() {
 let currentRoomId = null;
 let roomPollInterval = null;
 
+function lobbyLog(msg, ...args) {
+    const ts = new Date().toLocaleTimeString();
+    console.log(`[Lobby ${ts}] ${msg}`, ...args);
+    const el = document.getElementById('lobby-log');
+    if (el) {
+        const line = document.createElement('div');
+        line.textContent = `[${ts}] ${msg}` + (args.length ? ' ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ') : '');
+        el.appendChild(line);
+        el.scrollTop = el.scrollHeight;
+    }
+}
+
+function lobbyError(msg, ...args) {
+    const ts = new Date().toLocaleTimeString();
+    console.error(`[Lobby ${ts}] ${msg}`, ...args);
+    const el = document.getElementById('lobby-log');
+    if (el) {
+        const line = document.createElement('div');
+        line.style.color = '#ff6666';
+        line.textContent = `[${ts}] ERROR: ${msg}` + (args.length ? ' ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ') : '');
+        el.appendChild(line);
+        el.scrollTop = el.scrollHeight;
+    }
+}
+
 async function apiPost(url, data) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data),
-    });
-    return res.json();
+    lobbyLog(`POST ${url}`, data);
+    let res;
+    try {
+        res = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        });
+    } catch (e) {
+        lobbyError(`Fetch failed for POST ${url}: ${e.message}`);
+        return {ok: false, error: `Network error: ${e.message}`};
+    }
+    lobbyLog(`POST ${url} -> ${res.status} ${res.statusText}`);
+    if (!res.ok) {
+        const body = await res.text();
+        lobbyError(`HTTP ${res.status} from POST ${url}:`, body.substring(0, 500));
+        return {ok: false, error: `HTTP ${res.status}: ${body.substring(0, 200)}`};
+    }
+    let json;
+    const text = await res.text();
+    try {
+        json = JSON.parse(text);
+    } catch (e) {
+        lobbyError(`Invalid JSON from POST ${url}:`, text.substring(0, 500));
+        return {ok: false, error: `Invalid JSON response: ${text.substring(0, 200)}`};
+    }
+    lobbyLog(`POST ${url} response:`, json);
+    return json;
+}
+
+async function apiGet(url) {
+    lobbyLog(`GET ${url}`);
+    let res;
+    try {
+        res = await fetch(url);
+    } catch (e) {
+        lobbyError(`Fetch failed for GET ${url}: ${e.message}`);
+        return {ok: false, error: `Network error: ${e.message}`};
+    }
+    lobbyLog(`GET ${url} -> ${res.status} ${res.statusText}`);
+    if (!res.ok) {
+        const body = await res.text();
+        lobbyError(`HTTP ${res.status} from GET ${url}:`, body.substring(0, 500));
+        return {ok: false, error: `HTTP ${res.status}: ${body.substring(0, 200)}`};
+    }
+    let json;
+    const text = await res.text();
+    try {
+        json = JSON.parse(text);
+    } catch (e) {
+        lobbyError(`Invalid JSON from GET ${url}:`, text.substring(0, 500));
+        return {ok: false, error: `Invalid JSON response: ${text.substring(0, 200)}`};
+    }
+    return json;
 }
 
 async function createRoom() {
-    const roomName = document.getElementById('room-name').value.trim();    
+    const roomName = document.getElementById('room-name').value.trim();
     if (!roomName) return alert('Enter a room name');
     if (roomName.length > 30) return alert('Room name too big (>30)');
     const res = await apiPost(API_BASE + 'api/room_create.php', {
@@ -84,8 +157,7 @@ function showWaitingRoom(roomName, isHost) {
 function pollWaitingRoom() {
     if (roomPollInterval) clearInterval(roomPollInterval);
     roomPollInterval = setInterval(async () => {
-        const res = await fetch(API_BASE + 'api/room_list.php');
-        const data = await res.json();
+        const data = await apiGet(API_BASE + 'api/room_list.php');
         if (!data.ok) return;
         const room = data.rooms.find(r => r.id === currentRoomId);
         if (!room) return;
@@ -113,19 +185,14 @@ async function startGame() {
 }
 
 async function refreshRooms() {
-    const res = await fetch(API_BASE + 'api/room_list.php');
-    const data = await res.json();
-    if (!data.ok) return;
+    const data = await apiGet(API_BASE + 'api/room_list.php');
+    if (!data.ok) {
+        const container = document.getElementById('rooms');
+        container.innerHTML = `<p class="muted" style="color:#ff6666">Failed to load rooms: ${escHtml(data.error)}</p>`;
+        return;
+    }
     const container = document.getElementById('rooms');
     const waiting = data.rooms.filter(r => r.status === 'waiting');
-
-    // Check if we're already in a started game
-    const myToken = getToken();
-    for (const room of data.rooms) {
-        if (room.status === 'started' && room.game_id) {
-            // Check by fetching game state
-        }
-    }
 
     if (waiting.length === 0) {
         container.innerHTML = '<p class="muted">No rooms available. Create one!</p>';
@@ -148,6 +215,7 @@ function escHtml(s) {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+    lobbyLog('Lobby init, API_BASE=' + JSON.stringify(API_BASE));
     showLobby();
     setInterval(refreshRooms, 3000);
 });

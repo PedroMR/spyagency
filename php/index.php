@@ -39,6 +39,8 @@
         </div>
     </div>
 
+    <div id="lobby-log" style="max-width:600px;margin:20px auto;padding:10px;background:#111128;border-radius:8px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:11px;color:#aaa;"></div>
+
     <script src="js/config.js"></script>
     <script src="js/lobby.js"></script>
 </body>
