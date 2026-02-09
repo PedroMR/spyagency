@@ -1,2 +1,2 @@
 #!/bin/sh
-php -S localhost:8080 -t /mnt/shared/code/spies/php
+php -S localhost:8888 -t /mnt/shared/code/spies/php

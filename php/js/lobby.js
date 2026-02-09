@@ -124,7 +124,7 @@ async function apiGet(url) {
     if (url.indexOf('?') < 0)
         url += "?";
     url += "&r="+Math.random();
-    lobbyLog(`GET ${url}`);
+    // lobbyLog(`GET ${url}`);
     let res;
     try {
         res = await fetch(url);
@@ -132,7 +132,7 @@ async function apiGet(url) {
         lobbyError(`Fetch failed for GET ${url}: ${e.message}`);
         return {ok: false, error: `Network error: ${e.message}`};
     }
-    lobbyLog(`GET ${url} -> ${res.status} ${res.statusText}`);
+    // lobbyLog(`GET ${url} -> ${res.status} ${res.statusText}`);
     if (!res.ok) {
         const body = await res.text();
         lobbyError(`HTTP ${res.status} from GET ${url}:`, body.substring(0, 500));
