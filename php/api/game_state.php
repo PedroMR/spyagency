@@ -50,7 +50,9 @@ foreach ($game['players'] as $i => $p) {
             'money' => $p['money'],
             'stars' => $p['stars'],
             'extra_base_count' => $p['extra_base_count'],
-            'backup_agent' => $p['backup_agent'],
+            'backup_agent' => $p['backup_agent'] ?? null,
+            'extra_missions' => $p['extra_missions'] ?? 0,
+            'missions_this_turn' => $p['missions_this_turn'] ?? 0,
         ];
     } else {
         $players_data[] = [

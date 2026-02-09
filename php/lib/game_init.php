@@ -13,10 +13,33 @@ function init_game(array $players): array {
         }
     }
 
-    // Fill marketplace: 5 cards
+    // Fill marketplace: 5 unique cards (dedup: if drawn card matches one already present, put back and draw again)
     $marketplace = [];
-    for ($i = 0; $i < 5 && count($market_deck) > 0; $i++) {
-        $marketplace[] = array_shift($market_deck);
+    for ($i = 0; $i < 5; $i++) {
+        if (empty($market_deck)) break;
+        $drawn = array_shift($market_deck);
+        if (in_array($drawn, $marketplace)) {
+            // Try to find a different card
+            $market_deck[] = $drawn; // put to bottom
+            $found = false;
+            $attempts = 0;
+            while (!empty($market_deck) && $attempts < count($market_deck)) {
+                $next = array_shift($market_deck);
+                if (!in_array($next, $marketplace)) {
+                    $marketplace[] = $next;
+                    $found = true;
+                    break;
+                }
+                $market_deck[] = $next;
+                $attempts++;
+            }
+            if (!$found) {
+                // All remaining are duplicates, just place one
+                $marketplace[] = array_shift($market_deck);
+            }
+        } else {
+            $marketplace[] = $drawn;
+        }
     }
 
     // Init player states
@@ -33,12 +56,14 @@ function init_game(array $players): array {
             'play_area' => [],
             'bases' => [
                 ['type' => 'safehouse', 'agent' => null, 'tech' => []],
-                ['type' => 'hideaway', 'agent' => null, 'tech' => []],
+                ['type' => 'safehouse', 'agent' => null, 'tech' => []],
             ],
             'money' => 0,
             'stars' => 0,
             'extra_base_count' => 0,
             'backup_agent' => null, // for Got Your Back!
+            'extra_missions' => 0,
+            'missions_this_turn' => 0,
         ];
     }
 

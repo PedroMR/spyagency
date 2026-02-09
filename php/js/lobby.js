@@ -47,8 +47,9 @@ async function apiPost(url, data) {
 }
 
 async function createRoom() {
-    const roomName = document.getElementById('room-name').value.trim();
+    const roomName = document.getElementById('room-name').value.trim();    
     if (!roomName) return alert('Enter a room name');
+    if (roomName.length > 30) return alert('Room name too big (>30)');
     const res = await apiPost('api/room_create.php', {
         room_name: roomName,
         player_name: getPlayerName(),

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(chmod:*)",
+      "Bash(php -l:*)",
+      "Bash(curl:*)",
+      "Bash(GAME_ID=\"51de2639cec65248\")",
+      "Bash(php lib/convert_cards.php:*)",
+      "Bash(php -r:*)"
+    ]
+  }
+}

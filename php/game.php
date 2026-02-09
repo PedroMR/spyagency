@@ -34,7 +34,7 @@
                         <button onclick="Actions.refreshMarket()">Refresh ($2)</button>
                         <button onclick="Actions.buyAlwaysAvailable('barnstormer')">Buy Barnstormer ($3)</button>
                         <button onclick="Actions.buyAlwaysAvailable('shadow')">Buy Shadow ($4)</button>
-                        <button onclick="Actions.buyBase()">Buy Base (<span id="base-cost">$6</span>)</button>
+                        <button onclick="Actions.buyBase()">Buy Hideaway (<span id="base-cost">$5</span>)</button>
                     </div>
                 </div>
 

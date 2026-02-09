@@ -50,9 +50,10 @@ const UI = {
         const banner = document.getElementById('final-round-banner');
         banner.style.display = s.final_round ? 'block' : 'none';
 
-        // Base cost
+        // Base cost: $5, $8, $12, ...
         const extra = me.extra_base_count;
-        const baseCost = 6 + extra * 3;
+        const baseCosts = [5, 8, 12];
+        const baseCost = extra < baseCosts.length ? baseCosts[extra] : baseCosts[baseCosts.length-1] + (extra - baseCosts.length + 1) * 4;
         document.getElementById('base-cost').textContent = `$${baseCost}`;
     },
 
@@ -84,7 +85,7 @@ const UI = {
                 const card = this.catalog[mId];
                 const reqIcons = (card.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
                 const stars = card.stars ? `${card.stars}⭐ ` : '';
-                const money = (card.reward_money || []).map(v => `$${v}`).join(' ');
+                const money = card.value ? `$${card.value}` : '';
                 html += `<div class="card mission-card" onclick="UI.showMissionDialog('${mId}')">
                     <div class="card-name">${esc(card.name)}</div>
                     <div class="card-req">${reqIcons}</div>
@@ -98,10 +99,12 @@ const UI = {
 
     renderFundraising() {
         const card = this.catalog['fundraising'];
+        const reqIcons = (card.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
+        const reward = card.value > 0 ? `$${card.value}` : '';
         const el = document.getElementById('fundraising-mission');
         el.innerHTML = `<div class="card-name">${esc(card.name)}</div>
-            <div class="card-req">❓❓</div>
-            <div class="card-reward">$2</div>
+            <div class="card-req">${reqIcons}</div>
+            <div class="card-reward">${reward}</div>
             <div class="card-desc">Always available</div>`;
     },
 
@@ -240,6 +243,10 @@ const UI = {
             case 'money':
                 Actions.playMoney(cardId);
                 break;
+            case 'mission':
+                // Completed mission cards in hand can be played for money
+                if (card.value > 0) Actions.playMoney(cardId);
+                break;
             case 'agent':
                 this.showBasePickerForAgent(cardId);
                 break;
@@ -310,18 +317,13 @@ const UI = {
         const card = this.catalog[cardId];
         const effect = card.effect;
 
-        if (effect === 'none' || effect === 'draw2') {
+        if (effect === 'none' || effect === 'draw2' || effect === 'paperwork' || effect === 'multitask') {
             Actions.playPlot(cardId);
             return;
         }
 
         if (effect === 'trash') {
             this.showTrashDialog(cardId);
-            return;
-        }
-
-        if (effect === 'recall') {
-            this.showRecallDialog(cardId);
             return;
         }
 
@@ -353,24 +355,6 @@ const UI = {
                 </button>`;
             }
         }
-        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
-        this.showModal(html);
-    },
-
-    showRecallDialog(plotCardId) {
-        const me = this.state.players[this.state.my_index];
-        const occupied = me.bases.map((b, i) => ({...b, idx: i})).filter(b => b.agent);
-        if (occupied.length === 0) {
-            this.showError('No agents to recall!');
-            return;
-        }
-        let html = '<h3>Emergency Recall: Return which agent?</h3>';
-        occupied.forEach(b => {
-            const agent = this.catalog[b.agent];
-            html += `<button class="btn-modal" onclick="Actions.playPlot('${plotCardId}', {base_index:${b.idx}}); UI.closeModal()">
-                ${esc(agent.name)} at Base #${b.idx + 1}
-            </button>`;
-        });
         html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
         this.showModal(html);
     },
@@ -407,14 +391,14 @@ const UI = {
 
         const reqIcons = (mission.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
         let html = `<h3>Complete: ${esc(mission.name)}</h3><p>Requires: ${reqIcons}</p>`;
-        html += '<p>Select a base (agent will be sacrificed):</p>';
+        html += '<p>Select a base (agent will be discarded):</p>';
 
         occupied.forEach(b => {
             const agent = this.catalog[b.agent];
             const techNames = b.tech.map(t => this.catalog[t].name).join(', ');
             const iconsDisplay = this.getCardIcons(agent);
             const techIcons = b.tech.map(t => this.getCardIcons(this.catalog[t])).join(' ');
-            html += `<button class="btn-modal" onclick="UI.prepareMissionChoices('${missionId}', ${b.idx})">
+            html += `<button class="btn-modal" onclick="UI.attemptMission('${missionId}', ${b.idx})">
                 ${esc(agent.name)} (${iconsDisplay}${techIcons ? ' + ' + techIcons : ''}) at Base #${b.idx + 1}
             </button>`;
         });
@@ -422,81 +406,10 @@ const UI = {
         this.showModal(html);
     },
 
-    prepareMissionChoices(missionId, baseIdx) {
-        const me = this.state.players[this.state.my_index];
-        const base = me.bases[baseIdx];
-        const agent = this.catalog[base.agent];
-        const backup = me.backup_agent ? this.catalog[me.backup_agent] : null;
-
-        // Check if any cards need icon choices
-        const needsChoices = [];
-
-        // Check agent icons
-        agent.icons.forEach((icon, i) => {
-            if (Array.isArray(icon)) {
-                needsChoices.push({source: 'agent', index: i, options: icon, label: agent.name});
-            }
-        });
-
-        // Check tech icons
-        base.tech.forEach((techId, ti) => {
-            const tech = this.catalog[techId];
-            tech.icons.forEach((icon, i) => {
-                if (Array.isArray(icon)) {
-                    needsChoices.push({source: 'tech', techIndex: ti, index: i, options: icon, label: tech.name});
-                }
-            });
-        });
-
-        // Check backup
-        if (backup) {
-            backup.icons.forEach((icon, i) => {
-                if (Array.isArray(icon)) {
-                    needsChoices.push({source: 'backup', index: i, options: icon, label: backup.name});
-                }
-            });
-        }
-
-        if (needsChoices.length === 0) {
-            // No choices needed, complete directly
-            Actions.completeMission(missionId, baseIdx, {});
-            this.closeModal();
-            return;
-        }
-
-        // Show choice UI
-        this.pendingMission = {missionId, baseIdx, choices: needsChoices, resolved: {agent: [], tech: {}, backup: []}};
-        this.showNextChoice();
-    },
-
-    showNextChoice() {
-        const pm = this.pendingMission;
-        if (pm.choices.length === 0) {
-            // All choices made, submit
-            Actions.completeMission(pm.missionId, pm.baseIdx, pm.resolved);
-            this.closeModal();
-            return;
-        }
-
-        const choice = pm.choices.shift();
-        let html = `<h3>Choose icon for ${esc(choice.label)}:</h3>`;
-        choice.options.forEach(opt => {
-            html += `<button class="btn-modal btn-icon-choice" onclick="UI.resolveChoice('${choice.source}', ${choice.techIndex ?? -1}, '${opt}')">${this.iconMap[opt] || opt} ${opt}</button>`;
-        });
-        this.showModal(html);
-    },
-
-    resolveChoice(source, techIndex, chosen) {
-        const pm = this.pendingMission;
-        if (source === 'agent') {
-            pm.resolved.agent.push(chosen);
-        } else if (source === 'tech') {
-            if (!pm.resolved.tech[techIndex]) pm.resolved.tech[techIndex] = [];
-            pm.resolved.tech[techIndex].push(chosen);
-        } else if (source === 'backup') {
-            pm.resolved.backup.push(chosen);
-        }
-        this.showNextChoice();
+    attemptMission(missionId, baseIdx) {
+        // Server auto-resolves icon choices
+        Actions.completeMission(missionId, baseIdx, {});
+        this.closeModal();
     },
 
     showModal(html) {
