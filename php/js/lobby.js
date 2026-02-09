@@ -1,7 +1,7 @@
 // Fallback if config.js didn't load
-if (typeof API_BASE === 'undefined') {
-    var API_BASE = '';
-}
+//if (typeof API_BASE === 'undefined') {
+    //var API_BASE = '';
+//}
 
 // Catch all unhandled errors and show them visually
 window.addEventListener('error', function(e) {
@@ -121,6 +121,9 @@ async function apiPost(url, data) {
 }
 
 async function apiGet(url) {
+    if (url.indexOf('?') < 0)
+        url += "?";
+    url += "&r="+Math.random();
     lobbyLog(`GET ${url}`);
     let res;
     try {
