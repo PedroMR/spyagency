@@ -28,7 +28,7 @@ const Poller = {
 
     async poll() {
         try {
-            const url = API_BASE + `api/game_state.php?game_id=${this.gameId}&token=${this.token}&version=${this.version}`;
+            const url = API_BASE + `api/game_state.php?game_id=${this.gameId}&token=${this.token}&version=${this.version}&_t=${Date.now()}`;
             const res = await fetch(url);
             const data = await res.json();
             if (!data.ok) {

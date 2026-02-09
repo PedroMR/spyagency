@@ -10,7 +10,7 @@ const Actions = {
     async send(action, params = {}) {
         const res = await fetch(API_BASE + 'api/game_action.php', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', 'Cache-Control': 'no-cache'},
             body: JSON.stringify({
                 game_id: this.gameId,
                 token: this.token,
