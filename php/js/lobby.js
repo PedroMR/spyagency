@@ -50,7 +50,7 @@ async function createRoom() {
     const roomName = document.getElementById('room-name').value.trim();    
     if (!roomName) return alert('Enter a room name');
     if (roomName.length > 30) return alert('Room name too big (>30)');
-    const res = await apiPost('api/room_create.php', {
+    const res = await apiPost(API_BASE + 'api/room_create.php', {
         room_name: roomName,
         player_name: getPlayerName(),
         token: getToken(),
@@ -62,7 +62,7 @@ async function createRoom() {
 }
 
 async function joinRoom(roomId, roomName) {
-    const res = await apiPost('api/room_join.php', {
+    const res = await apiPost(API_BASE + 'api/room_join.php', {
         room_id: roomId,
         player_name: getPlayerName(),
         token: getToken(),
@@ -84,7 +84,7 @@ function showWaitingRoom(roomName, isHost) {
 function pollWaitingRoom() {
     if (roomPollInterval) clearInterval(roomPollInterval);
     roomPollInterval = setInterval(async () => {
-        const res = await fetch('api/room_list.php');
+        const res = await fetch(API_BASE + 'api/room_list.php');
         const data = await res.json();
         if (!data.ok) return;
         const room = data.rooms.find(r => r.id === currentRoomId);
@@ -102,7 +102,7 @@ function pollWaitingRoom() {
 }
 
 async function startGame() {
-    const res = await apiPost('api/room_start.php', {
+    const res = await apiPost(API_BASE + 'api/room_start.php', {
         room_id: currentRoomId,
         token: getToken(),
     });
@@ -113,7 +113,7 @@ async function startGame() {
 }
 
 async function refreshRooms() {
-    const res = await fetch('api/room_list.php');
+    const res = await fetch(API_BASE + 'api/room_list.php');
     const data = await res.json();
     if (!data.ok) return;
     const container = document.getElementById('rooms');

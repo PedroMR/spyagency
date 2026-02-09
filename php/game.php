@@ -86,6 +86,7 @@
         </div>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="js/actions.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/poller.js"></script>

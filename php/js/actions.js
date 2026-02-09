@@ -8,7 +8,7 @@ const Actions = {
     },
 
     async send(action, params = {}) {
-        const res = await fetch('api/game_action.php', {
+        const res = await fetch(API_BASE + 'api/game_action.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

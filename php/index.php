@@ -39,6 +39,7 @@
         </div>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="js/lobby.js"></script>
 </body>
 </html>
