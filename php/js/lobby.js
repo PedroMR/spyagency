@@ -201,7 +201,7 @@ function pollWaitingRoom() {
             clearInterval(roomPollInterval);
             sessionStorage.setItem('spy_game_id', room.game_id);
             sessionStorage.setItem('spy_room_id', room.id);
-            window.location.href = 'game.php';
+            window.location.href = 'game.php?game_id=' + encodeURIComponent(room.game_id) + '&token=' + encodeURIComponent(getToken());
             return;
         }
         const el = document.getElementById('waiting-players');
@@ -217,7 +217,7 @@ async function startGame() {
     if (!res.ok) return alert(res.error);
     sessionStorage.setItem('spy_game_id', res.game_id);
     sessionStorage.setItem('spy_room_id', currentRoomId);
-    window.location.href = 'game.php';
+    window.location.href = 'game.php?game_id=' + encodeURIComponent(res.game_id) + '&token=' + encodeURIComponent(getToken());
 }
 
 async function refreshRooms() {
