@@ -1,3 +1,30 @@
+// Fallback if config.js didn't load
+if (typeof API_BASE === 'undefined') {
+    var API_BASE = '';
+}
+
+// Catch all unhandled errors and show them visually
+window.addEventListener('error', function(e) {
+    var el = document.getElementById('lobby-log');
+    if (el) {
+        var line = document.createElement('div');
+        line.style.color = '#ff6666';
+        line.textContent = '[UNCAUGHT] ' + e.message + ' at ' + e.filename + ':' + e.lineno;
+        el.appendChild(line);
+    }
+    console.error('[Lobby UNCAUGHT]', e.message, e.filename, e.lineno);
+});
+window.addEventListener('unhandledrejection', function(e) {
+    var el = document.getElementById('lobby-log');
+    if (el) {
+        var line = document.createElement('div');
+        line.style.color = '#ff6666';
+        line.textContent = '[UNHANDLED PROMISE] ' + (e.reason && e.reason.message || e.reason || 'unknown');
+        el.appendChild(line);
+    }
+    console.error('[Lobby UNHANDLED PROMISE]', e.reason);
+});
+
 // Player token management
 function getToken() {
     let token = localStorage.getItem('spy_token');
