@@ -25,31 +25,31 @@ window.addEventListener('unhandledrejection', function(e) {
 
 // Player token management
 function getToken() {
-    let token = localStorage.getItem('spy_token');
+    let token = sessionStorage.getItem('spy_token');
     if (!token) {
         token = Array.from(crypto.getRandomValues(new Uint8Array(16)))
             .map(b => b.toString(16).padStart(2, '0')).join('');
-        localStorage.setItem('spy_token', token);
+        sessionStorage.setItem('spy_token', token);
     }
     return token;
 }
 
 function getPlayerName() {
-    return localStorage.getItem('spy_name') || '';
+    return sessionStorage.getItem('spy_name') || '';
 }
 
 function saveName() {
     const name = document.getElementById('player-name').value.trim();
     if (!name) return alert('Enter a name!');
-    localStorage.setItem('spy_name', name);
+    sessionStorage.setItem('spy_name', name);
     showLobby();
 }
 
 function logout() {
-    localStorage.removeItem('spy_name');
-    localStorage.removeItem('spy_token');
-    localStorage.removeItem('spy_game_id');
-    localStorage.removeItem('spy_room_id');
+    sessionStorage.removeItem('spy_name');
+    sessionStorage.removeItem('spy_token');
+    sessionStorage.removeItem('spy_game_id');
+    sessionStorage.removeItem('spy_room_id');
     showLobby();
 }
 
@@ -199,8 +199,8 @@ function pollWaitingRoom() {
         if (!room) return;
         if (room.status === 'started') {
             clearInterval(roomPollInterval);
-            localStorage.setItem('spy_game_id', room.game_id);
-            localStorage.setItem('spy_room_id', room.id);
+            sessionStorage.setItem('spy_game_id', room.game_id);
+            sessionStorage.setItem('spy_room_id', room.id);
             window.location.href = 'game.php';
             return;
         }
@@ -215,8 +215,8 @@ async function startGame() {
         token: getToken(),
     });
     if (!res.ok) return alert(res.error);
-    localStorage.setItem('spy_game_id', res.game_id);
-    localStorage.setItem('spy_room_id', currentRoomId);
+    sessionStorage.setItem('spy_game_id', res.game_id);
+    sessionStorage.setItem('spy_room_id', currentRoomId);
     window.location.href = 'game.php';
 }
 
