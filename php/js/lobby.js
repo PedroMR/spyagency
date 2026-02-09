@@ -45,6 +45,14 @@ function saveName() {
     showLobby();
 }
 
+function logout() {
+    localStorage.removeItem('spy_name');
+    localStorage.removeItem('spy_token');
+    localStorage.removeItem('spy_game_id');
+    localStorage.removeItem('spy_room_id');
+    showLobby();
+}
+
 function showLobby() {
     const name = getPlayerName();
     if (!name) {
