@@ -1,7 +1,5 @@
 // Fallback if config.js didn't load
-//if (typeof API_BASE === 'undefined') {
-    //var API_BASE = '';
-//}
+try { API_BASE; } catch(e) { window.API_BASE = ''; }
 
 // Catch all unhandled errors and show them visually
 window.addEventListener('error', function(e) {
