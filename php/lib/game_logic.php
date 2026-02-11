@@ -30,6 +30,24 @@ function remove_from_array(array &$arr, string $value): bool {
     return true;
 }
 
+/**
+ * Spend a cost using money first, then gems for the remainder.
+ * Returns true if affordable, false otherwise. Deducts automatically.
+ */
+function spend_cost(array &$player, int $cost, array &$log_parts): bool {
+    $money = $player['money'];
+    $gems = $player['gems'] ?? 0;
+    if ($money + $gems < $cost) return false;
+    $gems_needed = max(0, $cost - $money);
+    $money_spent = $cost - $gems_needed;
+    $player['money'] -= $money_spent;
+    $player['gems'] -= $gems_needed;
+    if ($gems_needed > 0) {
+        $log_parts[] = "using {$gems_needed} gem(s)";
+    }
+    return true;
+}
+
 function action_play_money(array &$game, int $pi, array $params): array {
     $card_id = $params['card_id'] ?? '';
     $catalog = get_card_catalog();
@@ -196,13 +214,15 @@ function action_buy_card(array &$game, int $pi, array $params): array {
     $always_available = array_filter($catalog, fn($c) => ($c['always_available'] ?? false) && $c['type'] === TYPE_AGENT);
     if (isset($always_available[$card_id])) {
         $cost = $catalog[$card_id]['cost'];
-        if ($game['players'][$pi]['money'] < $cost) {
-            return ['ok' => false, 'error' => 'Not enough money'];
+        $log_parts = [];
+        if (!spend_cost($game['players'][$pi], $cost, $log_parts)) {
+            return ['ok' => false, 'error' => 'Not enough money/gems'];
         }
-        $game['players'][$pi]['money'] -= $cost;
         $game['players'][$pi]['discard'][] = $card_id;
         $game['players'][$pi]['buys_this_turn'] = ($game['players'][$pi]['buys_this_turn'] ?? 0) + 1;
-        $game['log'][] = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
+        $msg = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
+        if (!empty($log_parts)) $msg .= ' (' . implode(', ', $log_parts) . ')';
+        $game['log'][] = $msg;
         return ['ok' => true];
     }
 
@@ -215,14 +235,16 @@ function action_buy_card(array &$game, int $pi, array $params): array {
         return ['ok' => false, 'error' => 'Card mismatch'];
     }
     $cost = $catalog[$card_id]['cost'] ?? 0;
-    if ($game['players'][$pi]['money'] < $cost) {
-        return ['ok' => false, 'error' => 'Not enough money'];
+    $log_parts = [];
+    if (!spend_cost($game['players'][$pi], $cost, $log_parts)) {
+        return ['ok' => false, 'error' => 'Not enough money/gems'];
     }
-    $game['players'][$pi]['money'] -= $cost;
     $game['players'][$pi]['discard'][] = $card_id;
     array_shift($game['marketplace'][$slot]); // Remove top card from stack
     $game['players'][$pi]['buys_this_turn'] = ($game['players'][$pi]['buys_this_turn'] ?? 0) + 1;
-    $game['log'][] = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
+    $msg = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
+    if (!empty($log_parts)) $msg .= ' (' . implode(', ', $log_parts) . ')';
+    $game['log'][] = $msg;
     return ['ok' => true];
 }
 
@@ -259,17 +281,15 @@ function refill_marketplace(array &$game): void {
 }
 
 function action_refresh_market(array &$game, int $pi, array $params): array {
-    if ($game['players'][$pi]['money'] < 2) {
-        return ['ok' => false, 'error' => 'Not enough money (need $2)'];
-    }
-    $game['players'][$pi]['money'] -= 2;
-    // Discard all marketplace cards
-    foreach ($game['marketplace'] as $stack) {
-        // Cards are discarded (removed from game market)
+    $log_parts = [];
+    if (!spend_cost($game['players'][$pi], 2, $log_parts)) {
+        return ['ok' => false, 'error' => 'Not enough money/gems (need $2)'];
     }
     $game['marketplace'] = [[], [], [], [], [], []];
     refill_marketplace($game);
-    $game['log'][] = $game['players'][$pi]['name'] . " refreshed the marketplace for \$2";
+    $msg = $game['players'][$pi]['name'] . " refreshed the marketplace for \$2";
+    if (!empty($log_parts)) $msg .= ' (' . implode(', ', $log_parts) . ')';
+    $game['log'][] = $msg;
     return ['ok' => true];
 }
 

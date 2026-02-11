@@ -64,6 +64,8 @@ At the end of the game, players gather the cards in their deck, discard, play an
 
 See the card list in the "cards.csv" file.
 
+I should be able to spend gems implicitly, without needing a "Cash Gems" button. This should happen automatically when I try to buy something I don't have $ for. The remaining balance should be paid for with the necessary gems.  
+
 The UI should show an area with my discard pile, showing the number of cards and which card is on top.
 The maraketplace UI should highlight which cards you have enough money to purchase.
 

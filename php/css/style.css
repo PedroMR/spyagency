@@ -301,10 +301,6 @@ input[type="text"] {
     accent-color: #4cff4c;
 }
 
-/* Cash gems button */
-#btn-cash-gems { background: #5c3a8a; border-color: #7b5ab8; }
-#btn-cash-gems:hover { background: #7b5ab8; }
-
 /* Stack count badge */
 .stack-count {
     background: #ffd700;

@@ -69,7 +69,6 @@ const UI = {
         document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         document.getElementById('btn-end-turn').style.display = s.is_my_turn ? 'inline-block' : 'none';
-        document.getElementById('btn-cash-gems').style.display = (s.is_my_turn && me.gems > 0) ? 'inline-block' : 'none';
 
         const banner = document.getElementById('final-round-banner');
         banner.style.display = s.final_round ? 'block' : 'none';
@@ -86,7 +85,7 @@ const UI = {
             if (!cardId) return '<div class="card card-empty">Empty</div>';
             const card = this.catalog[cardId];
             const stackCount = counts[i] || 1;
-            const affordable = s.is_my_turn && me.money >= card.cost && (me.buys_this_turn || 0) < 1;
+            const affordable = s.is_my_turn && (me.money + (me.gems || 0)) >= card.cost && (me.buys_this_turn || 0) < 1;
             const affordClass = affordable ? ' affordable' : '';
             const stackBadge = stackCount > 1 ? `<div class="stack-count">x${stackCount}</div>` : '';
             return `<div class="card market-card${affordClass}" style="border-color:${this.typeColors[card.type]}" onclick="UI.onMarketClick('${cardId}', ${i})">
@@ -269,7 +268,14 @@ const UI = {
             this.showError('Already bought a card this turn.');
             return;
         }
-        if (confirm(`Buy ${this.catalog[cardId].name} for $${this.catalog[cardId].cost}?`)) {
+        const card = this.catalog[cardId];
+        const cost = card.cost;
+        const gemsNeeded = Math.max(0, cost - me.money);
+        let msg = `Buy ${card.name} for $${cost}?`;
+        if (gemsNeeded > 0) {
+            msg += `\n(Will spend ${gemsNeeded} gem${gemsNeeded > 1 ? 's' : ''} to cover the difference)`;
+        }
+        if (confirm(msg)) {
             Actions.buyCard(cardId, slot);
         }
     },
@@ -482,24 +488,6 @@ const UI = {
 
         Actions.completeMission(missionId, agentIds, techIds);
         this.closeModal();
-    },
-
-    showCashGemsDialog() {
-        const me = this.state.players[this.state.my_index];
-        const gems = me.gems || 0;
-        if (gems <= 0) {
-            this.showError('No gems to cash!');
-            return;
-        }
-        let html = `<h3>Cash Gems (💎 ${gems} available)</h3>`;
-        html += '<p>Convert gems to money at 1:1 rate:</p>';
-        for (let i = 1; i <= gems; i++) {
-            html += `<button class="btn-modal" onclick="Actions.cashGems(${i}); UI.closeModal()">
-                Cash ${i} gem${i > 1 ? 's' : ''} for $${i}
-            </button>`;
-        }
-        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
-        this.showModal(html);
     },
 
     showModal(html) {

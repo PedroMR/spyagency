@@ -17,7 +17,6 @@
                 <span id="stars-display"></span>
             </div>
             <div class="game-header-actions">
-                <button id="btn-cash-gems" onclick="UI.showCashGemsDialog()" style="display:none">Cash Gems</button>
                 <button id="btn-end-turn" onclick="Actions.endTurn()" style="display:none">End Turn</button>
                 <button id="btn-back-lobby" onclick="location.href='index.php'">Lobby</button>
             </div>
