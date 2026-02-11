@@ -254,9 +254,9 @@ function get_card_catalog(): array {
             'type' => 'tech',
             'tier' => 1,
             'stars' => 0,
-            'cost' => 4,
-            'icons' => [['muscle', 'disguise']],
-            'description' => '💪/🥸 ($4)',
+            'cost' => 5,
+            'icons' => ['muscle', 'disguise'],
+            'description' => '💪🥸 ($5)',
         ],
         'bazooka' => [
             'id' => 'bazooka',
@@ -265,8 +265,8 @@ function get_card_catalog(): array {
             'tier' => 2,
             'stars' => 0,
             'cost' => 7,
-            'icons' => ['muscle', 'muscle'],
-            'description' => '💪💪 ($7)',
+            'icons' => ['muscle', 'muscle', 'muscle'],
+            'description' => '💪💪💪 ($7)',
         ],
         'ram' => [
             'id' => 'ram',
@@ -274,9 +274,9 @@ function get_card_catalog(): array {
             'type' => 'tech',
             'tier' => 1,
             'stars' => 0,
-            'cost' => 4,
-            'icons' => [['drive', 'key']],
-            'description' => '🚘/🔑 ($4)',
+            'cost' => 5,
+            'icons' => ['drive', 'key'],
+            'description' => '🚘🔑 ($5)',
         ],
         'holo_projector' => [
             'id' => 'holo_projector',
@@ -285,8 +285,18 @@ function get_card_catalog(): array {
             'tier' => 2,
             'stars' => 0,
             'cost' => 8,
-            'icons' => ['disguise', 'disguise'],
-            'description' => '🥸🥸 ($8)',
+            'icons' => ['disguise', 'disguise', 'disguise'],
+            'description' => '🥸🥸🥸 ($8)',
+        ],
+        'drone' => [
+            'id' => 'drone',
+            'name' => 'Drone',
+            'type' => 'tech',
+            'tier' => 1,
+            'stars' => 0,
+            'cost' => 5,
+            'icons' => ['key', 'disguise'],
+            'description' => '🔑🥸 ($5)',
         ],
         'muscle' => [
             'id' => 'muscle',
@@ -420,6 +430,20 @@ function get_card_catalog(): array {
             'effect' => 'training',
             'description' => 'Trash an agent from your hand to gain an agent costing up to $3 more from the market ($6)',
         ],
+        'off_shore_investment' => [
+            'id' => 'off_shore_investment',
+            'name' => 'Off-shore Investment',
+            'type' => 'money',
+            'tier' => 1,
+            'stars' => 0,
+        ],
+        'orbital_investment' => [
+            'id' => 'orbital_investment',
+            'name' => 'Orbital Investment',
+            'type' => 'money',
+            'tier' => 2,
+            'stars' => 0,
+        ],
     ];
 }
 
@@ -430,6 +454,7 @@ function build_market_deck(): array {
         'bazooka' => 2,
         'ram' => 4,
         'holo_projector' => 2,
+        'drone' => 4,
         'doorkicker' => 6,
         'reputable_driver' => 6,
         'speedboat_mechanic' => 6,
@@ -486,9 +511,10 @@ function build_mission_decks(): array {
 
 function get_starter_deck(): array {
     $deck = [];
-    for ($i = 0; $i < 6; $i++) $deck[] = 'money_1';
-    $deck[] = 'muscle';
-    $deck[] = 'muscle';
+    for ($i = 0; $i < 5; $i++) $deck[] = 'money_1';
+    $deck[] = 'barnstormer';
+    $deck[] = 'barnstormer';
+    $deck[] = 'red_tape';
     $deck[] = 'red_tape';
     $deck[] = 'red_tape';
     shuffle($deck);

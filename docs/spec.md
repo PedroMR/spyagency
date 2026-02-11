@@ -72,3 +72,16 @@ The maraketplace UI should highlight which cards you have enough money to purcha
 When starting the game, randomize which player will go first.
 
 Every time the user clicks a button we should hear a discreet "click" sound.
+
+When clicking the Shadow or Muscle button the user should see a confirmation of the purchase.
+
+At the top of the screen we should see the number of missions available to attempt this turn.
+
+Mission cards are purple.
+Plot cards are yellow.
+Money cards are green.
+Tech cards are blue.
+Red tape cards are red.
+Agent cards are white.
+
+After we buy a card from the Market there's no point showing the price of that card anymore. We should show the reward for Mission cards we've bought.
