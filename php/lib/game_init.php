@@ -13,32 +13,25 @@ function init_game(array $players): array {
         }
     }
 
-    // Fill marketplace: 5 unique cards (dedup: if drawn card matches one already present, put back and draw again)
-    $marketplace = [];
-    for ($i = 0; $i < 5; $i++) {
-        if (empty($market_deck)) break;
-        $drawn = array_shift($market_deck);
-        if (in_array($drawn, $marketplace)) {
-            // Try to find a different card
-            $market_deck[] = $drawn; // put to bottom
-            $found = false;
-            $attempts = 0;
-            while (!empty($market_deck) && $attempts < count($market_deck)) {
-                $next = array_shift($market_deck);
-                if (!in_array($next, $marketplace)) {
-                    $marketplace[] = $next;
-                    $found = true;
+    // Fill marketplace: 6 slots, each is a stack (array of card IDs)
+    // When a drawn card matches an existing slot, stack it and draw again
+    $marketplace = [[], [], [], [], [], []];
+    for ($i = 0; $i < 6; $i++) {
+        while (!empty($market_deck)) {
+            $drawn = array_shift($market_deck);
+            // Check if this card matches an existing slot
+            $stacked = false;
+            for ($j = 0; $j < $i; $j++) {
+                if (!empty($marketplace[$j]) && $marketplace[$j][0] === $drawn) {
+                    $marketplace[$j][] = $drawn;
+                    $stacked = true;
                     break;
                 }
-                $market_deck[] = $next;
-                $attempts++;
             }
-            if (!$found) {
-                // All remaining are duplicates, just place one
-                $marketplace[] = array_shift($market_deck);
+            if (!$stacked) {
+                $marketplace[$i][] = $drawn;
+                break;
             }
-        } else {
-            $marketplace[] = $drawn;
         }
     }
 
@@ -64,15 +57,16 @@ function init_game(array $players): array {
         ];
     }
 
+    $first_player = random_int(0, count($player_states) - 1);
     return [
-        'current_player' => 0,
+        'current_player' => $first_player,
         'market_deck' => $market_deck,
         'marketplace' => $marketplace,
         'mission_decks' => $mission_decks,
         'mission_grid' => $mission_grid,
         'players' => $player_states,
         'version' => 1,
-        'log' => ['Game started!'],
+        'log' => ['Game started!', $player_states[$first_player]['name'] . ' goes first.'],
         'status' => 'active',
         'turn_number' => 1,
         'final_round' => false,

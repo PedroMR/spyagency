@@ -486,10 +486,9 @@ function build_mission_decks(): array {
 
 function get_starter_deck(): array {
     $deck = [];
-    for ($i = 0; $i < 5; $i++) $deck[] = 'money_1';
-    $deck[] = 'barnstormer';
-    $deck[] = 'barnstormer';
-    $deck[] = 'red_tape';
+    for ($i = 0; $i < 6; $i++) $deck[] = 'money_1';
+    $deck[] = 'muscle';
+    $deck[] = 'muscle';
     $deck[] = 'red_tape';
     $deck[] = 'red_tape';
     shuffle($deck);

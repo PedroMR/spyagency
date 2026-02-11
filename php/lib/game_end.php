@@ -23,7 +23,7 @@ function calculate_scores(array &$game): array {
 function check_game_end(array &$game): bool {
     // Check if any mission deck is empty or market deck is empty
     $trigger = false;
-    if (empty($game['market_deck']) && empty($game['marketplace'])) {
+    if (empty($game['market_deck'])) {
         $trigger = true;
     }
     foreach ($game['mission_decks'] as $tier => $deck) {

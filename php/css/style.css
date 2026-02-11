@@ -305,5 +305,17 @@ input[type="text"] {
 #btn-cash-gems { background: #5c3a8a; border-color: #7b5ab8; }
 #btn-cash-gems:hover { background: #7b5ab8; }
 
+/* Stack count badge */
+.stack-count {
+    background: #ffd700;
+    color: #1a1a2e;
+    font-weight: bold;
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 2px;
+}
+
 /* Discard pile section */
 .discard-section { max-width: 200px; }

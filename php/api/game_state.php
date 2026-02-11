@@ -75,7 +75,8 @@ $state = [
     'current_player' => $game['current_player'],
     'my_index' => $my_index,
     'is_my_turn' => $game['current_player'] === $my_index,
-    'marketplace' => $game['marketplace'],
+    'marketplace' => array_map(fn($stack) => !empty($stack) ? $stack[0] : null, $game['marketplace']),
+    'marketplace_counts' => array_map(fn($stack) => count($stack), $game['marketplace']),
     'market_deck_count' => count($game['market_deck']),
     'mission_grid' => $game['mission_grid'],
     'mission_deck_counts' => [

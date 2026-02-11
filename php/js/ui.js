@@ -1,3 +1,27 @@
+// Discreet click sound using Web Audio API
+function playClick() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 1200;
+        gain.gain.value = 0.08;
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.06);
+    } catch (e) {}
+}
+
+// Attach click sound to all buttons
+document.addEventListener('click', function(e) {
+    if (e.target.matches('button, .card.playable, .market-card, .mission-card, .btn-modal, .hand-card.playable')) {
+        playClick();
+    }
+});
+
 const UI = {
     state: null,
     catalog: null,
@@ -57,16 +81,20 @@ const UI = {
         const container = document.getElementById('marketplace');
         document.getElementById('market-deck-count').textContent = `(${s.market_deck_count} left)`;
 
+        const counts = s.marketplace_counts || [];
         container.innerHTML = s.marketplace.map((cardId, i) => {
             if (!cardId) return '<div class="card card-empty">Empty</div>';
             const card = this.catalog[cardId];
+            const stackCount = counts[i] || 1;
             const affordable = s.is_my_turn && me.money >= card.cost && (me.buys_this_turn || 0) < 1;
             const affordClass = affordable ? ' affordable' : '';
+            const stackBadge = stackCount > 1 ? `<div class="stack-count">x${stackCount}</div>` : '';
             return `<div class="card market-card${affordClass}" style="border-color:${this.typeColors[card.type]}" onclick="UI.onMarketClick('${cardId}', ${i})">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-cost">$${card.cost}</div>
                 <div class="card-type">${card.type}</div>
                 <div class="card-desc">${esc(card.description)}</div>
+                ${stackBadge}
             </div>`;
         }).join('');
     },

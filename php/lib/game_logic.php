@@ -164,8 +164,8 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             $always_available = ($catalog[$gain_agent]['always_available'] ?? false);
             if ($always_available) {
                 // OK, infinite supply
-            } elseif ($gain_slot >= 0 && $gain_slot < count($game['marketplace']) && $game['marketplace'][$gain_slot] === $gain_agent) {
-                $game['marketplace'][$gain_slot] = null;
+            } elseif ($gain_slot >= 0 && $gain_slot < count($game['marketplace']) && !empty($game['marketplace'][$gain_slot]) && $game['marketplace'][$gain_slot][0] === $gain_agent) {
+                array_shift($game['marketplace'][$gain_slot]);
             } else {
                 $game['players'][$pi]['hand'][] = $trash_agent;
                 $game['players'][$pi]['hand'][] = $card_id;
@@ -206,11 +206,11 @@ function action_buy_card(array &$game, int $pi, array $params): array {
         return ['ok' => true];
     }
 
-    // Buy from marketplace
-    if ($slot < 0 || $slot >= count($game['marketplace']) || $game['marketplace'][$slot] === null) {
+    // Buy from marketplace (stacked slots)
+    if ($slot < 0 || $slot >= count($game['marketplace']) || empty($game['marketplace'][$slot])) {
         return ['ok' => false, 'error' => 'Invalid marketplace slot'];
     }
-    $market_card = $game['marketplace'][$slot];
+    $market_card = $game['marketplace'][$slot][0];
     if ($market_card !== $card_id) {
         return ['ok' => false, 'error' => 'Card mismatch'];
     }
@@ -220,45 +220,39 @@ function action_buy_card(array &$game, int $pi, array $params): array {
     }
     $game['players'][$pi]['money'] -= $cost;
     $game['players'][$pi]['discard'][] = $card_id;
-    $game['marketplace'][$slot] = null;
+    array_shift($game['marketplace'][$slot]); // Remove top card from stack
     $game['players'][$pi]['buys_this_turn'] = ($game['players'][$pi]['buys_this_turn'] ?? 0) + 1;
     $game['log'][] = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
     return ['ok' => true];
 }
 
+function marketplace_top(array $slot): ?string {
+    return !empty($slot) ? $slot[0] : null;
+}
+
 function refill_marketplace(array &$game): void {
-    while (count($game['marketplace']) < 5) {
-        $game['marketplace'][] = null;
+    // Ensure 6 slots
+    while (count($game['marketplace']) < 6) {
+        $game['marketplace'][] = [];
     }
-    foreach ($game['marketplace'] as $i => $card) {
-        if ($card === null && !empty($game['market_deck'])) {
-            $drawn = array_shift($game['market_deck']);
-            $existing = array_filter($game['marketplace'], fn($c) => $c === $drawn);
-            if (!empty($existing)) {
-                $game['marketplace'][$i] = $drawn;
-                foreach ($game['marketplace'] as $j => $mc) {
-                    if ($j !== $i && $mc === $drawn) {
-                        $game['marketplace'][$i] = null;
-                        $attempts = 0;
-                        while (!empty($game['market_deck']) && $attempts < count($game['market_deck']) + 1) {
-                            $next = array_shift($game['market_deck']);
-                            $already_in = in_array($next, array_filter($game['marketplace'], fn($c) => $c !== null));
-                            if ($already_in) {
-                                $game['market_deck'][] = $next;
-                                $attempts++;
-                            } else {
-                                $game['marketplace'][$i] = $next;
-                                break;
-                            }
-                        }
-                        if ($game['marketplace'][$i] === null && !empty($game['market_deck'])) {
-                            $game['marketplace'][$i] = array_shift($game['market_deck']);
-                        }
+    foreach ($game['marketplace'] as $i => $stack) {
+        if (empty($stack)) {
+            // Try to fill this empty slot
+            while (!empty($game['market_deck'])) {
+                $drawn = array_shift($game['market_deck']);
+                // Check if this card matches an existing non-empty slot
+                $stacked = false;
+                for ($j = 0; $j < count($game['marketplace']); $j++) {
+                    if ($j !== $i && !empty($game['marketplace'][$j]) && $game['marketplace'][$j][0] === $drawn) {
+                        $game['marketplace'][$j][] = $drawn;
+                        $stacked = true;
                         break;
                     }
                 }
-            } else {
-                $game['marketplace'][$i] = $drawn;
+                if (!$stacked) {
+                    $game['marketplace'][$i] = [$drawn];
+                    break;
+                }
             }
         }
     }
@@ -269,7 +263,11 @@ function action_refresh_market(array &$game, int $pi, array $params): array {
         return ['ok' => false, 'error' => 'Not enough money (need $2)'];
     }
     $game['players'][$pi]['money'] -= 2;
-    $game['marketplace'] = [null, null, null, null, null];
+    // Discard all marketplace cards
+    foreach ($game['marketplace'] as $stack) {
+        // Cards are discarded (removed from game market)
+    }
+    $game['marketplace'] = [[], [], [], [], [], []];
     refill_marketplace($game);
     $game['log'][] = $game['players'][$pi]['name'] . " refreshed the marketplace for \$2";
     return ['ok' => true];

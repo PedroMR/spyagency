@@ -34,7 +34,7 @@
                     <div id="marketplace" class="card-row"></div>
                     <div class="market-actions">
                         <button onclick="Actions.refreshMarket()">Refresh ($2)</button>
-                        <button onclick="Actions.buyAlwaysAvailable('barnstormer')">Buy Barnstormer ($3)</button>
+                        <button onclick="Actions.buyAlwaysAvailable('muscle')">Buy Muscle ($3)</button>
                         <button onclick="Actions.buyAlwaysAvailable('shadow')">Buy Shadow ($4)</button>
                     </div>
                 </div>
