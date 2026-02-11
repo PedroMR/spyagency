@@ -8,7 +8,7 @@ function playClick() {
         gain.connect(ctx.destination);
         osc.type = 'sine';
         osc.frequency.value = 1200;
-        gain.gain.value = 0.08;
+        gain.gain.value = 0.32;
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
         osc.start(ctx.currentTime);
         osc.stop(ctx.currentTime + 0.06);
@@ -17,7 +17,7 @@ function playClick() {
 
 // Attach click sound to all buttons
 document.addEventListener('click', function(e) {
-    if (e.target.matches('button, .card.playable, .market-card, .mission-card, .btn-modal, .hand-card.playable')) {
+    if (e.target.closest('button, .card, .btn-modal')) {
         playClick();
     }
 });
