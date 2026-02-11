@@ -31,14 +31,6 @@ const Actions = {
         return this.send('play_money', {card_id: cardId});
     },
 
-    playAgent(cardId, baseIndex) {
-        return this.send('play_agent', {card_id: cardId, base_index: baseIndex});
-    },
-
-    equipTech(cardId, baseIndex) {
-        return this.send('equip_tech', {card_id: cardId, base_index: baseIndex});
-    },
-
     playPlot(cardId, extraParams = {}) {
         return this.send('play_plot', Object.assign({card_id: cardId}, extraParams));
     },
@@ -51,24 +43,20 @@ const Actions = {
         return this.send('buy_card', {card_id: cardId});
     },
 
-    buyBase() {
-        return this.send('buy_base', {});
-    },
-
     refreshMarket() {
         return this.send('refresh_market', {});
     },
 
-    completeMission(missionId, baseIndex, iconChoices) {
-        return this.send('complete_mission', {
-            mission_id: missionId,
-            base_index: baseIndex,
-            icon_choices: iconChoices || {},
-        });
+    cashGems(amount) {
+        return this.send('cash_gems', {amount: amount});
     },
 
-    vacateBase(baseIndex) {
-        return this.send('vacate_base', {base_index: baseIndex});
+    completeMission(missionId, agentIds, techIds) {
+        return this.send('complete_mission', {
+            mission_id: missionId,
+            agent_ids: agentIds || [],
+            tech_ids: techIds || [],
+        });
     },
 
     endTurn() {

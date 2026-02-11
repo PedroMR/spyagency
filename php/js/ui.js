@@ -1,8 +1,6 @@
 const UI = {
     state: null,
     catalog: null,
-    selectedCard: null,
-    pendingMission: null,
 
     iconMap: {
         drive: '🚘',
@@ -17,7 +15,6 @@ const UI = {
         tech: '#5c3a1a',
         plot: '#4a1a4a',
         mission: '#8b0000',
-        base: '#333',
     },
 
     update(state) {
@@ -28,9 +25,9 @@ const UI = {
         this.renderMissionGrid();
         this.renderFundraising();
         this.renderOpponents();
-        this.renderBases();
         this.renderHand();
         this.renderPlayArea();
+        this.renderDiscardPile();
         this.renderLog();
         this.renderGameOver();
     },
@@ -44,28 +41,28 @@ const UI = {
         turnEl.className = s.is_my_turn ? 'your-turn' : 'other-turn';
 
         document.getElementById('money-display').textContent = `$${me.money}`;
+        document.getElementById('gems-display').textContent = `💎 ${me.gems}`;
+        document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         document.getElementById('btn-end-turn').style.display = s.is_my_turn ? 'inline-block' : 'none';
+        document.getElementById('btn-cash-gems').style.display = (s.is_my_turn && me.gems > 0) ? 'inline-block' : 'none';
 
         const banner = document.getElementById('final-round-banner');
         banner.style.display = s.final_round ? 'block' : 'none';
-
-        // Base cost: $5, $8, $12, ...
-        const extra = me.extra_base_count;
-        const baseCosts = [5, 8, 12];
-        const baseCost = extra < baseCosts.length ? baseCosts[extra] : baseCosts[baseCosts.length-1] + (extra - baseCosts.length + 1) * 4;
-        document.getElementById('base-cost').textContent = `$${baseCost}`;
     },
 
     renderMarketplace() {
         const s = this.state;
+        const me = s.players[s.my_index];
         const container = document.getElementById('marketplace');
         document.getElementById('market-deck-count').textContent = `(${s.market_deck_count} left)`;
 
         container.innerHTML = s.marketplace.map((cardId, i) => {
             if (!cardId) return '<div class="card card-empty">Empty</div>';
             const card = this.catalog[cardId];
-            return `<div class="card market-card" style="border-color:${this.typeColors[card.type]}" onclick="UI.onMarketClick('${cardId}', ${i})">
+            const affordable = s.is_my_turn && me.money >= card.cost && (me.buys_this_turn || 0) < 1;
+            const affordClass = affordable ? ' affordable' : '';
+            return `<div class="card market-card${affordClass}" style="border-color:${this.typeColors[card.type]}" onclick="UI.onMarketClick('${cardId}', ${i})">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-cost">$${card.cost}</div>
                 <div class="card-type">${card.type}</div>
@@ -100,11 +97,10 @@ const UI = {
     renderFundraising() {
         const card = this.catalog['fundraising'];
         const reqIcons = (card.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
-        const reward = card.value > 0 ? `$${card.value}` : '';
         const el = document.getElementById('fundraising-mission');
         el.innerHTML = `<div class="card-name">${esc(card.name)}</div>
             <div class="card-req">${reqIcons}</div>
-            <div class="card-reward">${reward}</div>
+            <div class="card-reward">💎 1-3</div>
             <div class="card-desc">Always available</div>`;
     },
 
@@ -121,51 +117,12 @@ const UI = {
                     <span>Hand: ${p.hand_count}</span>
                     <span>Deck: ${p.deck_count}</span>
                     <span>$${p.money}</span>
+                    ${p.gems > 0 ? `<span>💎${p.gems}</span>` : ''}
                     <span>⭐${p.stars}</span>
                 </div>
-                <div class="opponent-bases">${this.renderBasesFor(p, false)}</div>
             </div>`;
         }
         container.innerHTML = html;
-    },
-
-    renderBasesFor(player, isMe) {
-        let html = '';
-        player.bases.forEach((base, bi) => {
-            const card = this.catalog[base.type];
-            const agentCard = base.agent ? this.catalog[base.agent] : null;
-            const techHtml = base.tech.map(t => {
-                const tc = this.catalog[t];
-                return `<span class="tech-badge" title="${esc(tc.description)}">${esc(tc.name)}</span>`;
-            }).join('');
-
-            let agentHtml = '';
-            if (agentCard) {
-                agentHtml = `<div class="base-agent">
-                    <span class="agent-name">${esc(agentCard.name)}</span>
-                    <span class="agent-icons">${this.getCardIcons(agentCard)}</span>
-                    ${techHtml ? `<div class="base-tech">${techHtml}</div>` : ''}
-                </div>`;
-            } else {
-                agentHtml = '<div class="base-empty">Empty</div>';
-            }
-
-            const actions = isMe ? `<div class="base-actions">
-                ${base.agent ? `<button class="btn-sm" onclick="Actions.vacateBase(${bi})">Vacate</button>` : ''}
-            </div>` : '';
-
-            html += `<div class="base-slot" data-base="${bi}">
-                <div class="base-header">${esc(card.name)} #${bi + 1}</div>
-                ${agentHtml}
-                ${actions}
-            </div>`;
-        });
-        return html;
-    },
-
-    renderBases() {
-        const me = this.state.players[this.state.my_index];
-        document.getElementById('my-bases').innerHTML = this.renderBasesFor(me, true);
     },
 
     getCardIcons(card) {
@@ -213,6 +170,26 @@ const UI = {
         }).join('');
     },
 
+    renderDiscardPile() {
+        const me = this.state.players[this.state.my_index];
+        const discard = me.discard || [];
+        const countEl = document.getElementById('discard-count');
+        const container = document.getElementById('discard-pile');
+        countEl.textContent = `(${discard.length})`;
+
+        if (discard.length === 0) {
+            container.innerHTML = '<span class="muted">Empty</span>';
+            return;
+        }
+        // Show top card
+        const topId = discard[discard.length - 1];
+        const card = this.catalog[topId];
+        container.innerHTML = `<div class="card played-card" style="border-color:${this.typeColors[card.type]}">
+            <div class="card-name">${esc(card.name)}</div>
+            <div class="card-type">${card.type}</div>
+        </div>`;
+    },
+
     renderLog() {
         const container = document.getElementById('game-log');
         container.innerHTML = this.state.log.map(l => `<div class="log-entry">${esc(l)}</div>`).join('');
@@ -244,14 +221,12 @@ const UI = {
                 Actions.playMoney(cardId);
                 break;
             case 'mission':
-                // Completed mission cards in hand can be played for money
                 if (card.value > 0) Actions.playMoney(cardId);
                 break;
             case 'agent':
-                this.showBasePickerForAgent(cardId);
-                break;
             case 'tech':
-                this.showBasePickerForTech(cardId);
+                // Agents and tech are played as part of missions, not individually
+                this.showError('Agents and tech are played when completing missions.');
                 break;
             case 'plot':
                 this.handlePlotPlay(cardId);
@@ -261,56 +236,14 @@ const UI = {
 
     onMarketClick(cardId, slot) {
         if (!this.state.is_my_turn) return;
+        const me = this.state.players[this.state.my_index];
+        if ((me.buys_this_turn || 0) >= 1) {
+            this.showError('Already bought a card this turn.');
+            return;
+        }
         if (confirm(`Buy ${this.catalog[cardId].name} for $${this.catalog[cardId].cost}?`)) {
             Actions.buyCard(cardId, slot);
         }
-    },
-
-    showBasePickerForAgent(cardId) {
-        const me = this.state.players[this.state.my_index];
-        const emptyBases = me.bases.map((b, i) => ({...b, idx: i})).filter(b => !b.agent);
-        if (emptyBases.length === 0) {
-            this.showError('No empty bases! Vacate one first.');
-            return;
-        }
-        if (emptyBases.length === 1) {
-            Actions.playAgent(cardId, emptyBases[0].idx);
-            return;
-        }
-        let html = `<h3>Deploy ${esc(this.catalog[cardId].name)} to which base?</h3>`;
-        emptyBases.forEach(b => {
-            html += `<button class="btn-modal" onclick="Actions.playAgent('${cardId}', ${b.idx}); UI.closeModal()">
-                ${esc(this.catalog[b.type].name)} #${b.idx + 1}
-            </button>`;
-        });
-        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
-        this.showModal(html);
-    },
-
-    showBasePickerForTech(cardId) {
-        const me = this.state.players[this.state.my_index];
-        const eligibleBases = me.bases.map((b, i) => ({...b, idx: i})).filter(b => {
-            if (!b.agent) return false;
-            const agentCard = this.catalog[b.agent];
-            return b.tech.length < (agentCard.max_tech || 0);
-        });
-        if (eligibleBases.length === 0) {
-            this.showError('No agents with free tech slots!');
-            return;
-        }
-        if (eligibleBases.length === 1) {
-            Actions.equipTech(cardId, eligibleBases[0].idx);
-            return;
-        }
-        let html = `<h3>Equip ${esc(this.catalog[cardId].name)} to which agent?</h3>`;
-        eligibleBases.forEach(b => {
-            const agent = this.catalog[b.agent];
-            html += `<button class="btn-modal" onclick="Actions.equipTech('${cardId}', ${b.idx}); UI.closeModal()">
-                ${esc(agent.name)} at ${esc(this.catalog[b.type].name)} #${b.idx + 1}
-            </button>`;
-        });
-        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
-        this.showModal(html);
     },
 
     handlePlotPlay(cardId) {
@@ -329,6 +262,11 @@ const UI = {
 
         if (effect === 'backup') {
             this.showBackupDialog(cardId);
+            return;
+        }
+
+        if (effect === 'training') {
+            this.showTrainingDialog(cardId);
             return;
         }
 
@@ -378,38 +316,162 @@ const UI = {
         this.showModal(html);
     },
 
-    showMissionDialog(missionId) {
-        if (!this.state.is_my_turn) return;
-        const mission = this.catalog[missionId];
+    showTrainingDialog(plotCardId) {
         const me = this.state.players[this.state.my_index];
-        const occupied = me.bases.map((b, i) => ({...b, idx: i})).filter(b => b.agent);
-
-        if (occupied.length === 0) {
-            this.showError('No agents deployed to attempt missions!');
+        const agents = me.hand.filter(cid => cid !== plotCardId && this.catalog[cid].type === 'agent');
+        if (agents.length === 0) {
+            this.showError('No agents in hand to trash!');
             return;
         }
-
-        const reqIcons = (mission.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
-        let html = `<h3>Complete: ${esc(mission.name)}</h3><p>Requires: ${reqIcons}</p>`;
-        html += '<p>Select a base (agent will be discarded):</p>';
-
-        occupied.forEach(b => {
-            const agent = this.catalog[b.agent];
-            const techNames = b.tech.map(t => this.catalog[t].name).join(', ');
-            const iconsDisplay = this.getCardIcons(agent);
-            const techIcons = b.tech.map(t => this.getCardIcons(this.catalog[t])).join(' ');
-            html += `<button class="btn-modal" onclick="UI.attemptMission('${missionId}', ${b.idx})">
-                ${esc(agent.name)} (${iconsDisplay}${techIcons ? ' + ' + techIcons : ''}) at Base #${b.idx + 1}
+        let html = '<h3>Training Procedure: Select agent to trash</h3>';
+        const unique = [...new Set(agents)];
+        unique.forEach(cid => {
+            const c = this.catalog[cid];
+            const maxCost = (c.cost || 0) + 3;
+            html += `<button class="btn-modal" onclick="UI.showTrainingGainDialog('${plotCardId}', '${cid}', ${maxCost})">
+                Trash ${esc(c.name)} ($${c.cost}) — gain up to $${maxCost}
             </button>`;
         });
         html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
         this.showModal(html);
     },
 
-    attemptMission(missionId, baseIdx) {
-        // Server auto-resolves icon choices
-        Actions.completeMission(missionId, baseIdx, {});
+    showTrainingGainDialog(plotCardId, trashAgent, maxCost) {
+        const catalog = this.catalog;
+        let html = `<h3>Training: Gain an agent (up to $${maxCost})</h3>`;
+
+        // Always-available agents
+        const alwaysAvail = Object.values(catalog).filter(c => c.type === 'agent' && c.always_available && c.cost <= maxCost);
+        for (const c of alwaysAvail) {
+            html += `<button class="btn-modal" onclick="Actions.playPlot('${plotCardId}', {trash_agent:'${trashAgent}', gain_agent:'${c.id}', gain_slot:-1}); UI.closeModal()">
+                ${esc(c.name)} ($${c.cost}) — Always available
+            </button>`;
+        }
+
+        // Marketplace agents
+        this.state.marketplace.forEach((cardId, slot) => {
+            if (!cardId) return;
+            const c = catalog[cardId];
+            if (c.type === 'agent' && c.cost <= maxCost) {
+                html += `<button class="btn-modal" onclick="Actions.playPlot('${plotCardId}', {trash_agent:'${trashAgent}', gain_agent:'${cardId}', gain_slot:${slot}}); UI.closeModal()">
+                    ${esc(c.name)} ($${c.cost}) — Marketplace
+                </button>`;
+            }
+        });
+
+        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
+        this.showModal(html);
+    },
+
+    showMissionDialog(missionId) {
+        if (!this.state.is_my_turn) return;
+        const mission = this.catalog[missionId];
+        const me = this.state.players[this.state.my_index];
+
+        // Find agents and tech in hand
+        const handAgents = me.hand.filter(cid => this.catalog[cid].type === 'agent');
+        const handTech = me.hand.filter(cid => this.catalog[cid].type === 'tech');
+
+        if (handAgents.length === 0) {
+            this.showError('No agents in hand to attempt missions!');
+            return;
+        }
+
+        const reqIcons = (mission.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
+        const isFundraising = (mission.gems || 0) > 0;
+
+        let html = `<h3>Complete: ${esc(mission.name)}</h3>`;
+        html += `<p>Requires: ${reqIcons}</p>`;
+        if (isFundraising) {
+            html += '<p>Reward: 💎 1-3 gems (based on icons committed)</p>';
+        }
+        html += '<p>Select agents and tech from your hand:</p>';
+
+        // Checkboxes for agents
+        html += '<h4>Agents</h4>';
+        const uniqueAgents = [...new Set(handAgents)];
+        uniqueAgents.forEach(cid => {
+            const c = this.catalog[cid];
+            const count = handAgents.filter(x => x === cid).length;
+            const icons = this.getCardIcons(c);
+            for (let i = 0; i < count; i++) {
+                html += `<label class="mission-select-item">
+                    <input type="checkbox" name="mission-agent" value="${cid}" data-max-tech="${c.max_tech || 0}">
+                    ${esc(c.name)} (${icons}) [tech slots: ${c.max_tech || 0}]
+                </label>`;
+            }
+        });
+
+        // Checkboxes for tech
+        if (handTech.length > 0) {
+            html += '<h4>Tech</h4>';
+            const uniqueTech = [...new Set(handTech)];
+            uniqueTech.forEach(cid => {
+                const c = this.catalog[cid];
+                const count = handTech.filter(x => x === cid).length;
+                const icons = this.getCardIcons(c);
+                for (let i = 0; i < count; i++) {
+                    html += `<label class="mission-select-item">
+                        <input type="checkbox" name="mission-tech" value="${cid}">
+                        ${esc(c.name)} (${icons})
+                    </label>`;
+                }
+            });
+        }
+
+        html += `<button class="btn-modal" style="margin-top:12px;background:#1a8a2d;border-color:#2dbc45" onclick="UI.submitMission('${missionId}')">
+            Attempt Mission
+        </button>`;
+        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
+        this.showModal(html);
+    },
+
+    submitMission(missionId) {
+        const agentBoxes = document.querySelectorAll('input[name="mission-agent"]:checked');
+        const techBoxes = document.querySelectorAll('input[name="mission-tech"]:checked');
+        const agentIds = Array.from(agentBoxes).map(cb => cb.value);
+        const techIds = Array.from(techBoxes).map(cb => cb.value);
+
+        if (agentIds.length === 0) {
+            this.showError('Select at least one agent.');
+            return;
+        }
+
+        // Validate tech count against agent max_tech
+        let totalMaxTech = 0;
+        agentIds.forEach(aid => {
+            totalMaxTech += (this.catalog[aid].max_tech || 0);
+        });
+        // Add backup agent tech slots if present
+        const me = this.state.players[this.state.my_index];
+        if (me.backup_agent) {
+            totalMaxTech += (this.catalog[me.backup_agent].max_tech || 0);
+        }
+        if (techIds.length > totalMaxTech) {
+            this.showError(`Too many tech cards (max ${totalMaxTech} for selected agents).`);
+            return;
+        }
+
+        Actions.completeMission(missionId, agentIds, techIds);
         this.closeModal();
+    },
+
+    showCashGemsDialog() {
+        const me = this.state.players[this.state.my_index];
+        const gems = me.gems || 0;
+        if (gems <= 0) {
+            this.showError('No gems to cash!');
+            return;
+        }
+        let html = `<h3>Cash Gems (💎 ${gems} available)</h3>`;
+        html += '<p>Convert gems to money at 1:1 rate:</p>';
+        for (let i = 1; i <= gems; i++) {
+            html += `<button class="btn-modal" onclick="Actions.cashGems(${i}); UI.closeModal()">
+                Cash ${i} gem${i > 1 ? 's' : ''} for $${i}
+            </button>`;
+        }
+        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
+        this.showModal(html);
     },
 
     showModal(html) {
@@ -419,7 +481,6 @@ const UI = {
 
     closeModal() {
         document.getElementById('modal-overlay').style.display = 'none';
-        this.pendingMission = null;
     },
 
     showError(msg) {

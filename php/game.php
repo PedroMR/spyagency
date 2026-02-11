@@ -9,13 +9,15 @@
 <body>
     <div class="game-container">
         <div class="game-header">
-            <h2>🕵️ Spy Agency</h2>
+            <h2>Spy Agency</h2>
             <div class="turn-info">
                 <span id="turn-indicator"></span>
                 <span id="money-display"></span>
+                <span id="gems-display"></span>
                 <span id="stars-display"></span>
             </div>
             <div class="game-header-actions">
+                <button id="btn-cash-gems" onclick="UI.showCashGemsDialog()" style="display:none">Cash Gems</button>
                 <button id="btn-end-turn" onclick="Actions.endTurn()" style="display:none">End Turn</button>
                 <button id="btn-back-lobby" onclick="location.href='index.php'">Lobby</button>
             </div>
@@ -34,7 +36,6 @@
                         <button onclick="Actions.refreshMarket()">Refresh ($2)</button>
                         <button onclick="Actions.buyAlwaysAvailable('barnstormer')">Buy Barnstormer ($3)</button>
                         <button onclick="Actions.buyAlwaysAvailable('shadow')">Buy Shadow ($4)</button>
-                        <button onclick="Actions.buyBase()">Buy Hideaway (<span id="base-cost">$5</span>)</button>
                     </div>
                 </div>
 
@@ -56,11 +57,6 @@
             </div>
 
             <div class="board-bottom">
-                <div class="section bases-section">
-                    <h3>Your Bases</h3>
-                    <div id="my-bases" class="bases-row"></div>
-                </div>
-
                 <div class="section hand-section">
                     <h3>Your Hand</h3>
                     <div id="my-hand" class="card-row"></div>
@@ -69,6 +65,11 @@
                 <div class="section play-area-section">
                     <h3>Play Area</h3>
                     <div id="play-area" class="card-row"></div>
+                </div>
+
+                <div class="section discard-section">
+                    <h3>Discard Pile <span id="discard-count" class="deck-count"></span></h3>
+                    <div id="discard-pile"></div>
                 </div>
             </div>
         </div>

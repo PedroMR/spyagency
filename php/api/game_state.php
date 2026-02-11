@@ -46,10 +46,10 @@ foreach ($game['players'] as $i => $p) {
             'discard_count' => count($p['discard']),
             'discard' => $p['discard'],
             'play_area' => $p['play_area'],
-            'bases' => $p['bases'],
             'money' => $p['money'],
+            'gems' => $p['gems'] ?? 0,
             'stars' => $p['stars'],
-            'extra_base_count' => $p['extra_base_count'],
+            'buys_this_turn' => $p['buys_this_turn'] ?? 0,
             'backup_agent' => $p['backup_agent'] ?? null,
             'extra_missions' => $p['extra_missions'] ?? 0,
             'missions_this_turn' => $p['missions_this_turn'] ?? 0,
@@ -62,10 +62,9 @@ foreach ($game['players'] as $i => $p) {
             'deck_count' => count($p['deck']),
             'discard_count' => count($p['discard']),
             'play_area' => $p['play_area'],
-            'bases' => $p['bases'],
             'money' => $p['money'],
+            'gems' => $p['gems'] ?? 0,
             'stars' => $p['stars'],
-            'extra_base_count' => $p['extra_base_count'],
         ];
     }
 }

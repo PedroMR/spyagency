@@ -8,11 +8,6 @@ function calculate_scores(array &$game): array {
         $stars = 0;
         // Count stars from all cards the player owns (deck + hand + discard + play_area)
         $all_cards = array_merge($p['deck'], $p['hand'], $p['discard'], $p['play_area']);
-        // Also count agents/tech on bases
-        foreach ($p['bases'] as $base) {
-            if ($base['agent']) $all_cards[] = $base['agent'];
-            foreach ($base['tech'] as $t) $all_cards[] = $t;
-        }
         foreach ($all_cards as $card_id) {
             if (isset($catalog[$card_id]) && ($catalog[$card_id]['stars'] ?? 0) > 0) {
                 $stars += $catalog[$card_id]['stars'];

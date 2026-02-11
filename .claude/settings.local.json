@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(bash:*)",
+      "Bash(git -C . diff docs/cards.csv)",
+      "Bash(git --git-dir=/mnt/shared/code/spies/.git --work-tree=/mnt/shared/code/spies status)",
+      "Bash(git --git-dir=/mnt/shared/code/spies/.git --work-tree=/mnt/shared/code/spies diff docs/cards.csv)",
+      "Bash(git --git-dir=/mnt/shared/code/spies/.git --work-tree=/mnt/shared/code/spies diff -- docs/cards.csv)"
+    ]
+  }
+}

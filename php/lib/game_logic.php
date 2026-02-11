@@ -37,7 +37,6 @@ function action_play_money(array &$game, int $pi, array $params): array {
         return ['ok' => false, 'error' => 'Unknown card'];
     }
     $card = $catalog[$card_id];
-    // Allow playing money cards and completed mission cards (which have a value)
     $is_money = $card['type'] === TYPE_MONEY;
     $is_valued_mission = $card['type'] === TYPE_MISSION && ($card['value'] ?? 0) > 0;
     if (!$is_money && !$is_valued_mission) {
@@ -50,58 +49,6 @@ function action_play_money(array &$game, int $pi, array $params): array {
     $game['players'][$pi]['play_area'][] = $card_id;
     $game['players'][$pi]['money'] += $value;
     $game['log'][] = $game['players'][$pi]['name'] . " played {$card['name']} (+\${$value})";
-    return ['ok' => true];
-}
-
-function action_play_agent(array &$game, int $pi, array $params): array {
-    $card_id = $params['card_id'] ?? '';
-    $base_idx = $params['base_index'] ?? -1;
-    $catalog = get_card_catalog();
-
-    if (!isset($catalog[$card_id]) || $catalog[$card_id]['type'] !== TYPE_AGENT) {
-        return ['ok' => false, 'error' => 'Not an agent card'];
-    }
-    if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
-        return ['ok' => false, 'error' => 'Card not in hand'];
-    }
-    if (!isset($game['players'][$pi]['bases'][$base_idx])) {
-        // Put card back
-        $game['players'][$pi]['hand'][] = $card_id;
-        return ['ok' => false, 'error' => 'Invalid base'];
-    }
-    if ($game['players'][$pi]['bases'][$base_idx]['agent'] !== null) {
-        $game['players'][$pi]['hand'][] = $card_id;
-        return ['ok' => false, 'error' => 'Base already occupied'];
-    }
-    $game['players'][$pi]['bases'][$base_idx]['agent'] = $card_id;
-    $game['log'][] = $game['players'][$pi]['name'] . " deployed {$catalog[$card_id]['name']} to base " . ($base_idx + 1);
-    return ['ok' => true];
-}
-
-function action_equip_tech(array &$game, int $pi, array $params): array {
-    $card_id = $params['card_id'] ?? '';
-    $base_idx = $params['base_index'] ?? -1;
-    $catalog = get_card_catalog();
-
-    if (!isset($catalog[$card_id]) || $catalog[$card_id]['type'] !== TYPE_TECH) {
-        return ['ok' => false, 'error' => 'Not a tech card'];
-    }
-    if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
-        return ['ok' => false, 'error' => 'Card not in hand'];
-    }
-    $base = &$game['players'][$pi]['bases'][$base_idx] ?? null;
-    if (!$base || $base['agent'] === null) {
-        $game['players'][$pi]['hand'][] = $card_id;
-        return ['ok' => false, 'error' => 'No agent at this base'];
-    }
-    $agent_card = $catalog[$base['agent']];
-    $max_tech = $agent_card['max_tech'] ?? 0;
-    if (count($base['tech']) >= $max_tech) {
-        $game['players'][$pi]['hand'][] = $card_id;
-        return ['ok' => false, 'error' => "Agent can only hold {$max_tech} tech"];
-    }
-    $base['tech'][] = $card_id;
-    $game['log'][] = $game['players'][$pi]['name'] . " equipped {$catalog[$card_id]['name']} to {$agent_card['name']}";
     return ['ok' => true];
 }
 
@@ -120,20 +67,17 @@ function action_play_plot(array &$game, int $pi, array $params): array {
 
     switch ($effect) {
         case 'none':
-            // Red Tape - does nothing
             $game['players'][$pi]['play_area'][] = $card_id;
             $game['log'][] = $game['players'][$pi]['name'] . " played Red Tape (does nothing)";
             break;
 
         case 'draw2':
-            // Para-drop
             $game['players'][$pi]['play_area'][] = $card_id;
             player_draw_cards($game['players'][$pi], 2);
             $game['log'][] = $game['players'][$pi]['name'] . " played Para-drop and drew 2 cards";
             break;
 
         case 'trash':
-            // Burn Notice - trash a card specified by target_card and target_area
             $target_card = $params['target_card'] ?? '';
             $target_area = $params['target_area'] ?? '';
             if (!$target_card || !$target_area) {
@@ -149,13 +93,11 @@ function action_play_plot(array &$game, int $pi, array $params): array {
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Target card not found in ' . $target_area];
             }
-            // Card is trashed (removed from game entirely)
             $game['players'][$pi]['play_area'][] = $card_id;
             $game['log'][] = $game['players'][$pi]['name'] . " played Burn Notice, trashing {$catalog[$target_card]['name']} from {$target_area}";
             break;
 
         case 'paperwork':
-            // Paperwork - every other player gains a Red Tape in their discard
             $game['players'][$pi]['play_area'][] = $card_id;
             foreach ($game['players'] as $oi => &$other) {
                 if ($oi !== $pi) {
@@ -167,14 +109,12 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             break;
 
         case 'multitask':
-            // Multitasking - allows an additional mission this turn
             $game['players'][$pi]['play_area'][] = $card_id;
             $game['players'][$pi]['extra_missions'] = ($game['players'][$pi]['extra_missions'] ?? 0) + 1;
             $game['log'][] = $game['players'][$pi]['name'] . " played Multitasking — may complete an additional mission this turn!";
             break;
 
         case 'backup':
-            // Got Your Back! - play an agent from hand as backup
             $agent_card_id = $params['agent_card_id'] ?? '';
             if (!$agent_card_id || !isset($catalog[$agent_card_id]) || $catalog[$agent_card_id]['type'] !== TYPE_AGENT) {
                 $game['players'][$pi]['hand'][] = $card_id;
@@ -189,6 +129,54 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             $game['players'][$pi]['play_area'][] = $agent_card_id;
             $game['log'][] = $game['players'][$pi]['name'] . " played Got Your Back! with {$catalog[$agent_card_id]['name']} as backup";
             break;
+
+        case 'training':
+            // Training Procedure: trash an agent from hand, gain an agent costing up to $3 more from market
+            $trash_agent = $params['trash_agent'] ?? '';
+            $gain_agent = $params['gain_agent'] ?? '';
+            $gain_slot = $params['gain_slot'] ?? -1;
+            if (!$trash_agent || !isset($catalog[$trash_agent]) || $catalog[$trash_agent]['type'] !== TYPE_AGENT) {
+                $game['players'][$pi]['hand'][] = $card_id;
+                return ['ok' => false, 'error' => 'Must specify an agent to trash'];
+            }
+            if (!remove_from_array($game['players'][$pi]['hand'], $trash_agent)) {
+                $game['players'][$pi]['hand'][] = $card_id;
+                return ['ok' => false, 'error' => 'Agent to trash not in hand'];
+            }
+            $trash_cost = $catalog[$trash_agent]['cost'] ?? 0;
+            $max_cost = $trash_cost + 3;
+
+            // Gain agent: from marketplace slot or always-available
+            if (!$gain_agent || !isset($catalog[$gain_agent]) || $catalog[$gain_agent]['type'] !== TYPE_AGENT) {
+                // Restore cards
+                $game['players'][$pi]['hand'][] = $trash_agent;
+                $game['players'][$pi]['hand'][] = $card_id;
+                return ['ok' => false, 'error' => 'Must specify a valid agent to gain'];
+            }
+            $gain_cost = $catalog[$gain_agent]['cost'] ?? 0;
+            if ($gain_cost > $max_cost) {
+                $game['players'][$pi]['hand'][] = $trash_agent;
+                $game['players'][$pi]['hand'][] = $card_id;
+                return ['ok' => false, 'error' => "Agent costs \${$gain_cost}, max is \${$max_cost}"];
+            }
+
+            // Check source: always-available or marketplace slot
+            $always_available = ($catalog[$gain_agent]['always_available'] ?? false);
+            if ($always_available) {
+                // OK, infinite supply
+            } elseif ($gain_slot >= 0 && $gain_slot < count($game['marketplace']) && $game['marketplace'][$gain_slot] === $gain_agent) {
+                $game['marketplace'][$gain_slot] = null;
+            } else {
+                $game['players'][$pi]['hand'][] = $trash_agent;
+                $game['players'][$pi]['hand'][] = $card_id;
+                return ['ok' => false, 'error' => 'Agent not available in marketplace'];
+            }
+
+            // Trash the agent (removed from game), gain the new one to discard
+            $game['players'][$pi]['discard'][] = $gain_agent;
+            $game['players'][$pi]['play_area'][] = $card_id;
+            $game['log'][] = $game['players'][$pi]['name'] . " played Training Procedure: trashed {$catalog[$trash_agent]['name']}, gained {$catalog[$gain_agent]['name']}";
+            break;
     }
 
     return ['ok' => true];
@@ -199,6 +187,11 @@ function action_buy_card(array &$game, int $pi, array $params): array {
     $slot = $params['slot'] ?? -1;
     $catalog = get_card_catalog();
 
+    // Buy limit: 1 per turn
+    if (($game['players'][$pi]['buys_this_turn'] ?? 0) >= 1) {
+        return ['ok' => false, 'error' => 'Already bought a card this turn'];
+    }
+
     // Always-available cards
     $always_available = array_filter($catalog, fn($c) => ($c['always_available'] ?? false) && $c['type'] === TYPE_AGENT);
     if (isset($always_available[$card_id])) {
@@ -208,6 +201,7 @@ function action_buy_card(array &$game, int $pi, array $params): array {
         }
         $game['players'][$pi]['money'] -= $cost;
         $game['players'][$pi]['discard'][] = $card_id;
+        $game['players'][$pi]['buys_this_turn'] = ($game['players'][$pi]['buys_this_turn'] ?? 0) + 1;
         $game['log'][] = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
         return ['ok' => true];
     }
@@ -226,67 +220,30 @@ function action_buy_card(array &$game, int $pi, array $params): array {
     }
     $game['players'][$pi]['money'] -= $cost;
     $game['players'][$pi]['discard'][] = $card_id;
-    $game['marketplace'][$slot] = null; // Empty slot, refilled at end of turn
+    $game['marketplace'][$slot] = null;
+    $game['players'][$pi]['buys_this_turn'] = ($game['players'][$pi]['buys_this_turn'] ?? 0) + 1;
     $game['log'][] = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
     return ['ok' => true];
 }
 
-function get_base_cost(int $extra_count): int {
-    // $5, $8, $12, ...
-    $costs = [5, 8, 12];
-    if ($extra_count < count($costs)) return $costs[$extra_count];
-    // Beyond defined costs, keep incrementing
-    return $costs[count($costs) - 1] + ($extra_count - count($costs) + 1) * 4;
-}
-
-function action_buy_base(array &$game, int $pi, array $params): array {
-    $extra = $game['players'][$pi]['extra_base_count'];
-    $cost = get_base_cost($extra);
-    if ($game['players'][$pi]['money'] < $cost) {
-        return ['ok' => false, 'error' => "Not enough money (need \${$cost})"];
-    }
-    $game['players'][$pi]['money'] -= $cost;
-    $game['players'][$pi]['extra_base_count']++;
-    // Extra bases are always Hideaways
-    $game['players'][$pi]['bases'][] = [
-        'type' => 'hideaway',
-        'agent' => null,
-        'tech' => [],
-    ];
-    $game['log'][] = $game['players'][$pi]['name'] . " bought a new Hideaway for \${$cost}";
-    return ['ok' => true];
-}
-
 function refill_marketplace(array &$game): void {
-    // Pad marketplace to 5 slots
     while (count($game['marketplace']) < 5) {
         $game['marketplace'][] = null;
     }
     foreach ($game['marketplace'] as $i => $card) {
         if ($card === null && !empty($game['market_deck'])) {
             $drawn = array_shift($game['market_deck']);
-            // Dedup: if this card already exists in the marketplace, place on top and draw again
             $existing = array_filter($game['marketplace'], fn($c) => $c === $drawn);
             if (!empty($existing)) {
-                // "Place on top" — the slot keeps same card id, effectively stacking
-                // Put drawn card on top of the matching slot, then draw another for this empty slot
                 $game['marketplace'][$i] = $drawn;
-                // Try to draw a different card for a new pass
-                // Actually per spec: "place the new card on top of it and draw again"
-                // So the duplicate goes onto the existing slot (no visible change), and we re-draw for this slot
-                // Find the existing slot that matches
                 foreach ($game['marketplace'] as $j => $mc) {
                     if ($j !== $i && $mc === $drawn) {
-                        // Stack: put it back conceptually, re-draw
                         $game['marketplace'][$i] = null;
-                        // Put the drawn card under the existing one (or just try next card)
-                        // Simplest: keep trying to draw unique cards, give up after deck exhausted
                         $attempts = 0;
                         while (!empty($game['market_deck']) && $attempts < count($game['market_deck']) + 1) {
                             $next = array_shift($game['market_deck']);
                             $already_in = in_array($next, array_filter($game['marketplace'], fn($c) => $c !== null));
                             if ($already_in) {
-                                // Put at bottom of deck and try again
                                 $game['market_deck'][] = $next;
                                 $attempts++;
                             } else {
@@ -294,7 +251,6 @@ function refill_marketplace(array &$game): void {
                                 break;
                             }
                         }
-                        // If we couldn't find a unique card, just place whatever
                         if ($game['marketplace'][$i] === null && !empty($game['market_deck'])) {
                             $game['marketplace'][$i] = array_shift($game['market_deck']);
                         }
@@ -313,54 +269,25 @@ function action_refresh_market(array &$game, int $pi, array $params): array {
         return ['ok' => false, 'error' => 'Not enough money (need $2)'];
     }
     $game['players'][$pi]['money'] -= 2;
-    // Discard current marketplace cards (removed from game)
     $game['marketplace'] = [null, null, null, null, null];
-    // Refill with dedup logic
     refill_marketplace($game);
     $game['log'][] = $game['players'][$pi]['name'] . " refreshed the marketplace for \$2";
     return ['ok' => true];
 }
 
-/**
- * Resolve icons for a card, with auto-resolution of choices to satisfy mission requirements.
- * $choices is an array of explicit player choices (for manual override).
- * Returns array of resolved icon strings.
- */
-function resolve_icons(string $card_id, array $choices, array $catalog): array {
-    $card = $catalog[$card_id];
-    $icons = [];
-    $choice_idx = 0;
-    foreach ($card['icons'] as $icon) {
-        if (is_array($icon)) {
-            $chosen = $choices[$choice_idx] ?? $icon[0];
-            if (!in_array($chosen, $icon)) {
-                $chosen = $icon[0];
-            }
-            $icons[] = $chosen;
-            $choice_idx++;
-        } else {
-            $icons[] = $icon;
-        }
+function action_cash_gems(array &$game, int $pi, array $params): array {
+    $amount = (int)($params['amount'] ?? 0);
+    $gems = $game['players'][$pi]['gems'] ?? 0;
+    if ($amount <= 0) {
+        return ['ok' => false, 'error' => 'Must cash at least 1 gem'];
     }
-    return $icons;
-}
-
-/**
- * Collect all cards involved in a mission attempt (agent, tech, backup) with their choice slots.
- * Returns array of ['card_id' => ..., 'icons' => [...]] where choice icons are arrays.
- */
-function collect_mission_cards(array $base, ?string $backup, array $catalog): array {
-    $cards = [];
-    if ($base['agent']) {
-        $cards[] = $base['agent'];
+    if ($amount > $gems) {
+        return ['ok' => false, 'error' => "Not enough gems (have {$gems})"];
     }
-    foreach ($base['tech'] as $t) {
-        $cards[] = $t;
-    }
-    if ($backup) {
-        $cards[] = $backup;
-    }
-    return $cards;
+    $game['players'][$pi]['gems'] -= $amount;
+    $game['players'][$pi]['money'] += $amount;
+    $game['log'][] = $game['players'][$pi]['name'] . " cashed {$amount} gem(s) for \${$amount}";
+    return ['ok' => true];
 }
 
 /**
@@ -368,16 +295,14 @@ function collect_mission_cards(array $base, ?string $backup, array $catalog): ar
  * Uses backtracking to find a valid assignment.
  */
 function auto_resolve_choices(array $requirements, array $card_ids, array $catalog): ?array {
-    // Gather all icon slots: fixed icons and choice slots
-    $slots = []; // [{card_idx, icon_idx, options: string|array}]
+    $slots = [];
     foreach ($card_ids as $ci => $card_id) {
         $card = $catalog[$card_id];
-        foreach ($card['icons'] as $ii => $icon) {
+        foreach (($card['icons'] ?? []) as $ii => $icon) {
             $slots[] = ['card_idx' => $ci, 'icon_idx' => $ii, 'options' => $icon];
         }
     }
 
-    // Try all combinations of choices via backtracking
     $choice_slots = [];
     $fixed_icons = [];
     foreach ($slots as $si => $slot) {
@@ -388,15 +313,13 @@ function auto_resolve_choices(array $requirements, array $card_ids, array $catal
         }
     }
 
-    // If no choices, just check directly
     if (empty($choice_slots)) {
         if (check_requirements($requirements, $fixed_icons)) {
-            return []; // no choices needed
+            return [];
         }
         return null;
     }
 
-    // Try all combinations
     $num_choices = count($choice_slots);
     $combo = array_fill(0, $num_choices, 0);
 
@@ -420,7 +343,6 @@ function auto_resolve_choices(array $requirements, array $card_ids, array $catal
         }
 
         if (check_requirements($requirements, $icons)) {
-            // Build choices structure by card
             $choices_by_card = [];
             foreach ($resolved as $r) {
                 $choices_by_card[$r['card_idx']][$r['icon_idx']] = $r['chosen'];
@@ -428,7 +350,6 @@ function auto_resolve_choices(array $requirements, array $card_ids, array $catal
             return $choices_by_card;
         }
 
-        // Increment combo
         for ($ci = $num_choices - 1; $ci >= 0; $ci--) {
             $combo[$ci]++;
             if ($combo[$ci] < count($slots[$choice_slots[$ci]]['options'])) break;
@@ -436,11 +357,11 @@ function auto_resolve_choices(array $requirements, array $card_ids, array $catal
         }
     }
 
-    return null; // no valid assignment found
+    return null;
 }
 
 function check_requirements(array $requirements, array $available): bool {
-    $avail = $available; // copy
+    $avail = $available;
     foreach ($requirements as $req) {
         if ($req === 'any') {
             if (empty($avail)) return false;
@@ -454,9 +375,14 @@ function check_requirements(array $requirements, array $available): bool {
     return true;
 }
 
+/**
+ * Complete a mission by playing agents + tech from hand.
+ * Params: mission_id, agent_ids (array), tech_ids (array)
+ */
 function action_complete_mission(array &$game, int $pi, array $params): array {
     $mission_id = $params['mission_id'] ?? '';
-    $base_idx = $params['base_index'] ?? -1;
+    $agent_ids = $params['agent_ids'] ?? [];
+    $tech_ids = $params['tech_ids'] ?? [];
     $catalog = get_card_catalog();
 
     if (!isset($catalog[$mission_id]) || $catalog[$mission_id]['type'] !== TYPE_MISSION) {
@@ -465,14 +391,14 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
 
     $mission = $catalog[$mission_id];
 
-    // Check mission limit (default 1 per turn, +1 per Multitasking played)
+    // Check mission limit
     $missions_allowed = 1 + ($game['players'][$pi]['extra_missions'] ?? 0);
     $missions_completed = $game['players'][$pi]['missions_this_turn'] ?? 0;
     if ($missions_completed >= $missions_allowed) {
         return ['ok' => false, 'error' => 'No more missions allowed this turn'];
     }
 
-    // Find mission in grid or check if it's always available
+    // Find mission in grid or check always-available
     $found_tier = null;
     $found_idx = null;
     $is_always = $catalog[$mission_id]['always_available'] ?? false;
@@ -491,33 +417,72 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         }
     }
 
-    // Validate base has an agent
-    if (!isset($game['players'][$pi]['bases'][$base_idx]) || $game['players'][$pi]['bases'][$base_idx]['agent'] === null) {
-        return ['ok' => false, 'error' => 'No agent at that base'];
+    // Validate agents are in hand
+    if (empty($agent_ids)) {
+        return ['ok' => false, 'error' => 'Must commit at least one agent'];
     }
 
-    $base = &$game['players'][$pi]['bases'][$base_idx];
+    // Also include backup agent if one was played via Got Your Back!
     $backup = $game['players'][$pi]['backup_agent'] ?? null;
 
-    // Collect all card IDs involved
-    $card_ids = collect_mission_cards($base, $backup, $catalog);
+    // Validate all agent_ids are agents in hand
+    $hand_copy = $game['players'][$pi]['hand'];
+    foreach ($agent_ids as $aid) {
+        if (!isset($catalog[$aid]) || $catalog[$aid]['type'] !== TYPE_AGENT) {
+            return ['ok' => false, 'error' => "{$aid} is not an agent"];
+        }
+        if (!remove_from_array($hand_copy, $aid)) {
+            return ['ok' => false, 'error' => "Agent {$catalog[$aid]['name']} not in hand"];
+        }
+    }
+
+    // Validate tech: each tech must be in hand, and respect max_tech per agent
+    // Tech assignment: each tech attaches to an agent. For simplicity,
+    // we validate total tech count against total max_tech across all committed agents.
+    $total_max_tech = 0;
+    foreach ($agent_ids as $aid) {
+        $total_max_tech += $catalog[$aid]['max_tech'] ?? 0;
+    }
+    if ($backup) {
+        $total_max_tech += $catalog[$backup]['max_tech'] ?? 0;
+    }
+
+    if (count($tech_ids) > $total_max_tech) {
+        return ['ok' => false, 'error' => "Too many tech cards (max {$total_max_tech} for these agents)"];
+    }
+
+    foreach ($tech_ids as $tid) {
+        if (!isset($catalog[$tid]) || $catalog[$tid]['type'] !== TYPE_TECH) {
+            return ['ok' => false, 'error' => "{$tid} is not a tech card"];
+        }
+        if (!remove_from_array($hand_copy, $tid)) {
+            return ['ok' => false, 'error' => "Tech {$catalog[$tid]['name']} not in hand"];
+        }
+    }
+
+    // Collect all card IDs for icon resolution
+    $all_card_ids = array_merge($agent_ids, $tech_ids);
+    if ($backup) {
+        $all_card_ids[] = $backup;
+    }
 
     // Auto-resolve icon choices
-    $resolution = auto_resolve_choices($mission['requirements'], $card_ids, $catalog);
+    $resolution = auto_resolve_choices($mission['requirements'], $all_card_ids, $catalog);
     if ($resolution === null) {
-        return ['ok' => false, 'error' => 'Agent skills do not meet mission requirements'];
+        return ['ok' => false, 'error' => 'Cards do not meet mission requirements'];
     }
 
-    // Success! Complete the mission
-    $agent_id = $base['agent'];
-    $game['players'][$pi]['discard'][] = $agent_id;
-    foreach ($base['tech'] as $t) {
-        $game['players'][$pi]['discard'][] = $t;
+    // Success! Remove cards from hand
+    foreach ($agent_ids as $aid) {
+        remove_from_array($game['players'][$pi]['hand'], $aid);
+        $game['players'][$pi]['discard'][] = $aid;
     }
-    $base['agent'] = null;
-    $base['tech'] = [];
+    foreach ($tech_ids as $tid) {
+        remove_from_array($game['players'][$pi]['hand'], $tid);
+        $game['players'][$pi]['discard'][] = $tid;
+    }
 
-    // Clear backup agent (it was already in play_area)
+    // Clear backup agent
     if ($backup) {
         $game['players'][$pi]['backup_agent'] = null;
     }
@@ -527,40 +492,28 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         array_splice($game['mission_grid'][$found_tier], $found_idx, 1);
     }
 
-    // Add mission card to discard (it has stars and/or value)
-    $game['players'][$pi]['discard'][] = $mission_id;
+    // Handle Fundraising: award gems, card does NOT go into deck
+    $mission_gems = $mission['gems'] ?? 0;
+    if ($mission_gems > 0) {
+        // Count total icons committed (for Fundraising, gems based on icon count)
+        $total_icons = 0;
+        foreach ($all_card_ids as $cid) {
+            $total_icons += count($catalog[$cid]['icons'] ?? []);
+        }
+        $gems_awarded = min($total_icons, 3); // cap at 3
+        if ($gems_awarded < 1) $gems_awarded = 1; // at least 1 for completing
+        $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + $gems_awarded;
+        $game['log'][] = $game['players'][$pi]['name'] . " completed Fundraising and earned {$gems_awarded} gem(s)!";
+    } else {
+        // Normal mission: add mission card to discard (it has stars and/or value)
+        $game['players'][$pi]['discard'][] = $mission_id;
+        $game['log'][] = $game['players'][$pi]['name'] . " completed mission {$mission['name']}!";
+    }
 
-    // Track missions completed this turn
     $game['players'][$pi]['missions_this_turn'] = $missions_completed + 1;
 
-    $game['log'][] = $game['players'][$pi]['name'] . " completed mission {$mission['name']}!";
-
-    // Check for game end trigger
     check_game_end($game);
 
-    return ['ok' => true];
-}
-
-function action_vacate_base(array &$game, int $pi, array $params): array {
-    $base_idx = $params['base_index'] ?? -1;
-    $catalog = get_card_catalog();
-
-    if (!isset($game['players'][$pi]['bases'][$base_idx])) {
-        return ['ok' => false, 'error' => 'Invalid base'];
-    }
-    $base = &$game['players'][$pi]['bases'][$base_idx];
-    if ($base['agent'] === null) {
-        return ['ok' => false, 'error' => 'Base is already empty'];
-    }
-
-    $agent_name = $catalog[$base['agent']]['name'] ?? $base['agent'];
-    $game['players'][$pi]['discard'][] = $base['agent'];
-    foreach ($base['tech'] as $t) {
-        $game['players'][$pi]['discard'][] = $t;
-    }
-    $base['agent'] = null;
-    $base['tech'] = [];
-    $game['log'][] = $game['players'][$pi]['name'] . " vacated base " . ($base_idx + 1) . " ({$agent_name})";
     return ['ok' => true];
 }
 
@@ -578,11 +531,13 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     }
     $p['hand'] = [];
     $p['money'] = 0;
+    $p['buys_this_turn'] = 0;
     $p['backup_agent'] = null;
     $p['extra_missions'] = 0;
     $p['missions_this_turn'] = 0;
+    // gems persist between turns
 
-    // Refill marketplace (with dedup: if drawn card matches one already in market, stack and draw again)
+    // Refill marketplace
     refill_marketplace($game);
 
     // Refill mission grid
@@ -595,7 +550,6 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     // Draw 5 cards
     player_draw_cards($p, 5);
 
-    // Check end conditions
     check_game_end($game);
 
     if (is_game_over($game)) {
@@ -626,14 +580,11 @@ function process_action(array &$game, string $token, string $action, array $para
 
     $result = match($action) {
         'play_money' => action_play_money($game, $pi, $params),
-        'play_agent' => action_play_agent($game, $pi, $params),
-        'equip_tech' => action_equip_tech($game, $pi, $params),
         'play_plot' => action_play_plot($game, $pi, $params),
         'buy_card' => action_buy_card($game, $pi, $params),
-        'buy_base' => action_buy_base($game, $pi, $params),
         'refresh_market' => action_refresh_market($game, $pi, $params),
+        'cash_gems' => action_cash_gems($game, $pi, $params),
         'complete_mission' => action_complete_mission($game, $pi, $params),
-        'vacate_base' => action_vacate_base($game, $pi, $params),
         'end_turn' => action_end_turn($game, $pi, $params),
         default => ['ok' => false, 'error' => 'Unknown action: ' . $action],
     };

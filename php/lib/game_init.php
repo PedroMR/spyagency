@@ -54,13 +54,10 @@ function init_game(array $players): array {
             'hand' => $hand,
             'discard' => [],
             'play_area' => [],
-            'bases' => [
-                ['type' => 'safehouse', 'agent' => null, 'tech' => []],
-                ['type' => 'safehouse', 'agent' => null, 'tech' => []],
-            ],
             'money' => 0,
+            'gems' => 0,
             'stars' => 0,
-            'extra_base_count' => 0,
+            'buys_this_turn' => 0,
             'backup_agent' => null, // for Got Your Back!
             'extra_missions' => 0,
             'missions_this_turn' => 0,

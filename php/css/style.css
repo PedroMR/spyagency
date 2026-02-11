@@ -277,3 +277,33 @@ input[type="text"] {
     background: #2a2a2a;
     border-radius: 6px;
 }
+
+/* Affordable marketplace cards */
+.market-card.affordable {
+    border-color: #4cff4c;
+    box-shadow: 0 0 6px rgba(76, 255, 76, 0.2);
+}
+
+/* Mission select checkboxes in modal */
+.mission-select-item {
+    display: block;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    background: #1a1a3a;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #e0e0e0;
+}
+.mission-select-item:hover { background: #2a2a5a; }
+.mission-select-item input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: #4cff4c;
+}
+
+/* Cash gems button */
+#btn-cash-gems { background: #5c3a8a; border-color: #7b5ab8; }
+#btn-cash-gems:hover { background: #7b5ab8; }
+
+/* Discard pile section */
+.discard-section { max-width: 200px; }

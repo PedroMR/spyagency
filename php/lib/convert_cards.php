@@ -95,7 +95,12 @@ function parse_mission_rewards(string $desc): array {
     if (preg_match('/\$(\d+)/', $desc, $m)) {
         $value = (int)$m[1];
     }
-    return [$stars, $value];
+    // Extract gems: "💎1" or "💎3"
+    $gems = 0;
+    if (preg_match('/💎(\d+)/u', $desc, $m)) {
+        $gems = (int)$m[1];
+    }
+    return [$stars, $value, $gems];
 }
 
 // Parse CSV
@@ -185,6 +190,8 @@ foreach ($rows as $row) {
             $desc_lower = strtolower($row['desc']);
             if (stripos($desc_lower, 'does nothing') !== false || stripos($desc_lower, 'useless') !== false) {
                 $entry['effect'] = 'none';
+            } elseif (stripos($desc_lower, 'trash an agent') !== false && stripos($desc_lower, 'gain an agent') !== false) {
+                $entry['effect'] = 'training';
             } elseif (stripos($desc_lower, 'trash') !== false) {
                 $entry['effect'] = 'trash';
             } elseif (stripos($desc_lower, 'return an agent') !== false || stripos($desc_lower, 'recall') !== false) {
@@ -209,9 +216,10 @@ foreach ($rows as $row) {
         case 'mission':
             $entry['cost'] = 0;
             $entry['requirements'] = parse_mission_requirements($row['cost_raw'], $emoji_to_icon);
-            [$stars, $value] = parse_mission_rewards($row['desc']);
+            [$stars, $value, $gems] = parse_mission_rewards($row['desc']);
             $entry['stars'] = $stars;
             $entry['value'] = $value; // mission card itself is worth this much $
+            $entry['gems'] = $gems; // gems awarded on completion
             $entry['always_available'] = stripos($row['desc'], 'permanently available') !== false || stripos($row['desc'], 'always available') !== false;
             // Build description
             $req_display = $row['cost_raw'];
@@ -323,6 +331,8 @@ $output .= "    \$deck = [];\n";
 $output .= "    for (\$i = 0; \$i < 5; \$i++) \$deck[] = 'money_1';\n";
 $output .= "    \$deck[] = 'barnstormer';\n";
 $output .= "    \$deck[] = 'barnstormer';\n";
+$output .= "    \$deck[] = 'red_tape';\n";
+$output .= "    \$deck[] = 'red_tape';\n";
 $output .= "    \$deck[] = 'red_tape';\n";
 $output .= "    shuffle(\$deck);\n";
 $output .= "    return \$deck;\n";
