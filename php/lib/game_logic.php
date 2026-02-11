@@ -520,15 +520,21 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     // Handle Fundraising: award gems, card does NOT go into deck
     $mission_gems = $mission['gems'] ?? 0;
     if ($mission_gems > 0) {
-        // Count total icons committed (for Fundraising, gems based on icon count)
+        // Count total icons committed
         $total_icons = 0;
         foreach ($all_card_ids as $cid) {
             $total_icons += count($catalog[$cid]['icons'] ?? []);
         }
-        $gems_awarded = min($total_icons, 3); // cap at 3
-        if ($gems_awarded < 1) $gems_awarded = 1; // at least 1 for completing
+        // 1-2 icons → 1 gem, 3-4 icons → 2 gems, 5+ icons → 3 gems
+        if ($total_icons >= 5) {
+            $gems_awarded = 3;
+        } elseif ($total_icons >= 3) {
+            $gems_awarded = 2;
+        } else {
+            $gems_awarded = 1;
+        }
         $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + $gems_awarded;
-        $game['log'][] = $game['players'][$pi]['name'] . " completed Fundraising and earned {$gems_awarded} gem(s)!";
+        $game['log'][] = $game['players'][$pi]['name'] . " completed Fundraising ({$total_icons} icons) and earned {$gems_awarded} gem(s)!";
     } else {
         // Normal mission: add mission card to discard (it has stars and/or value)
         $game['players'][$pi]['discard'][] = $mission_id;
@@ -594,7 +600,47 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     $next_name = $game['players'][$game['current_player']]['name'];
     $game['log'][] = "It's now {$next_name}'s turn.";
 
+    // Auto-play money cards and money-only mission cards for the next player
+    auto_play_cards($game, $game['current_player']);
+
     return ['ok' => true];
+}
+
+/**
+ * Auto-play all Money cards and Mission cards that only reward $ and stars
+ * (no gems) from the player's hand at the start of their turn.
+ */
+function auto_play_cards(array &$game, int $pi): void {
+    $catalog = get_card_catalog();
+    $p = &$game['players'][$pi];
+
+    // Collect cards to auto-play (iterate by index so we can remove them)
+    $to_play = [];
+    foreach ($p['hand'] as $card_id) {
+        if (!isset($catalog[$card_id])) continue;
+        $card = $catalog[$card_id];
+
+        if ($card['type'] === TYPE_MONEY) {
+            $to_play[] = $card_id;
+        } elseif ($card['type'] === TYPE_MISSION && ($card['value'] ?? 0) > 0 && ($card['gems'] ?? 0) === 0) {
+            $to_play[] = $card_id;
+        }
+    }
+
+    foreach ($to_play as $card_id) {
+        if (!remove_from_array($p['hand'], $card_id)) continue;
+        $card = $catalog[$card_id];
+        $value = $card['value'] ?? 0;
+        $p['play_area'][] = $card_id;
+        $p['money'] += $value;
+
+        $log_msg = $p['name'] . " auto-played {$card['name']} (+\${$value})";
+        if ($card['extra_buy'] ?? false) {
+            $p['extra_buys'] = ($p['extra_buys'] ?? 0) + 1;
+            $log_msg .= ' (+1 Buy)';
+        }
+        $game['log'][] = $log_msg;
+    }
 }
 
 function process_action(array &$game, string $token, string $action, array $params): array {

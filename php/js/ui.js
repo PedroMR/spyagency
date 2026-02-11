@@ -157,7 +157,7 @@ const UI = {
         el.innerHTML = `<div class="card-name">${esc(card.name)}</div>
             <div class="card-req">${reqIcons}</div>
             <div class="card-reward">💎 1-3</div>
-            <div class="card-desc">Always available</div>`;
+            <div class="card-desc">1-2 icons: 💎1 · 3-4: 💎2 · 5+: 💎3</div>`;
     },
 
     renderOpponents() {
@@ -485,7 +485,12 @@ const UI = {
         let html = `<h3>Complete: ${esc(mission.name)}</h3>`;
         html += `<p>Requires: ${reqIcons}</p>`;
         if (isFundraising) {
-            html += '<p>Reward: 💎 1-3 gems (based on icons committed)</p>';
+            html += `<table class="fundraising-table">
+                <tr><th>Icons</th><th>Gems</th></tr>
+                <tr><td>1-2</td><td>💎 1</td></tr>
+                <tr><td>3-4</td><td>💎 2</td></tr>
+                <tr><td>5+</td><td>💎 3</td></tr>
+            </table>`;
         }
         html += '<p>Select agents and tech from your hand:</p>';
 
@@ -522,7 +527,7 @@ const UI = {
         }
 
         html += `<button class="btn-modal" style="margin-top:12px;background:#1a8a2d;border-color:#2dbc45" onclick="UI.submitMission('${missionId}')">
-            Attempt Mission
+            Run Mission
         </button>`;
         html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
         this.showModal(html);

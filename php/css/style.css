@@ -320,5 +320,22 @@ input[type="text"] {
     margin-top: 2px;
 }
 
+/* Fundraising reward table */
+.fundraising-table {
+    width: 100%;
+    margin: 8px 0;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.fundraising-table th, .fundraising-table td {
+    padding: 4px 12px;
+    border: 1px solid #444;
+    text-align: center;
+}
+.fundraising-table th {
+    background: #2a2a4a;
+    color: #ffd700;
+}
+
 /* Discard pile section */
 .discard-section { max-width: 200px; }

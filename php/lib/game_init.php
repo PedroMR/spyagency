@@ -54,11 +54,13 @@ function init_game(array $players): array {
             'backup_agent' => null, // for Got Your Back!
             'extra_missions' => 0,
             'missions_this_turn' => 0,
+            'extra_buys' => 0,
         ];
     }
 
     $first_player = random_int(0, count($player_states) - 1);
-    return [
+
+    $game = [
         'current_player' => $first_player,
         'first_player' => $first_player,
         'market_deck' => $market_deck,
@@ -75,4 +77,10 @@ function init_game(array $players): array {
         'final_round_starter' => null,
         'ended' => false,
     ];
+
+    // Auto-play money and money-only mission cards for the first player
+    require_once __DIR__ . '/game_logic.php';
+    auto_play_cards($game, $first_player);
+
+    return $game;
 }

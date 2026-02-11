@@ -10,7 +10,7 @@ The Mission decks are composed of the Mission cards, sorted by tier (1, 2 and 3)
 
 Bases are not shuffled.
 
-There is a marketplace for the Market deck. 6 cards are offered openly for players. At the end of a player turn the marketplace is refreshed by filling empty slots with cards from the deck. The active player may refresh the marketplace by paying $2, which discards all the cards in offer and refills the marketplace immediately.
+There is a marketplace for the Market Deck. 7 cards are offered openly for players. At the end of a player turn the marketplace is refreshed by filling empty slots with cards from the deck. The active player may refresh the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately.
 
 There is a Mission Grid on offer for players to complete. 3 from each Mission Deck.
 
@@ -48,7 +48,7 @@ To buy a card the player spends the required amount of money ($) and takes the c
 
 ### End of player turn
 
-After the player is done playing their cards the Mission Grid and the Market are refilled and the turn of the player to their left begins. When refilling the Market, if a card drawn to refill it matches a card already in it, place the new card on top of the existing stack and draw again. <!--Note that Agents in Bases who were not deployed to complete a mission are not discarded; they remain in the player's play area, as well as any Tech equipped onto them. -->
+After the player is done playing their cards the Mission Grid and the Market are refilled and the turn of the player to their left begins. When refilling the Market, if a card drawn to refill it matches a card already in it, place the new card on top of the existing stack and draw again. The same procedure applies to the Mission grid, stacking cards if they are the same. <!--Note that Agents in Bases who were not deployed to complete a mission are not discarded; they remain in the player's play area, as well as any Tech equipped onto them. -->
 
 The player then discards their whole hand and draws 5 cards. If there are no cards left in the deck the player shuffles their discard pile to make a new deck and resumes drawing.
 
@@ -91,3 +91,5 @@ Cards in the Market that we can buy (with $ and gems) should be highlighted. Car
 The UI should show which round we're playing, starting at 1 and going up every time it is the initial player's turn.
 
 The number of stars a player shows in the UI is the number of stars in all the cards they own (hand, deck, discard area, in play). This goes up as they accomplish missions with stars and goes down if they trash one of those cards.
+
+When it's my turn I want all the Money cards in my hand and all the Missions which only reward points and money to be automatically played. This should happen after a small delay (1 second).
