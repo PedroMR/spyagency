@@ -78,6 +78,9 @@ input[type="text"] {
 .turn-info { display: flex; gap: 16px; align-items: center; font-size: 16px; }
 .your-turn { color: #4cff4c; font-weight: bold; animation: pulse 1s infinite; }
 .other-turn { color: #aaa; }
+#missions-display { color: #c8a0e8; font-weight: bold; }
+#buys-display { color: #a0c8e8; font-weight: bold; }
+#round-display { color: #888; font-size: 13px; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 .game-header-actions { display: flex; gap: 8px; }
 #btn-end-turn { background: #8b0000; border-color: #c00; font-size: 14px; padding: 8px 20px; }
@@ -136,6 +139,7 @@ input[type="text"] {
 .card-desc { color: #bbb; font-size: 10px; }
 .card-req { font-size: 16px; }
 .card-reward { color: #4cff4c; font-size: 12px; }
+.card-icons { font-size: 14px; }
 .card-empty { color: #555; border-style: dashed; justify-content: center; align-items: center; min-height: 60px; }
 
 .card-row { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -155,8 +159,8 @@ input[type="text"] {
     box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
 }
 
-.mission-card { cursor: pointer; border-color: #8b0000; }
-.mission-card:hover { box-shadow: 0 2px 8px rgba(139, 0, 0, 0.4); }
+.mission-card { cursor: pointer; border-color: #6a1b9a; }
+.mission-card:hover { box-shadow: 0 2px 8px rgba(106, 27, 154, 0.4); }
 
 .played-card { opacity: 0.7; }
 
@@ -282,6 +286,9 @@ input[type="text"] {
 .market-card.affordable {
     border-color: #4cff4c;
     box-shadow: 0 0 6px rgba(76, 255, 76, 0.2);
+}
+.market-card.unaffordable {
+    opacity: 0.4;
 }
 
 /* Mission select checkboxes in modal */

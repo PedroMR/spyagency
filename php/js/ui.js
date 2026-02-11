@@ -35,10 +35,16 @@ const UI = {
 
     typeColors: {
         money: '#2d5a1e',
-        agent: '#1a3a5c',
-        tech: '#5c3a1a',
-        plot: '#4a1a4a',
-        mission: '#8b0000',
+        agent: '#cccccc',
+        tech: '#1a4a8c',
+        plot: '#b8a000',
+        mission: '#6a1b9a',
+        red_tape: '#8b0000',
+    },
+
+    getCardColor(card) {
+        if (card.id === 'red_tape') return this.typeColors.red_tape;
+        return this.typeColors[card.type] || '#555';
     },
 
     update(state) {
@@ -70,6 +76,26 @@ const UI = {
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         document.getElementById('btn-end-turn').style.display = s.is_my_turn ? 'inline-block' : 'none';
 
+        document.getElementById('round-display').textContent = `Round ${s.round || 1}`;
+
+        const missionsEl = document.getElementById('missions-display');
+        const buysEl = document.getElementById('buys-display');
+        if (s.is_my_turn) {
+            const missionsAllowed = 1 + (me.extra_missions || 0);
+            const missionsDone = me.missions_this_turn || 0;
+            const missionsRemaining = missionsAllowed - missionsDone;
+            missionsEl.textContent = `Missions: ${missionsRemaining}`;
+            missionsEl.style.display = 'inline';
+
+            const buyLimit = 1 + (me.extra_buys || 0);
+            const buysRemaining = buyLimit - (me.buys_this_turn || 0);
+            buysEl.textContent = `Buys: ${buysRemaining}`;
+            buysEl.style.display = 'inline';
+        } else {
+            missionsEl.style.display = 'none';
+            buysEl.style.display = 'none';
+        }
+
         const banner = document.getElementById('final-round-banner');
         banner.style.display = s.final_round ? 'block' : 'none';
     },
@@ -85,10 +111,13 @@ const UI = {
             if (!cardId) return '<div class="card card-empty">Empty</div>';
             const card = this.catalog[cardId];
             const stackCount = counts[i] || 1;
-            const affordable = s.is_my_turn && (me.money + (me.gems || 0)) >= card.cost && (me.buys_this_turn || 0) < 1;
-            const affordClass = affordable ? ' affordable' : '';
+            const canBuy = (me.buys_this_turn || 0) < (1 + (me.extra_buys || 0));
+            const canAfford = (me.money + (me.gems || 0)) >= card.cost;
+            const affordable = s.is_my_turn && canAfford && canBuy;
+            const unaffordable = s.is_my_turn && !canAfford && canBuy;
+            const affordClass = affordable ? ' affordable' : (unaffordable ? ' unaffordable' : '');
             const stackBadge = stackCount > 1 ? `<div class="stack-count">x${stackCount}</div>` : '';
-            return `<div class="card market-card${affordClass}" style="border-color:${this.typeColors[card.type]}" onclick="UI.onMarketClick('${cardId}', ${i})">
+            return `<div class="card market-card${affordClass}" style="border-color:${this.getCardColor(card)}" onclick="UI.onMarketClick('${cardId}', ${i})">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-cost">$${card.cost}</div>
                 <div class="card-type">${card.type}</div>
@@ -162,26 +191,47 @@ const UI = {
         }).join(' ');
     },
 
+    getOwnedCardInfo(card) {
+        // For cards in hand/play/discard, show reward instead of cost
+        if (card.type === 'mission') {
+            const stars = card.stars ? `${card.stars}⭐ ` : '';
+            const money = card.value ? `$${card.value}` : '';
+            return `<div class="card-reward">${stars}${money}</div>`;
+        }
+        if (card.type === 'money') {
+            return `<div class="card-reward">$${card.value || 0}</div>`;
+        }
+        if (card.type === 'agent') {
+            const icons = this.getCardIcons(card);
+            return icons ? `<div class="card-icons">${icons}</div>` : '';
+        }
+        if (card.type === 'tech') {
+            const icons = this.getCardIcons(card);
+            return icons ? `<div class="card-icons">${icons}</div>` : '';
+        }
+        return `<div class="card-desc">${esc(card.description)}</div>`;
+    },
+
     renderHand() {
         const me = this.state.players[this.state.my_index];
         const container = document.getElementById('my-hand');
         if (!this.state.is_my_turn) {
             container.innerHTML = me.hand.map(cardId => {
                 const card = this.catalog[cardId];
-                return `<div class="card hand-card" style="border-color:${this.typeColors[card.type]}">
+                return `<div class="card hand-card" style="border-color:${this.getCardColor(card)}">
                     <div class="card-name">${esc(card.name)}</div>
                     <div class="card-type">${card.type}</div>
-                    <div class="card-desc">${esc(card.description)}</div>
+                    ${this.getOwnedCardInfo(card)}
                 </div>`;
             }).join('');
             return;
         }
         container.innerHTML = me.hand.map(cardId => {
             const card = this.catalog[cardId];
-            return `<div class="card hand-card playable" style="border-color:${this.typeColors[card.type]}" onclick="UI.onHandClick('${cardId}')">
+            return `<div class="card hand-card playable" style="border-color:${this.getCardColor(card)}" onclick="UI.onHandClick('${cardId}')">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-type">${card.type}</div>
-                <div class="card-desc">${esc(card.description)}</div>
+                ${this.getOwnedCardInfo(card)}
             </div>`;
         }).join('');
     },
@@ -191,8 +241,9 @@ const UI = {
         const container = document.getElementById('play-area');
         container.innerHTML = me.play_area.map(cardId => {
             const card = this.catalog[cardId];
-            return `<div class="card played-card" style="border-color:${this.typeColors[card.type]}">
+            return `<div class="card played-card" style="border-color:${this.getCardColor(card)}">
                 <div class="card-name">${esc(card.name)}</div>
+                ${this.getOwnedCardInfo(card)}
             </div>`;
         }).join('');
     },
@@ -211,9 +262,9 @@ const UI = {
         // Show top card
         const topId = discard[discard.length - 1];
         const card = this.catalog[topId];
-        container.innerHTML = `<div class="card played-card" style="border-color:${this.typeColors[card.type]}">
+        container.innerHTML = `<div class="card played-card" style="border-color:${this.getCardColor(card)}">
             <div class="card-name">${esc(card.name)}</div>
-            <div class="card-type">${card.type}</div>
+            ${this.getOwnedCardInfo(card)}
         </div>`;
     },
 
@@ -261,11 +312,28 @@ const UI = {
         }
     },
 
+    buyAlwaysAvailable(cardId, name, cost) {
+        if (!this.state.is_my_turn) return;
+        const me = this.state.players[this.state.my_index];
+        if ((me.buys_this_turn || 0) >= (1 + (me.extra_buys || 0))) {
+            this.showError('Already bought maximum cards this turn.');
+            return;
+        }
+        const gemsNeeded = Math.max(0, cost - me.money);
+        let msg = `Buy ${name} for $${cost}?`;
+        if (gemsNeeded > 0) {
+            msg += `\n(Will spend ${gemsNeeded} gem${gemsNeeded > 1 ? 's' : ''} to cover the difference)`;
+        }
+        if (confirm(msg)) {
+            Actions.buyAlwaysAvailable(cardId);
+        }
+    },
+
     onMarketClick(cardId, slot) {
         if (!this.state.is_my_turn) return;
         const me = this.state.players[this.state.my_index];
-        if ((me.buys_this_turn || 0) >= 1) {
-            this.showError('Already bought a card this turn.');
+        if ((me.buys_this_turn || 0) >= (1 + (me.extra_buys || 0))) {
+            this.showError('Already bought maximum cards this turn.');
             return;
         }
         const card = this.catalog[cardId];

@@ -33,9 +33,22 @@ if ($my_index < 0) {
     send_json(json_error('Player not in game'));
 }
 
+// Compute live star count for a player from all owned cards
+function compute_stars(array $player, array $catalog): int {
+    $stars = 0;
+    $all = array_merge($player['deck'], $player['hand'], $player['discard'], $player['play_area']);
+    foreach ($all as $cid) {
+        if (isset($catalog[$cid]) && ($catalog[$cid]['stars'] ?? 0) > 0) {
+            $stars += $catalog[$cid]['stars'];
+        }
+    }
+    return $stars;
+}
+
 // Build filtered player data
 $players_data = [];
 foreach ($game['players'] as $i => $p) {
+    $live_stars = compute_stars($p, $catalog);
     if ($i === $my_index) {
         $players_data[] = [
             'name' => $p['name'],
@@ -48,8 +61,9 @@ foreach ($game['players'] as $i => $p) {
             'play_area' => $p['play_area'],
             'money' => $p['money'],
             'gems' => $p['gems'] ?? 0,
-            'stars' => $p['stars'],
+            'stars' => $live_stars,
             'buys_this_turn' => $p['buys_this_turn'] ?? 0,
+            'extra_buys' => $p['extra_buys'] ?? 0,
             'backup_agent' => $p['backup_agent'] ?? null,
             'extra_missions' => $p['extra_missions'] ?? 0,
             'missions_this_turn' => $p['missions_this_turn'] ?? 0,
@@ -64,7 +78,7 @@ foreach ($game['players'] as $i => $p) {
             'play_area' => $p['play_area'],
             'money' => $p['money'],
             'gems' => $p['gems'] ?? 0,
-            'stars' => $p['stars'],
+            'stars' => $live_stars,
         ];
     }
 }
@@ -91,6 +105,7 @@ $state = [
     'final_round' => $game['final_round'] ?? false,
     'scores' => $game['scores'] ?? null,
     'turn_number' => $game['turn_number'] ?? 1,
+    'round' => $game['round'] ?? 1,
     'catalog' => $catalog,
 ];
 

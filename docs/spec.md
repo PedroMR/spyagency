@@ -41,7 +41,7 @@ To complete a Mission the player plays one or more Agents with Tech. The number 
 
 Some Missions and Plots will reward the Player with gems (💎). Gems are kept between turns, and may be cashed in for the same amount in money ($). 1 gem = 1 money. This should be done "just in time", at moment of purchase. The game can ask the player if they're willing to spend X gems to purchase the thing, and allow them to cancel.
 
-"Fundraising" is a special mission. It immediately rewards the player with gems, but is not added to their deck. Fundraising is always available. If the agent(s) committed to it feature 1 icon, Fundraising rewards 1 gem. If two icons, two gems, and if three icons, three gems are rewarded. Any more icons bear no extra reward.
+"Fundraising" is a special mission. It immediately rewards the player with gems, but is not added to their deck. Fundraising is always available. If the agent(s) committed to it feature 1 or 2 icons, Fundraising rewards 1 gem. If 3 or 4 icons, two gems, and if 5 or more icons, three gems are rewarded. Any more icons bear no extra reward. The gem rewards for Fundraising should be visible in a table when that mission is selected.
 
 To buy a card the player spends the required amount of money ($) and takes the card, adding it to their discard pile. The space left by the purchased card is only refilled at the end of the turn.
 
@@ -58,7 +58,7 @@ The game is over at the end of the round where either of two things have happene
 1) Any of the Mission Decks are empty;
 2) The Market Deck is empty.
 
-At the end of the game, players gather the cards in their deck, discard, play and hand areas. The player with the most stars wins the game.
+At the end of the game, players gather the cards in their deck, discard, play and hand areas. The player with the most stars appearing in their cards wins the game.
 
 ## Implementation Details
 
@@ -75,7 +75,7 @@ Every time the user clicks a button we should hear a discreet "click" sound.
 
 When clicking the Shadow or Muscle button the user should see a confirmation of the purchase.
 
-At the top of the screen we should see the number of missions available to attempt this turn.
+At the top of the screen we should see the number of missions available to attempt this turn and the number of buys available this turn.
 
 Mission cards are purple.
 Plot cards are yellow.
@@ -85,3 +85,9 @@ Red tape cards are red.
 Agent cards are white.
 
 After we buy a card from the Market there's no point showing the price of that card anymore. We should show the reward for Mission cards we've bought.
+
+Cards in the Market that we can buy (with $ and gems) should be highlighted. Cards that we cannot afford should be lowlighted.
+
+The UI should show which round we're playing, starting at 1 and going up every time it is the initial player's turn.
+
+The number of stars a player shows in the UI is the number of stars in all the cards they own (hand, deck, discard area, in play). This goes up as they accomplish missions with stars and goes down if they trash one of those cards.

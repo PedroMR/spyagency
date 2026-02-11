@@ -60,6 +60,7 @@ function init_game(array $players): array {
     $first_player = random_int(0, count($player_states) - 1);
     return [
         'current_player' => $first_player,
+        'first_player' => $first_player,
         'market_deck' => $market_deck,
         'marketplace' => $marketplace,
         'mission_decks' => $mission_decks,
@@ -69,6 +70,7 @@ function init_game(array $players): array {
         'log' => ['Game started!', $player_states[$first_player]['name'] . ' goes first.'],
         'status' => 'active',
         'turn_number' => 1,
+        'round' => 1,
         'final_round' => false,
         'final_round_starter' => null,
         'ended' => false,

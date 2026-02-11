@@ -66,7 +66,13 @@ function action_play_money(array &$game, int $pi, array $params): array {
     $value = $card['value'] ?? 0;
     $game['players'][$pi]['play_area'][] = $card_id;
     $game['players'][$pi]['money'] += $value;
-    $game['log'][] = $game['players'][$pi]['name'] . " played {$card['name']} (+\${$value})";
+    $log_msg = $game['players'][$pi]['name'] . " played {$card['name']} (+\${$value})";
+    // Extra buy effect
+    if ($card['extra_buy'] ?? false) {
+        $game['players'][$pi]['extra_buys'] = ($game['players'][$pi]['extra_buys'] ?? 0) + 1;
+        $log_msg .= ' (+1 Buy)';
+    }
+    $game['log'][] = $log_msg;
     return ['ok' => true];
 }
 
@@ -205,9 +211,10 @@ function action_buy_card(array &$game, int $pi, array $params): array {
     $slot = $params['slot'] ?? -1;
     $catalog = get_card_catalog();
 
-    // Buy limit: 1 per turn
-    if (($game['players'][$pi]['buys_this_turn'] ?? 0) >= 1) {
-        return ['ok' => false, 'error' => 'Already bought a card this turn'];
+    // Buy limit: 1 + extra buys per turn
+    $buy_limit = 1 + ($game['players'][$pi]['extra_buys'] ?? 0);
+    if (($game['players'][$pi]['buys_this_turn'] ?? 0) >= $buy_limit) {
+        return ['ok' => false, 'error' => 'Already bought maximum cards this turn'];
     }
 
     // Always-available cards
@@ -550,6 +557,7 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     $p['hand'] = [];
     $p['money'] = 0;
     $p['buys_this_turn'] = 0;
+    $p['extra_buys'] = 0;
     $p['backup_agent'] = null;
     $p['extra_missions'] = 0;
     $p['missions_this_turn'] = 0;
@@ -578,6 +586,11 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     // Advance to next player
     $game['current_player'] = ($game['current_player'] + 1) % count($game['players']);
     $game['turn_number']++;
+    // Increment round when it comes back to the first player
+    $first_player = $game['first_player'] ?? 0;
+    if ($game['current_player'] === $first_player) {
+        $game['round'] = ($game['round'] ?? 1) + 1;
+    }
     $next_name = $game['players'][$game['current_player']]['name'];
     $game['log'][] = "It's now {$next_name}'s turn.";
 

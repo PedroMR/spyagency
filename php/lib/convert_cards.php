@@ -213,6 +213,25 @@ foreach ($rows as $row) {
             }
             break;
 
+        case 'money':
+            $cost_val = (int)preg_replace('/[^0-9]/', '', $row['cost_raw']);
+            $entry['cost'] = $cost_val;
+            // Extract value from description: "$2" or "$3"
+            $value = 0;
+            if (preg_match('/\$(\d+)/', $row['desc'], $m)) {
+                $value = (int)$m[1];
+            }
+            $entry['value'] = $value;
+            // Check for +1 Buy effect
+            if (stripos($row['desc'], '+1 buy') !== false) {
+                $entry['extra_buy'] = true;
+            }
+            $entry['description'] = "\${$value}" . ($cost_val > 0 ? " (\${$cost_val})" : '');
+            if ($row['tier'] > 0) {
+                $market_counts[$id] = $row['count'];
+            }
+            break;
+
         case 'mission':
             $entry['cost'] = 0;
             $entry['requirements'] = parse_mission_requirements($row['cost_raw'], $emoji_to_icon);
@@ -328,10 +347,9 @@ $output .= "}\n\n";
 // Generate get_starter_deck
 $output .= "function get_starter_deck(): array {\n";
 $output .= "    \$deck = [];\n";
-$output .= "    for (\$i = 0; \$i < 5; \$i++) \$deck[] = 'money_1';\n";
-$output .= "    \$deck[] = 'barnstormer';\n";
-$output .= "    \$deck[] = 'barnstormer';\n";
-$output .= "    \$deck[] = 'red_tape';\n";
+$output .= "    for (\$i = 0; \$i < 6; \$i++) \$deck[] = 'money_1';\n";
+$output .= "    \$deck[] = 'muscle';\n";
+$output .= "    \$deck[] = 'muscle';\n";
 $output .= "    \$deck[] = 'red_tape';\n";
 $output .= "    \$deck[] = 'red_tape';\n";
 $output .= "    shuffle(\$deck);\n";

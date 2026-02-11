@@ -11,10 +11,13 @@
         <div class="game-header">
             <h2>Spy Agency</h2>
             <div class="turn-info">
+                <span id="round-display"></span>
                 <span id="turn-indicator"></span>
                 <span id="money-display"></span>
                 <span id="gems-display"></span>
                 <span id="stars-display"></span>
+                <span id="missions-display"></span>
+                <span id="buys-display"></span>
             </div>
             <div class="game-header-actions">
                 <button id="btn-end-turn" onclick="Actions.endTurn()" style="display:none">End Turn</button>
@@ -33,8 +36,8 @@
                     <div id="marketplace" class="card-row"></div>
                     <div class="market-actions">
                         <button onclick="Actions.refreshMarket()">Refresh ($2)</button>
-                        <button onclick="Actions.buyAlwaysAvailable('muscle')">Buy Muscle ($3)</button>
-                        <button onclick="Actions.buyAlwaysAvailable('shadow')">Buy Shadow ($4)</button>
+                        <button onclick="UI.buyAlwaysAvailable('muscle', 'Muscle', 3)">Buy Muscle ($3)</button>
+                        <button onclick="UI.buyAlwaysAvailable('shadow', 'Shadow', 4)">Buy Shadow ($4)</button>
                     </div>
                 </div>
 
