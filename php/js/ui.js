@@ -35,9 +35,9 @@ const UI = {
 
     typeColors: {
         money: '#2d5a1e',
-        agent: '#cccccc',
+        agent: '#b8a000',
         tech: '#1a4a8c',
-        plot: '#b8a000',
+        plot: '#3fb9b1',
         mission: '#6a1b9a',
         red_tape: '#8b0000',
     },
@@ -46,6 +46,10 @@ const UI = {
         if (card.id === 'red_tape') return this.typeColors.red_tape;
         return this.typeColors[card.type] || '#555';
     },
+
+    _autoPlayTimer: null,
+    _autoPlaying: false,
+    _lastTurnNumber: null,
 
     update(state) {
         this.state = state;
@@ -60,6 +64,44 @@ const UI = {
         this.renderDiscardPile();
         this.renderLog();
         this.renderGameOver();
+
+        // Auto-play money and money-only mission cards with 1s delay
+        if (state.is_my_turn && !this._autoPlaying && this._lastTurnNumber !== state.turn_number) {
+            this._lastTurnNumber = state.turn_number;
+            this._scheduleAutoPlay();
+        }
+    },
+
+    _getAutoPlayCards() {
+        if (!this.state || !this.state.is_my_turn) return [];
+        const me = this.state.players[this.state.my_index];
+        const cards = [];
+        for (const cid of me.hand) {
+            const card = this.catalog[cid];
+            if (!card) continue;
+            if (card.type === 'money') {
+                cards.push(cid);
+            } else if (card.type === 'mission' && (card.value || 0) > 0 && (card.gems || 0) === 0) {
+                cards.push(cid);
+            }
+        }
+        return cards;
+    },
+
+    _scheduleAutoPlay() {
+        if (this._autoPlayTimer) clearTimeout(this._autoPlayTimer);
+        const cards = this._getAutoPlayCards();
+        if (cards.length === 0) return;
+        this._autoPlayTimer = setTimeout(() => this._doAutoPlay(cards), 800);
+    },
+
+    async _doAutoPlay(cards) {
+        this._autoPlaying = true;
+        for (const cid of cards) {
+            if (!this.state.is_my_turn) break;
+            await Actions.playMoney(cid);
+        }
+        this._autoPlaying = false;
     },
 
     renderTurnInfo() {
@@ -134,15 +176,21 @@ const UI = {
             const deckCount = this.state.mission_deck_counts[tier];
             html += `<div class="mission-tier"><h4>Tier ${tier} <span class="deck-count">(${deckCount} left)</span></h4><div class="mission-tier-cards">`;
             const missions = this.state.mission_grid[tier] || [];
-            for (const mId of missions) {
+            const missionCounts = (this.state.mission_grid_counts || {})[tier] || [];
+            for (let mi = 0; mi < missions.length; mi++) {
+                const mId = missions[mi];
+                if (!mId) continue;
                 const card = this.catalog[mId];
                 const reqIcons = (card.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
                 const stars = card.stars ? `${card.stars}⭐ ` : '';
                 const money = card.value ? `$${card.value}` : '';
+                const count = missionCounts[mi] || 1;
+                const countBadge = count > 1 ? `<div class="stack-count">×${count}</div>` : '';
                 html += `<div class="card mission-card" onclick="UI.showMissionDialog('${mId}')">
                     <div class="card-name">${esc(card.name)}</div>
                     <div class="card-req">${reqIcons}</div>
                     <div class="card-reward">${stars}${money}</div>
+                    ${countBadge}
                 </div>`;
             }
             html += '</div></div>';
@@ -420,32 +468,43 @@ const UI = {
 
     showTrainingDialog(plotCardId) {
         const me = this.state.players[this.state.my_index];
-        const agents = me.hand.filter(cid => cid !== plotCardId && this.catalog[cid].type === 'agent');
-        if (agents.length === 0) {
-            this.showError('No agents in hand to trash!');
+        const areas = [
+            { key: 'hand', label: 'Hand', cards: me.hand.filter(cid => cid !== plotCardId) },
+            { key: 'play_area', label: 'Play Area', cards: me.play_area },
+            { key: 'discard', label: 'Discard', cards: me.discard },
+        ];
+        let hasAny = false;
+        let html = '<h3>Training Procedure: Select agent to trash</h3>';
+        for (const area of areas) {
+            const agents = area.cards.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent');
+            const unique = [...new Set(agents)];
+            if (unique.length === 0) continue;
+            hasAny = true;
+            html += `<p style="color:#888;margin:8px 0 4px;font-size:12px">${area.label}</p>`;
+            unique.forEach(cid => {
+                const c = this.catalog[cid];
+                const maxCost = (c.cost || 0) + 3;
+                html += `<button class="btn-modal" onclick="UI.showTrainingGainDialog('${plotCardId}', '${cid}', ${maxCost}, '${area.key}')">
+                    Trash ${esc(c.name)} ($${c.cost}) — gain up to $${maxCost}
+                </button>`;
+            });
+        }
+        if (!hasAny) {
+            this.showError('No agents to trash!');
             return;
         }
-        let html = '<h3>Training Procedure: Select agent to trash</h3>';
-        const unique = [...new Set(agents)];
-        unique.forEach(cid => {
-            const c = this.catalog[cid];
-            const maxCost = (c.cost || 0) + 3;
-            html += `<button class="btn-modal" onclick="UI.showTrainingGainDialog('${plotCardId}', '${cid}', ${maxCost})">
-                Trash ${esc(c.name)} ($${c.cost}) — gain up to $${maxCost}
-            </button>`;
-        });
         html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
         this.showModal(html);
     },
 
-    showTrainingGainDialog(plotCardId, trashAgent, maxCost) {
+    showTrainingGainDialog(plotCardId, trashAgent, maxCost, trashFrom) {
         const catalog = this.catalog;
         let html = `<h3>Training: Gain an agent (up to $${maxCost})</h3>`;
 
         // Always-available agents
         const alwaysAvail = Object.values(catalog).filter(c => c.type === 'agent' && c.always_available && c.cost <= maxCost);
         for (const c of alwaysAvail) {
-            html += `<button class="btn-modal" onclick="Actions.playPlot('${plotCardId}', {trash_agent:'${trashAgent}', gain_agent:'${c.id}', gain_slot:-1}); UI.closeModal()">
+            html += `<button class="btn-modal" onclick="Actions.playPlot('${plotCardId}', {trash_agent:'${trashAgent}', gain_agent:'${c.id}', gain_slot:-1, trash_from:'${trashFrom}'}); UI.closeModal()">
                 ${esc(c.name)} ($${c.cost}) — Always available
             </button>`;
         }
@@ -455,7 +514,7 @@ const UI = {
             if (!cardId) return;
             const c = catalog[cardId];
             if (c.type === 'agent' && c.cost <= maxCost) {
-                html += `<button class="btn-modal" onclick="Actions.playPlot('${plotCardId}', {trash_agent:'${trashAgent}', gain_agent:'${cardId}', gain_slot:${slot}}); UI.closeModal()">
+                html += `<button class="btn-modal" onclick="Actions.playPlot('${plotCardId}', {trash_agent:'${trashAgent}', gain_agent:'${cardId}', gain_slot:${slot}, trash_from:'${trashFrom}'}); UI.closeModal()">
                     ${esc(c.name)} ($${c.cost}) — Marketplace
                 </button>`;
             }

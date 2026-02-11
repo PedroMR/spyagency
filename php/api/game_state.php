@@ -92,7 +92,14 @@ $state = [
     'marketplace' => array_map(fn($stack) => !empty($stack) ? $stack[0] : null, $game['marketplace']),
     'marketplace_counts' => array_map(fn($stack) => count($stack), $game['marketplace']),
     'market_deck_count' => count($game['market_deck']),
-    'mission_grid' => $game['mission_grid'],
+    'mission_grid' => array_map(fn($tier_slots) => array_map(
+        fn($slot) => is_array($slot) ? ($slot[0] ?? null) : $slot,
+        $tier_slots
+    ), $game['mission_grid']),
+    'mission_grid_counts' => array_map(fn($tier_slots) => array_map(
+        fn($slot) => is_array($slot) ? count($slot) : 1,
+        $tier_slots
+    ), $game['mission_grid']),
     'mission_deck_counts' => [
         1 => count($game['mission_decks'][1]),
         2 => count($game['mission_decks'][2]),

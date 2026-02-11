@@ -5,18 +5,31 @@ function init_game(array $players): array {
     $market_deck = build_market_deck();
     $mission_decks = build_mission_decks();
 
-    // Fill mission grid: 3 from each tier
+    // Fill mission grid: 3 slots per tier, each slot is a stack (array of card IDs)
+    // When a drawn card matches an existing slot, stack it and draw again
     $mission_grid = [1 => [], 2 => [], 3 => []];
     foreach ([1, 2, 3] as $tier) {
-        for ($i = 0; $i < 3 && count($mission_decks[$tier]) > 0; $i++) {
-            $mission_grid[$tier][] = array_shift($mission_decks[$tier]);
+        while (count($mission_grid[$tier]) < 3 && !empty($mission_decks[$tier])) {
+            $drawn = array_shift($mission_decks[$tier]);
+            $stacked = false;
+            foreach ($mission_grid[$tier] as &$slot) {
+                if (!empty($slot) && $slot[0] === $drawn) {
+                    $slot[] = $drawn;
+                    $stacked = true;
+                    break;
+                }
+            }
+            unset($slot);
+            if (!$stacked) {
+                $mission_grid[$tier][] = [$drawn];
+            }
         }
     }
 
-    // Fill marketplace: 6 slots, each is a stack (array of card IDs)
+    // Fill marketplace: 7 slots, each is a stack (array of card IDs)
     // When a drawn card matches an existing slot, stack it and draw again
-    $marketplace = [[], [], [], [], [], []];
-    for ($i = 0; $i < 6; $i++) {
+    $marketplace = [[], [], [], [], [], [], []];
+    for ($i = 0; $i < 7; $i++) {
         while (!empty($market_deck)) {
             $drawn = array_shift($market_deck);
             // Check if this card matches an existing slot
@@ -77,10 +90,6 @@ function init_game(array $players): array {
         'final_round_starter' => null,
         'ended' => false,
     ];
-
-    // Auto-play money and money-only mission cards for the first player
-    require_once __DIR__ . '/game_logic.php';
-    auto_play_cards($game, $first_player);
 
     return $game;
 }

@@ -155,17 +155,23 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             break;
 
         case 'training':
-            // Training Procedure: trash an agent from hand, gain an agent costing up to $3 more from market
+            // Training Procedure: trash an agent from play, hand or discard areas, gain an agent costing up to $3 more from market
             $trash_agent = $params['trash_agent'] ?? '';
+            $trash_from = $params['trash_from'] ?? 'hand'; // 'hand', 'play_area', or 'discard'
             $gain_agent = $params['gain_agent'] ?? '';
             $gain_slot = $params['gain_slot'] ?? -1;
             if (!$trash_agent || !isset($catalog[$trash_agent]) || $catalog[$trash_agent]['type'] !== TYPE_AGENT) {
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Must specify an agent to trash'];
             }
-            if (!remove_from_array($game['players'][$pi]['hand'], $trash_agent)) {
+            $valid_areas = ['hand', 'play_area', 'discard'];
+            if (!in_array($trash_from, $valid_areas)) {
                 $game['players'][$pi]['hand'][] = $card_id;
-                return ['ok' => false, 'error' => 'Agent to trash not in hand'];
+                return ['ok' => false, 'error' => 'Invalid trash area'];
+            }
+            if (!remove_from_array($game['players'][$pi][$trash_from], $trash_agent)) {
+                $game['players'][$pi]['hand'][] = $card_id;
+                return ['ok' => false, 'error' => 'Agent not found in ' . str_replace('_', ' ', $trash_from)];
             }
             $trash_cost = $catalog[$trash_agent]['cost'] ?? 0;
             $max_cost = $trash_cost + 3;
@@ -173,13 +179,13 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             // Gain agent: from marketplace slot or always-available
             if (!$gain_agent || !isset($catalog[$gain_agent]) || $catalog[$gain_agent]['type'] !== TYPE_AGENT) {
                 // Restore cards
-                $game['players'][$pi]['hand'][] = $trash_agent;
+                $game['players'][$pi][$trash_from][] = $trash_agent;
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Must specify a valid agent to gain'];
             }
             $gain_cost = $catalog[$gain_agent]['cost'] ?? 0;
             if ($gain_cost > $max_cost) {
-                $game['players'][$pi]['hand'][] = $trash_agent;
+                $game['players'][$pi][$trash_from][] = $trash_agent;
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => "Agent costs \${$gain_cost}, max is \${$max_cost}"];
             }
@@ -191,7 +197,7 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             } elseif ($gain_slot >= 0 && $gain_slot < count($game['marketplace']) && !empty($game['marketplace'][$gain_slot]) && $game['marketplace'][$gain_slot][0] === $gain_agent) {
                 array_shift($game['marketplace'][$gain_slot]);
             } else {
-                $game['players'][$pi]['hand'][] = $trash_agent;
+                $game['players'][$pi][$trash_from][] = $trash_agent;
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Agent not available in marketplace'];
             }
@@ -260,8 +266,8 @@ function marketplace_top(array $slot): ?string {
 }
 
 function refill_marketplace(array &$game): void {
-    // Ensure 6 slots
-    while (count($game['marketplace']) < 6) {
+    // Ensure 7 slots
+    while (count($game['marketplace']) < 7) {
         $game['marketplace'][] = [];
     }
     foreach ($game['marketplace'] as $i => $stack) {
@@ -287,12 +293,43 @@ function refill_marketplace(array &$game): void {
     }
 }
 
+function refill_mission_grid(array &$game): void {
+    foreach ([1, 2, 3] as $tier) {
+        // Remove empty stacks
+        $game['mission_grid'][$tier] = array_values(array_filter(
+            $game['mission_grid'][$tier],
+            fn($slot) => !empty($slot)
+        ));
+        while (count($game['mission_grid'][$tier]) < 3 && !empty($game['mission_decks'][$tier])) {
+            $drawn = array_shift($game['mission_decks'][$tier]);
+            $stacked = false;
+            foreach ($game['mission_grid'][$tier] as &$slot) {
+                if (!empty($slot) && $slot[0] === $drawn) {
+                    $slot[] = $drawn;
+                    $stacked = true;
+                    break;
+                }
+            }
+            unset($slot);
+            if (!$stacked) {
+                $game['mission_grid'][$tier][] = [$drawn];
+            }
+        }
+    }
+}
+
 function action_refresh_market(array &$game, int $pi, array $params): array {
     $log_parts = [];
     if (!spend_cost($game['players'][$pi], 2, $log_parts)) {
         return ['ok' => false, 'error' => 'Not enough money/gems (need $2)'];
     }
-    $game['marketplace'] = [[], [], [], [], [], []];
+    // Move all marketplace cards to bottom of Market Deck
+    foreach ($game['marketplace'] as $stack) {
+        foreach ($stack as $card_id) {
+            $game['market_deck'][] = $card_id;
+        }
+    }
+    $game['marketplace'] = [[], [], [], [], [], [], []];
     refill_marketplace($game);
     $msg = $game['players'][$pi]['name'] . " refreshed the marketplace for \$2";
     if (!empty($log_parts)) $msg .= ' (' . implode(', ', $log_parts) . ')';
@@ -429,12 +466,14 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     $is_always = $catalog[$mission_id]['always_available'] ?? false;
 
     if (!$is_always) {
-        foreach ($game['mission_grid'] as $tier => $missions) {
-            $idx = array_search($mission_id, $missions);
-            if ($idx !== false) {
-                $found_tier = $tier;
-                $found_idx = $idx;
-                break;
+        foreach ($game['mission_grid'] as $tier => $slots) {
+            foreach ($slots as $idx => $slot) {
+                $top = is_array($slot) ? ($slot[0] ?? null) : $slot;
+                if ($top === $mission_id) {
+                    $found_tier = $tier;
+                    $found_idx = $idx;
+                    break 2;
+                }
             }
         }
         if ($found_tier === null) {
@@ -512,9 +551,18 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         $game['players'][$pi]['backup_agent'] = null;
     }
 
-    // Remove mission from grid
+    // Remove mission from grid (pop from stack, remove slot if empty)
     if (!$is_always && $found_tier !== null) {
-        array_splice($game['mission_grid'][$found_tier], $found_idx, 1);
+        $slot = &$game['mission_grid'][$found_tier][$found_idx];
+        if (is_array($slot)) {
+            array_shift($slot);
+            if (empty($slot)) {
+                array_splice($game['mission_grid'][$found_tier], $found_idx, 1);
+            }
+        } else {
+            array_splice($game['mission_grid'][$found_tier], $found_idx, 1);
+        }
+        unset($slot);
     }
 
     // Handle Fundraising: award gems, card does NOT go into deck
@@ -572,12 +620,8 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     // Refill marketplace
     refill_marketplace($game);
 
-    // Refill mission grid
-    foreach ([1, 2, 3] as $tier) {
-        while (count($game['mission_grid'][$tier]) < 3 && count($game['mission_decks'][$tier]) > 0) {
-            $game['mission_grid'][$tier][] = array_shift($game['mission_decks'][$tier]);
-        }
-    }
+    // Refill mission grid (with stacking: if drawn card matches existing, stack and draw again)
+    refill_mission_grid($game);
 
     // Draw 5 cards
     player_draw_cards($p, 5);
@@ -600,47 +644,7 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     $next_name = $game['players'][$game['current_player']]['name'];
     $game['log'][] = "It's now {$next_name}'s turn.";
 
-    // Auto-play money cards and money-only mission cards for the next player
-    auto_play_cards($game, $game['current_player']);
-
     return ['ok' => true];
-}
-
-/**
- * Auto-play all Money cards and Mission cards that only reward $ and stars
- * (no gems) from the player's hand at the start of their turn.
- */
-function auto_play_cards(array &$game, int $pi): void {
-    $catalog = get_card_catalog();
-    $p = &$game['players'][$pi];
-
-    // Collect cards to auto-play (iterate by index so we can remove them)
-    $to_play = [];
-    foreach ($p['hand'] as $card_id) {
-        if (!isset($catalog[$card_id])) continue;
-        $card = $catalog[$card_id];
-
-        if ($card['type'] === TYPE_MONEY) {
-            $to_play[] = $card_id;
-        } elseif ($card['type'] === TYPE_MISSION && ($card['value'] ?? 0) > 0 && ($card['gems'] ?? 0) === 0) {
-            $to_play[] = $card_id;
-        }
-    }
-
-    foreach ($to_play as $card_id) {
-        if (!remove_from_array($p['hand'], $card_id)) continue;
-        $card = $catalog[$card_id];
-        $value = $card['value'] ?? 0;
-        $p['play_area'][] = $card_id;
-        $p['money'] += $value;
-
-        $log_msg = $p['name'] . " auto-played {$card['name']} (+\${$value})";
-        if ($card['extra_buy'] ?? false) {
-            $p['extra_buys'] = ($p['extra_buys'] ?? 0) + 1;
-            $log_msg .= ' (+1 Buy)';
-        }
-        $game['log'][] = $log_msg;
-    }
 }
 
 function process_action(array &$game, string $token, string $action, array $params): array {

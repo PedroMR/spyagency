@@ -92,4 +92,4 @@ The UI should show which round we're playing, starting at 1 and going up every t
 
 The number of stars a player shows in the UI is the number of stars in all the cards they own (hand, deck, discard area, in play). This goes up as they accomplish missions with stars and goes down if they trash one of those cards.
 
-When it's my turn I want all the Money cards in my hand and all the Missions which only reward points and money to be automatically played. This should happen after a small delay (1 second).
+When it's my turn I want all the Money cards in my hand and all the Missions which only reward points and money to be automatically played. This should happen after a small delay (0.8 seconds).
