@@ -337,6 +337,16 @@ function action_refresh_market(array &$game, int $pi, array $params): array {
     return ['ok' => true];
 }
 
+function action_buy_gem(array &$game, int $pi, array $params): array {
+    if ($game['players'][$pi]['money'] < 3) {
+        return ['ok' => false, 'error' => 'Not enough money (need $3)'];
+    }
+    $game['players'][$pi]['money'] -= 3;
+    $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + 1;
+    $game['log'][] = $game['players'][$pi]['name'] . " bought a gem for \$3";
+    return ['ok' => true];
+}
+
 function action_cash_gems(array &$game, int $pi, array $params): array {
     $amount = (int)($params['amount'] ?? 0);
     $gems = $game['players'][$pi]['gems'] ?? 0;
@@ -727,6 +737,7 @@ function process_action(array &$game, string $token, string $action, array $para
         'play_plot' => action_play_plot($game, $pi, $params),
         'buy_card' => action_buy_card($game, $pi, $params),
         'refresh_market' => action_refresh_market($game, $pi, $params),
+        'buy_gem' => action_buy_gem($game, $pi, $params),
         'cash_gems' => action_cash_gems($game, $pi, $params),
         'complete_mission' => action_complete_mission($game, $pi, $params),
         'end_turn' => action_end_turn($game, $pi, $params),

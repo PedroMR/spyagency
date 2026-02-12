@@ -45,6 +45,7 @@ Some Missions and Plots will reward the Player with gems (💎). Gems are kept b
 
 To buy a card the player spends the required amount of money ($) and takes the card, adding it to their discard pile. The space left by the purchased card is only refilled at the end of the turn.
 
+Players can spend $3 to buy 1 gem. They may do this as many times as they want.
 
 ### End of player turn
 

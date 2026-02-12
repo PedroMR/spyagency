@@ -193,6 +193,10 @@ const UI = {
             if (canBuyMarket || canBuyAlways) return false;
         }
 
+        // Can buy gems? (3 money, no gems)
+        if (me.money >= 3)
+            return false;
+
         return true;
     },
 
@@ -296,6 +300,17 @@ const UI = {
                 <div class="card-type">agent</div>
             </div>`;
         }).join('');
+
+        // Buy Gem card (unlimited, costs $3 money only)
+        const gemAffordable = s.is_my_turn && me.money >= 3;
+        const gemDimmed = !gemAffordable ? ' unaffordable' : '';
+        const gemClick = gemAffordable ? 'onclick="UI.buyGem()"' : '';
+        alwaysContainer.innerHTML += `<div class="card always-available-card${gemDimmed}" style="border-color:#9c27b0" ${gemClick}>
+            <div class="card-name">Buy Gem</div>
+            <div class="card-cost">$3</div>
+            <div class="card-icons">💎</div>
+            <div class="card-type">gem</div>
+        </div>`;
     },
 
     renderMissionGrid() {
@@ -516,6 +531,16 @@ const UI = {
                 this.handlePlotPlay(cardId);
                 break;
         }
+    },
+
+    buyGem() {
+        if (!this.state.is_my_turn) return;
+        const me = this.state.players[this.state.my_index];
+        if (me.money < 3) {
+            this.showError('Not enough money (need $3).');
+            return;
+        }
+        Actions.buyGem();
     },
 
     buyAlwaysAvailable(cardId, name, cost) {

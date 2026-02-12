@@ -47,6 +47,10 @@ const Actions = {
         return this.send('refresh_market', {});
     },
 
+    buyGem() {
+        return this.send('buy_gem', {});
+    },
+
     cashGems(amount) {
         return this.send('cash_gems', {amount: amount});
     },
