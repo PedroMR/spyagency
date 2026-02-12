@@ -1,7 +1,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: #1a1a2e;
+    background: #1a1a2e url('../img/spyalley.png') center center / cover no-repeat fixed;
     color: #e0e0e0;
     min-height: 100vh;
 }
@@ -17,7 +17,7 @@ button {
 }
 button:hover { background: #3a7bc8; }
 input[type="text"] {
-    background: #2a2a4a;
+    background: rgba(42, 42, 74, 0.85);
     color: #e0e0e0;
     border: 1px solid #444;
     padding: 6px 10px;
@@ -42,7 +42,7 @@ input[type="text"] {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #2a2a4a;
+    background: rgba(42, 42, 74, 0.85);
     padding: 10px 14px;
     margin-bottom: 6px;
     border-radius: 6px;
@@ -52,7 +52,7 @@ input[type="text"] {
 .muted { color: #888; font-style: italic; }
 
 #waiting-room {
-    background: #2a2a4a;
+    background: rgba(42, 42, 74, 0.85);
     padding: 20px;
     border-radius: 8px;
     text-align: center;
@@ -115,7 +115,7 @@ input[type="text"] {
 .board-bottom > .section { flex: 1; min-width: 250px; }
 
 .section {
-    background: #222244;
+    background: rgba(34, 34, 68, 0.85);
     border-radius: 8px;
     padding: 10px;
 }
@@ -128,7 +128,7 @@ input[type="text"] {
 
 /* Cards */
 .card {
-    background: #2a2a3a;
+    background: rgba(42, 42, 58, 0.9);
     border: 2px solid #555;
     border-radius: 6px;
     padding: 6px 8px;
@@ -192,7 +192,7 @@ input[type="text"] {
 /* Bases */
 .bases-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .base-slot {
-    background: #1a1a3a;
+    background: rgba(26, 26, 58, 0.85);
     border: 2px solid #555;
     border-radius: 6px;
     padding: 8px;
@@ -219,7 +219,7 @@ input[type="text"] {
 
 /* Players */
 .opponent {
-    background: #1a1a3a;
+    background: rgba(26, 26, 58, 0.85);
     padding: 6px;
     border-radius: 6px;
     margin-bottom: 4px;
@@ -233,7 +233,7 @@ input[type="text"] {
 
 /* Game log */
 .game-log {
-    background: #111128;
+    background: rgba(17, 17, 40, 0.85);
     border-radius: 8px;
     padding: 10px;
     margin-top: 10px;
@@ -257,7 +257,7 @@ input[type="text"] {
     z-index: 1000;
 }
 .modal {
-    background: #2a2a4a;
+    background: rgba(42, 42, 74, 0.85);
     border: 2px solid #ffd700;
     border-radius: 12px;
     padding: 20px;
@@ -313,7 +313,7 @@ input[type="text"] {
     display: block;
     padding: 6px 10px;
     margin-bottom: 4px;
-    background: #1a1a3a;
+    background: rgba(26, 26, 58, 0.85);
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
@@ -350,7 +350,7 @@ input[type="text"] {
     text-align: center;
 }
 .heist-table th {
-    background: #2a2a4a;
+    background: rgba(42, 42, 74, 0.85);
     color: #ffd700;
 }
 

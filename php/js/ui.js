@@ -15,6 +15,27 @@ function playClick() {
     } catch (e) {}
 }
 
+// Soft bell sound for turn notification
+function playBell() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const t = ctx.currentTime;
+        // Two harmonics for a bell-like tone
+        [880, 1320].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(i === 0 ? 0.15 : 0.07, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+            osc.start(t);
+            osc.stop(t + 0.6);
+        });
+    } catch (e) {}
+}
+
 // Attach click sound to all buttons
 document.addEventListener('click', function(e) {
     if (e.target.closest('button, .card, .btn-modal')) {
@@ -68,6 +89,7 @@ const UI = {
         // Auto-play money and money-only mission cards with 1s delay
         if (state.is_my_turn && !this._autoPlaying && this._lastTurnNumber !== state.turn_number) {
             this._lastTurnNumber = state.turn_number;
+            playBell();
             this._scheduleAutoPlay();
         }
     },

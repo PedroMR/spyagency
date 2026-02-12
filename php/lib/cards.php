@@ -483,7 +483,7 @@ function get_card_catalog(): array {
             'stars' => 0,
             'cost' => 6,
             'effect' => 'multitask',
-            'description' => 'You may complete an additional mission this turn ($6)',
+            'description' => '$2, You may complete an additional mission this turn ($6)',
         ],
         'training_procedure' => [
             'id' => 'training_procedure',
