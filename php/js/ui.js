@@ -60,6 +60,7 @@ const UI = {
         this.renderOpponents();
         this.renderHand();
         this.renderPlayArea();
+        this.renderDeck();
         this.renderDiscardPile();
         this.renderLog();
         this.renderGameOver();
@@ -343,6 +344,11 @@ const UI = {
                 ${this.getOwnedCardInfo(card)}
             </div>`;
         }).join('');
+    },
+
+    renderDeck() {
+        const me = this.state.players[this.state.my_index];
+        document.getElementById('my-deck-count').textContent = me.deck_count + (me.deck_count == 1 ? " card" : " cards");
     },
 
     renderDiscardPile() {

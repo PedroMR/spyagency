@@ -16,7 +16,7 @@ There is a Mission Grid on offer for players to complete. 3 from each Mission De
 
 <!--Each player starts with 2 Bases (Safehouses) in front of them. They can acquire more bases (Hideaways) with money. The first extra Hideaway costs $5, the next $8, the next $12.-->
 
-Each player starts with a deck consisting of 6 $1 cards, 2 Muscles, and 2 Red Tape cards.
+Each player starts with a deck consisting of 6 $1 cards, 2 Muscles, 1 Shadow, and 1 Red Tape cards.
 
 Red Tape does nothing.
 
@@ -73,7 +73,7 @@ When starting the game, randomize which player will go first.
 
 Every time the user clicks a button we should hear a discreet "click" sound.
 
-When clicking the Shadow or Muscle button the user should see a confirmation of the purchase.
+The Shadow and Muscle buttons should look like the cards you get when you buy them. When clicking the Shadow or Muscle button the user should see a confirmation of the purchase.
 
 At the top of the screen we should see the number of missions available to attempt this turn and the number of buys available this turn.
 

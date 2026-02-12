@@ -58,6 +58,11 @@
             </div>
 
             <div class="board-bottom">
+                <div class="section deck-section">
+                    <h3>Deck</h3>
+                    <div id="my-deck-count" class="deck-count-display"></div>
+                </div>
+
                 <div class="section hand-section">
                     <h3>Your Hand</h3>
                     <div id="my-hand" class="card-row"></div>

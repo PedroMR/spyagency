@@ -347,5 +347,9 @@ input[type="text"] {
     color: #ffd700;
 }
 
+/* Deck section */
+.deck-section { flex: 0 0 80px; min-width: 70px; max-width: 100px; text-align: center; }
+.deck-count-display { font-size: 28px; font-weight: bold; color: #ffd700; padding: 10px 0; }
+
 /* Discard pile section */
 .discard-section { max-width: 200px; }
