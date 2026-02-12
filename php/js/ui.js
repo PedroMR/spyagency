@@ -63,9 +63,18 @@ const UI = {
         hazard: '#8b0000',
     },
 
-    formatReqIcons(requirements) {
-        const icons = (requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r));
-        if (icons.length === 0) return '';
+    iconSortOrder: { key: 0, drive: 1, disguise: 2, muscle: 3 },
+
+    formatReqIcons(icons_raw) {
+        if (!icons_raw || icons_raw.length === 0) return '';
+        // Sort by defined order, keeping raw keys for sorting
+        const mapped = icons_raw.map(r => {
+            const sortKey = Array.isArray(r) ? (this.iconSortOrder[r[0]] ?? 99) : (r === 'any' ? 100 : (this.iconSortOrder[r] ?? 99));
+            const display = Array.isArray(r) ? r.map(i => this.iconMap[i] || i).join('/') : (r === 'any' ? '❓' : (this.iconMap[r] || r));
+            return { sortKey, display };
+        });
+        mapped.sort((a, b) => a.sortKey - b.sortKey);
+        const icons = mapped.map(m => m.display);
         // Group consecutive same icons
         const groups = [];
         let cur = { icon: icons[0], count: 1 };
@@ -256,11 +265,14 @@ const UI = {
             const affordClass = affordable ? ' affordable' : (unaffordable ? ' unaffordable' : '');
             const stackBadge = count > 1 ? `<div class="stack-count">x${count}</div>` : '';
             const click = affordable ? `onclick="UI.onMarketClick('${cardId}', ${i})"` : '';
+            const detail = (card.type === 'agent' || card.type === 'tech') && card.icons
+                ? `<div class="card-icons">${this.getCardIcons(card)}</div>`
+                : `<div class="card-desc">${esc(card.description)}</div>`;
             return `<div class="card market-card${affordClass}" style="border-color:${this.getCardColor(card)}" ${click}>
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-cost">$${card.cost}</div>
                 <div class="card-type">${card.type}</div>
-                <div class="card-desc">${esc(card.description)}</div>
+                ${detail}
                 ${stackBadge}
             </div>`;
         }).join('') + Array(empties).fill('<div class="card card-empty">Empty</div>').join('');
@@ -348,12 +360,7 @@ const UI = {
 
     getCardIcons(card) {
         if (!card.icons) return '';
-        return card.icons.map(icon => {
-            if (Array.isArray(icon)) {
-                return icon.map(i => this.iconMap[i] || i).join('/');
-            }
-            return this.iconMap[icon] || icon;
-        }).join(' ');
+        return this.formatReqIcons(card.icons);
     },
 
     getOwnedCardInfo(card) {
