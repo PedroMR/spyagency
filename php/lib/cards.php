@@ -598,7 +598,7 @@ function get_starter_deck(): array {
     for ($i = 0; $i < 6; $i++) $deck[] = 'money_1';
     $deck[] = 'muscle';
     $deck[] = 'muscle';
-    $deck[] = 'red_tape';
+    $deck[] = 'shadow';
     $deck[] = 'red_tape';
     shuffle($deck);
     return $deck;

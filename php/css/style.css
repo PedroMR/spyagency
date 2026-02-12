@@ -180,8 +180,13 @@ input[type="text"] {
 .fundraising-row { margin-top: 8px; border-top: 1px solid #444; padding-top: 8px; }
 
 /* Market actions */
-.market-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.market-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: flex-start; }
 .market-actions button { font-size: 11px; padding: 4px 8px; }
+.always-available-card { cursor: pointer; }
+.always-available-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
+}
 
 /* Bases */
 .bases-row { display: flex; gap: 8px; flex-wrap: wrap; }

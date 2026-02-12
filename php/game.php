@@ -36,10 +36,20 @@
                     <h3>Marketplace <span id="market-deck-count" class="deck-count"></span></h3>
                     <div id="marketplace" class="card-row"></div>
                     <div class="market-actions">
-                        <button onclick="Actions.refreshMarket()">Restock ($2)</button>
-                        <button onclick="UI.buyAlwaysAvailable('muscle', 'Muscle', 3)">Buy Muscle ($3)</button>
-                        <button onclick="UI.buyAlwaysAvailable('shadow', 'Shadow', 4)">Buy Shadow ($4)</button>
+                        <div class="card always-available-card" style="border-color:#b8a000" onclick="UI.buyAlwaysAvailable('muscle', 'Muscle', 3)">
+                            <div class="card-name">Muscle</div>
+                            <div class="card-cost">$3</div>
+                            <div class="card-icons">💪</div>
+                            <div class="card-type">agent</div>
+                        </div>
+                        <div class="card always-available-card" style="border-color:#b8a000" onclick="UI.buyAlwaysAvailable('shadow', 'Shadow', 4)">
+                            <div class="card-name">Shadow</div>
+                            <div class="card-cost">$4</div>
+                            <div class="card-icons">🥸</div>
+                            <div class="card-type">agent</div>
+                        </div>
                     </div>
+                    <button class="market-actions" onclick="Actions.refreshMarket()">Restock ($2)</button>
                 </div>
 
                 <div class="section missions-section">

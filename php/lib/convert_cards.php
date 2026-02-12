@@ -350,7 +350,7 @@ $output .= "    \$deck = [];\n";
 $output .= "    for (\$i = 0; \$i < 6; \$i++) \$deck[] = 'money_1';\n";
 $output .= "    \$deck[] = 'muscle';\n";
 $output .= "    \$deck[] = 'muscle';\n";
-$output .= "    \$deck[] = 'red_tape';\n";
+$output .= "    \$deck[] = 'shadow';\n";
 $output .= "    \$deck[] = 'red_tape';\n";
 $output .= "    shuffle(\$deck);\n";
 $output .= "    return \$deck;\n";
