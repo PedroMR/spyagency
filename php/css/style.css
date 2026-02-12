@@ -6,6 +6,10 @@ body {
     min-height: 100vh;
 }
 h1, h2, h3, h4 { color: #ffd700; }
+h1 {
+    background-color:  rgba(17, 17, 40, 0.85);/* rgba(42, 42, 74, 0.85);*/
+    padding: 0.4em 0em;
+}
 button {
     background: #2d5a8a;
     color: #fff;
