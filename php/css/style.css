@@ -139,7 +139,7 @@ input[type="text"] {
     border-radius: 6px;
     padding: 6px 8px;
     min-width: 100px;
-    max-width: 130px;
+    max-width: 145px;
     font-size: 11px;
     display: inline-flex;
     flex-direction: column;
@@ -153,6 +153,7 @@ input[type="text"] {
 .card-type { color: #888; text-transform: uppercase; font-size: 9px; }
 .card-desc { color: #bbb; font-size: 10px; }
 .card-req { font-size: 16px; }
+.icon-group { letter-spacing: -3px; margin-right: 5px }
 .card-reward { color: #4cff4c; font-size: 12px; }
 .card-icons { font-size: 14px; }
 .card-empty { color: #555; border-style: dashed; justify-content: center; align-items: center; min-height: 60px; }

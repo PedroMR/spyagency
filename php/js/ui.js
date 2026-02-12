@@ -63,6 +63,27 @@ const UI = {
         hazard: '#8b0000',
     },
 
+    formatReqIcons(requirements) {
+        const icons = (requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r));
+        if (icons.length === 0) return '';
+        // Group consecutive same icons
+        const groups = [];
+        let cur = { icon: icons[0], count: 1 };
+        for (let i = 1; i < icons.length; i++) {
+            if (icons[i] === cur.icon) {
+                cur.count++;
+            } else {
+                groups.push(cur);
+                cur = { icon: icons[i], count: 1 };
+            }
+        }
+        groups.push(cur);
+        return groups.map(g => {
+            if (g.count === 1) return g.icon;
+            return `<span class="icon-group">${g.icon.repeat(g.count)}</span>`;
+        }).join(' ');
+    },
+
     getCardColor(card) {
         return this.typeColors[card.type] || '#555';
     },
@@ -276,7 +297,7 @@ const UI = {
                 const mId = missions[mi];
                 if (!mId) continue;
                 const card = this.catalog[mId];
-                const reqIcons = (card.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
+                const reqIcons = this.formatReqIcons(card.requirements);
                 const stars = card.stars ? `${card.stars}⭐ ` : '';
                 const money = card.value ? `$${card.value}` : '';
                 const count = missionCounts[mi] || 1;
@@ -295,7 +316,7 @@ const UI = {
 
     renderHeist() {
         const card = this.catalog['heist'];
-        const reqIcons = (card.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
+        const reqIcons = this.formatReqIcons(card.requirements);
         const el = document.getElementById('heist-mission');
         el.innerHTML = `<div class="card-name">${esc(card.name)}</div>
             <div class="card-req">${reqIcons}</div>
@@ -667,7 +688,7 @@ const UI = {
             return;
         }
 
-        const reqIcons = (mission.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
+        const reqIcons = this.formatReqIcons(mission.requirements);
         const isHeist = (mission.gems || 0) > 0;
 
         let html = `<h3>Run: ${esc(mission.name)}</h3>`;
