@@ -85,6 +85,8 @@ input[type="text"] {
 .game-header-actions { display: flex; gap: 8px; }
 #btn-end-turn { background: #8b0000; border-color: #c00; font-size: 14px; padding: 8px 20px; }
 #btn-end-turn:hover { background: #c00; }
+#btn-debug-end { background: #555; border-color: #777; font-size: 11px; padding: 4px 8px; }
+#btn-debug-end:hover { background: #777; }
 #btn-end-turn.glow {
     animation: end-turn-glow 1.2s ease-in-out infinite;
     border-color: #ff4444;
@@ -297,6 +299,16 @@ input[type="text"] {
     background: #2a2a2a;
     border-radius: 6px;
 }
+
+/* Game over actions */
+.gameover-actions { display: flex; gap: 16px; align-items: center; margin-top: 12px; }
+.rematch-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 15px; cursor: pointer; color: #e0e0e0;
+}
+.rematch-label.disabled { opacity: 0.4; cursor: default; }
+.rematch-label input[type="checkbox"] { accent-color: #4cff4c; width: 18px; height: 18px; }
+.rematch-count { color: #888; font-size: 12px; }
 
 /* Affordable marketplace cards */
 .market-card.affordable {

@@ -19,6 +19,7 @@ if (count($room['players']) < 2) send_json(json_error('Need at least 2 players')
 
 $game_id = gen_id();
 $game = init_game($room['players']);
+$game['room_id'] = $room_id;
 
 write_json(data_path('games', $game_id), $game);
 

@@ -97,3 +97,5 @@ When it's my turn I want all the Money cards in my hand and all the Missions whi
 If there is nothing more I can do in my turn (no useful cards to play, no cards to buy, no missions to complete) the End Turn button should glow in an animated way.
 
 The player list should be smaller and to the right of the mission list.
+
+When a game is over we should get two buttons -- one to go Back to Lobby (we already have this) and a checkbox that says "Rematch?". If all the people left in the room have the Rematch? checkbox enabled we should clear the room and start a new game in the same room with those people. If there's only one person left in the room the checkbox should be disabled (greyed out).

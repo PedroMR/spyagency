@@ -180,6 +180,8 @@ const UI = {
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         const endTurnBtn = document.getElementById('btn-end-turn');
         endTurnBtn.style.display = s.is_my_turn ? 'inline-block' : 'none';
+        const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+        document.getElementById('btn-debug-end').style.display = (isLocal && !s.ended) ? 'inline-block' : 'none';
         if (s.is_my_turn) {
             endTurnBtn.classList.toggle('glow', this._shouldEndTurn());
         } else {
@@ -422,18 +424,47 @@ const UI = {
 
     renderGameOver() {
         if (!this.state.ended) return;
+
+        // If rematch triggered, redirect to new game
+        if (this.state.rematch_game_id) {
+            const token = sessionStorage.getItem('spy_token');
+            sessionStorage.setItem('spy_game_id', this.state.rematch_game_id);
+            window.location.href = 'game.php?game_id=' + encodeURIComponent(this.state.rematch_game_id) + '&token=' + encodeURIComponent(token);
+            return;
+        }
+
         const scores = this.state.scores;
         if (!scores) return;
+        const s = this.state;
+        const totalPlayers = s.players.length;
+        const voteCount = s.rematch_vote_count || 0;
+        const myVote = s.rematch_my_vote || false;
+        const onlyOne = totalPlayers < 2;
+
         let html = '<h2>Game Over!</h2><div class="scores">';
-        scores.forEach((s, i) => {
+        scores.forEach((sc, i) => {
             html += `<div class="score-row ${i === 0 ? 'winner' : ''}">
-                <span>${i + 1}. ${esc(s.name)}</span>
-                <span>${s.stars} ⭐</span>
+                <span>${i + 1}. ${esc(sc.name)}</span>
+                <span>${sc.stars} ⭐</span>
             </div>`;
         });
-        html += '</div><button onclick="location.href=\'index.php\'">Back to Lobby</button>';
+        html += '</div>';
+        html += '<div class="gameover-actions">';
+        html += '<button onclick="location.href=\'index.php\'">Back to Lobby</button>';
+        const checked = myVote ? 'checked' : '';
+        const disabled = onlyOne ? 'disabled' : '';
+        html += `<label class="rematch-label ${onlyOne ? 'disabled' : ''}">
+            <input type="checkbox" id="rematch-checkbox" ${checked} ${disabled}
+                onchange="UI.onRematchVote(this.checked)">
+            Rematch? <span class="rematch-count">(${voteCount}/${totalPlayers})</span>
+        </label>`;
+        html += '</div>';
         document.getElementById('modal-content').innerHTML = html;
         document.getElementById('modal-overlay').style.display = 'flex';
+    },
+
+    onRematchVote(vote) {
+        Actions.voteRematch(vote);
     },
 
     onHandClick(cardId) {
@@ -726,6 +757,7 @@ const UI = {
     },
 
     closeModal() {
+        if (this.state && this.state.ended) return;
         document.getElementById('modal-overlay').style.display = 'none';
     },
 

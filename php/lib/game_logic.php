@@ -647,9 +647,72 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     return ['ok' => true];
 }
 
+function action_vote_rematch(array &$game, int $pi, array $params): array {
+    if (!($game['ended'] ?? false)) {
+        return ['ok' => false, 'error' => 'Game is not over yet'];
+    }
+
+    $vote = !empty($params['vote']);
+    if (!isset($game['rematch_votes'])) {
+        $game['rematch_votes'] = [];
+    }
+
+    $player_token = $game['players'][$pi]['token'];
+    if ($vote) {
+        $game['rematch_votes'][$player_token] = true;
+    } else {
+        unset($game['rematch_votes'][$player_token]);
+    }
+
+    // Check if all players voted yes and there are at least 2
+    $total_players = count($game['players']);
+    $total_votes = count($game['rematch_votes']);
+
+    if ($total_votes >= 2 && $total_votes === $total_players) {
+        // Trigger rematch: create new game in the same room
+        $room_id = $game['room_id'] ?? null;
+        if ($room_id) {
+            require_once __DIR__ . '/game_init.php';
+            require_once __DIR__ . '/../api/helpers.php';
+
+            $room_path = data_path('rooms', $room_id);
+            $room = read_json($room_path);
+            if ($room) {
+                $new_game_id = gen_id();
+                $new_game = init_game($room['players']);
+                $new_game['room_id'] = $room_id;
+                write_json(data_path('games', $new_game_id), $new_game);
+
+                $room['game_id'] = $new_game_id;
+                write_json($room_path, $room);
+
+                $game['rematch_game_id'] = $new_game_id;
+            }
+        }
+    }
+
+    return ['ok' => true];
+}
+
 function process_action(array &$game, string $token, string $action, array $params): array {
     $pi = find_player_index($game, $token);
     if ($pi < 0) return ['ok' => false, 'error' => 'Player not found'];
+
+    // Rematch voting works after the game ends
+    if ($action === 'vote_rematch') {
+        $result = action_vote_rematch($game, $pi, $params);
+        if ($result['ok'] ?? false) $game['version']++;
+        return $result;
+    }
+
+    // Debug: force end game
+    if ($action === 'debug_end_game') {
+        if (!($game['ended'] ?? false)) {
+            finalize_game($game);
+            $game['version']++;
+        }
+        return ['ok' => true];
+    }
 
     if ($game['ended'] ?? false) {
         return ['ok' => false, 'error' => 'Game is over'];

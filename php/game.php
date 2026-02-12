@@ -83,6 +83,7 @@
             <h4>Game Log</h4>
             <div id="game-log"></div>
         </div>
+        <button id="btn-debug-end" onclick="Actions.debugEndGame()" style="display:none">Debug: End Game</button>
     </div>
 
     <!-- Modal for mission completion -->

@@ -62,4 +62,12 @@ const Actions = {
     endTurn() {
         return this.send('end_turn', {});
     },
+
+    voteRematch(vote) {
+        return this.send('vote_rematch', { vote: vote });
+    },
+
+    debugEndGame() {
+        return this.send('debug_end_game', {});
+    },
 };

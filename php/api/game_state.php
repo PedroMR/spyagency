@@ -114,6 +114,9 @@ $state = [
     'turn_number' => $game['turn_number'] ?? 1,
     'round' => $game['round'] ?? 1,
     'catalog' => $catalog,
+    'rematch_vote_count' => count($game['rematch_votes'] ?? []),
+    'rematch_my_vote' => isset(($game['rematch_votes'] ?? [])[$token]),
+    'rematch_game_id' => $game['rematch_game_id'] ?? null,
 ];
 
 send_json(json_success($state));
