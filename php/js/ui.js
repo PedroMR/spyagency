@@ -209,7 +209,8 @@ const UI = {
             const unaffordable = s.is_my_turn ? (!canAfford || !canBuy) : true;
             const affordClass = affordable ? ' affordable' : (unaffordable ? ' unaffordable' : '');
             const stackBadge = count > 1 ? `<div class="stack-count">x${count}</div>` : '';
-            return `<div class="card market-card${affordClass}" style="border-color:${this.getCardColor(card)}" onclick="UI.onMarketClick('${cardId}', ${i})">
+            const click = affordable ? `onclick="UI.onMarketClick('${cardId}', ${i})"` : '';
+            return `<div class="card market-card${affordClass}" style="border-color:${this.getCardColor(card)}" ${click}>
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-cost">$${card.cost}</div>
                 <div class="card-type">${card.type}</div>
@@ -217,6 +218,26 @@ const UI = {
                 ${stackBadge}
             </div>`;
         }).join('') + Array(empties).fill('<div class="card card-empty">Empty</div>').join('');
+
+        // Render always-available cards (Muscle, Shadow)
+        const alwaysContainer = document.getElementById('always-available-cards');
+        const canBuyAny = s.is_my_turn && (me.buys_this_turn || 0) < (1 + (me.extra_buys || 0));
+        const totalFunds = me.money + (me.gems || 0);
+        const alwaysCards = [
+            { id: 'muscle', name: 'Muscle', cost: 3, icon: '💪' },
+            { id: 'shadow', name: 'Shadow', cost: 4, icon: '🥸' },
+        ];
+        alwaysContainer.innerHTML = alwaysCards.map(c => {
+            const affordable = canBuyAny && totalFunds >= c.cost;
+            const dimmed = !affordable ? ' unaffordable' : '';
+            const click = affordable ? `onclick="UI.buyAlwaysAvailable('${c.id}', '${c.name}', ${c.cost})"` : '';
+            return `<div class="card always-available-card${dimmed}" style="border-color:#b8a000" ${click}>
+                <div class="card-name">${c.name}</div>
+                <div class="card-cost">$${c.cost}</div>
+                <div class="card-icons">${c.icon}</div>
+                <div class="card-type">agent</div>
+            </div>`;
+        }).join('');
     },
 
     renderMissionGrid() {

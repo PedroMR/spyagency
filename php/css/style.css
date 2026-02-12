@@ -183,10 +183,11 @@ input[type="text"] {
 .market-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: flex-start; }
 .market-actions button { font-size: 11px; padding: 4px 8px; }
 .always-available-card { cursor: pointer; }
-.always-available-card:hover {
+.always-available-card:hover:not(.unaffordable) {
     transform: translateY(-3px);
     box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
 }
+.always-available-card.unaffordable { opacity: 0.4; cursor: default; }
 
 /* Bases */
 .bases-row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -304,6 +305,7 @@ input[type="text"] {
 }
 .market-card.unaffordable {
     opacity: 0.4;
+    cursor: default;
 }
 
 /* Mission select checkboxes in modal */
