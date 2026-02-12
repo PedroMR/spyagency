@@ -106,7 +106,7 @@ $state = [
         3 => count($game['mission_decks'][3]),
     ],
     'players' => $players_data,
-    'log' => array_slice($game['log'], -20),
+    'log' => array_slice($game['log'], -2000),
     'status' => $game['status'],
     'ended' => $game['ended'] ?? false,
     'final_round' => $game['final_round'] ?? false,
