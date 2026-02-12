@@ -37,13 +37,12 @@ const UI = {
         money: '#2d5a1e',
         agent: '#b8a000',
         tech: '#1a4a8c',
-        plot: '#3fb9b1',
+        plot: '#0a8a8a',
         mission: '#6a1b9a',
-        red_tape: '#8b0000',
+        hazard: '#8b0000',
     },
 
     getCardColor(card) {
-        if (card.id === 'red_tape') return this.typeColors.red_tape;
         return this.typeColors[card.type] || '#555';
     },
 
@@ -104,6 +103,46 @@ const UI = {
         this._autoPlaying = false;
     },
 
+    _shouldEndTurn() {
+        if (!this.state.is_my_turn || this._autoPlaying) return false;
+        const me = this.state.players[this.state.my_index];
+        const s = this.state;
+
+        // Any playable cards in hand? (money, plot, agent — not hazards)
+        const hasPlayable = me.hand.some(cid => {
+            const c = this.catalog[cid];
+            if (!c) return false;
+            if (c.type === 'hazard') return false;
+            if (c.type === 'money' || c.type === 'mission') return true;
+            if (c.type === 'plot') return true;
+            return false;
+        });
+        if (hasPlayable) return false;
+
+        // Can complete any mission? (have agents in hand)
+        const agents = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent');
+        const missionsAllowed = 1 + (me.extra_missions || 0);
+        const missionsDone = me.missions_this_turn || 0;
+        if (agents.length > 0 && missionsDone < missionsAllowed) return false;
+
+        // Can buy anything? (have buys left and can afford something)
+        const buyLimit = 1 + (me.extra_buys || 0);
+        const buysLeft = buyLimit - (me.buys_this_turn || 0);
+        if (buysLeft > 0) {
+            const totalFunds = me.money + (me.gems || 0);
+            const canBuyMarket = s.marketplace.some(cid => {
+                if (!cid) return false;
+                return (this.catalog[cid].cost || 0) <= totalFunds;
+            });
+            const canBuyAlways = Object.values(this.catalog).some(c =>
+                c.always_available && c.type === 'agent' && (c.cost || 0) <= totalFunds
+            );
+            if (canBuyMarket || canBuyAlways) return false;
+        }
+
+        return true;
+    },
+
     renderTurnInfo() {
         const s = this.state;
         const me = s.players[s.my_index];
@@ -116,7 +155,13 @@ const UI = {
         document.getElementById('gems-display').textContent = `💎 ${me.gems}`;
         document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
-        document.getElementById('btn-end-turn').style.display = s.is_my_turn ? 'inline-block' : 'none';
+        const endTurnBtn = document.getElementById('btn-end-turn');
+        endTurnBtn.style.display = s.is_my_turn ? 'inline-block' : 'none';
+        if (s.is_my_turn) {
+            endTurnBtn.classList.toggle('glow', this._shouldEndTurn());
+        } else {
+            endTurnBtn.classList.remove('glow');
+        }
 
         document.getElementById('round-display').textContent = `Round ${s.round || 1}`;
 
@@ -149,16 +194,20 @@ const UI = {
         document.getElementById('market-deck-count').textContent = `(${s.market_deck_count} left)`;
 
         const counts = s.marketplace_counts || [];
-        container.innerHTML = s.marketplace.map((cardId, i) => {
-            if (!cardId) return '<div class="card card-empty">Empty</div>';
+        // Build indexed entries, sort by ascending cost
+        const entries = s.marketplace.map((cardId, i) => ({ cardId, i, count: counts[i] || 1 }))
+            .filter(e => e.cardId)
+            .sort((a, b) => (this.catalog[a.cardId].cost || 0) - (this.catalog[b.cardId].cost || 0));
+        const empties = s.marketplace.filter(c => !c).length;
+
+        container.innerHTML = entries.map(({ cardId, i, count }) => {
             const card = this.catalog[cardId];
-            const stackCount = counts[i] || 1;
             const canBuy = (me.buys_this_turn || 0) < (1 + (me.extra_buys || 0));
             const canAfford = (me.money + (me.gems || 0)) >= card.cost;
             const affordable = s.is_my_turn && canAfford && canBuy;
-            const unaffordable = s.is_my_turn && !canAfford && canBuy;
+            const unaffordable = s.is_my_turn ? (!canAfford || !canBuy) : true;
             const affordClass = affordable ? ' affordable' : (unaffordable ? ' unaffordable' : '');
-            const stackBadge = stackCount > 1 ? `<div class="stack-count">x${stackCount}</div>` : '';
+            const stackBadge = count > 1 ? `<div class="stack-count">x${count}</div>` : '';
             return `<div class="card market-card${affordClass}" style="border-color:${this.getCardColor(card)}" onclick="UI.onMarketClick('${cardId}', ${i})">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-cost">$${card.cost}</div>
@@ -166,7 +215,7 @@ const UI = {
                 <div class="card-desc">${esc(card.description)}</div>
                 ${stackBadge}
             </div>`;
-        }).join('');
+        }).join('') + Array(empties).fill('<div class="card card-empty">Empty</div>').join('');
     },
 
     renderMissionGrid() {
@@ -212,17 +261,17 @@ const UI = {
         const container = document.getElementById('opponents');
         let html = '';
         for (let i = 0; i < this.state.players.length; i++) {
-            if (i === this.state.my_index) continue;
             const p = this.state.players[i];
+            const isMe = i === this.state.my_index;
             const isActive = i === this.state.current_player;
-            html += `<div class="opponent ${isActive ? 'active-player' : ''}">
-                <h4>${esc(p.name)} ${isActive ? '(playing)' : ''}</h4>
+            const label = isMe ? `${esc(p.name)} (You)` : esc(p.name);
+            const tag = isActive ? ' ▶' : '';
+            html += `<div class="opponent ${isActive ? 'active-player' : ''} ${isMe ? 'is-me' : ''}">
+                <h4>${label}${tag}</h4>
                 <div class="opponent-stats">
-                    <span>Hand: ${p.hand_count}</span>
-                    <span>Deck: ${p.deck_count}</span>
+                    <span>⭐${p.stars}</span>
                     <span>$${p.money}</span>
                     ${p.gems > 0 ? `<span>💎${p.gems}</span>` : ''}
-                    <span>⭐${p.stars}</span>
                 </div>
             </div>`;
         }

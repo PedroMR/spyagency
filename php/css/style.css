@@ -85,6 +85,14 @@ input[type="text"] {
 .game-header-actions { display: flex; gap: 8px; }
 #btn-end-turn { background: #8b0000; border-color: #c00; font-size: 14px; padding: 8px 20px; }
 #btn-end-turn:hover { background: #c00; }
+#btn-end-turn.glow {
+    animation: end-turn-glow 1.2s ease-in-out infinite;
+    border-color: #ff4444;
+}
+@keyframes end-turn-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); background: #8b0000; }
+    50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); background: #cc0000; }
+}
 
 .final-round-banner {
     background: #8b0000;
@@ -102,6 +110,7 @@ input[type="text"] {
 .game-board { display: flex; flex-direction: column; gap: 12px; }
 .board-top { display: flex; gap: 12px; flex-wrap: wrap; }
 .board-top > .section { flex: 1; min-width: 300px; }
+.board-top > .opponents-section { flex: 0 0 180px; min-width: 160px; max-width: 200px; font-size: 11px; }
 .board-bottom { display: flex; gap: 12px; flex-wrap: wrap; }
 .board-bottom > .section { flex: 1; min-width: 250px; }
 
@@ -202,16 +211,17 @@ input[type="text"] {
 .base-actions { margin-top: 4px; }
 .btn-sm { font-size: 10px; padding: 2px 6px; }
 
-/* Opponents */
+/* Players */
 .opponent {
     background: #1a1a3a;
-    padding: 8px;
+    padding: 6px;
     border-radius: 6px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
-.opponent h4 { font-size: 13px; margin-bottom: 4px; }
+.opponent h4 { font-size: 11px; margin-bottom: 2px; }
 .opponent.active-player { border: 1px solid #ffd700; }
-.opponent-stats { display: flex; gap: 12px; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+.opponent.is-me { background: #1a2a3a; }
+.opponent-stats { display: flex; gap: 6px; flex-wrap: wrap; font-size: 10px; color: #aaa; }
 .opponent-bases { display: flex; gap: 4px; flex-wrap: wrap; }
 .opponent-bases .base-slot { min-width: 110px; max-width: 140px; font-size: 10px; }
 

@@ -36,7 +36,7 @@
                     <h3>Marketplace <span id="market-deck-count" class="deck-count"></span></h3>
                     <div id="marketplace" class="card-row"></div>
                     <div class="market-actions">
-                        <button onclick="Actions.refreshMarket()">Refresh ($2)</button>
+                        <button onclick="Actions.refreshMarket()">Restock ($2)</button>
                         <button onclick="UI.buyAlwaysAvailable('muscle', 'Muscle', 3)">Buy Muscle ($3)</button>
                         <button onclick="UI.buyAlwaysAvailable('shadow', 'Shadow', 4)">Buy Shadow ($4)</button>
                     </div>
@@ -50,11 +50,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="board-middle">
                 <div class="section opponents-section">
-                    <h3>Opponents</h3>
+                    <h3>Players</h3>
                     <div id="opponents"></div>
                 </div>
             </div>

@@ -331,7 +331,7 @@ function action_refresh_market(array &$game, int $pi, array $params): array {
     }
     $game['marketplace'] = [[], [], [], [], [], [], []];
     refill_marketplace($game);
-    $msg = $game['players'][$pi]['name'] . " refreshed the marketplace for \$2";
+    $msg = $game['players'][$pi]['name'] . " restocked the marketplace for \$2";
     if (!empty($log_parts)) $msg .= ' (' . implode(', ', $log_parts) . ')';
     $game['log'][] = $msg;
     return ['ok' => true];

@@ -16,6 +16,7 @@ define('TYPE_TECH', 'tech');
 define('TYPE_PLOT', 'plot');
 define('TYPE_BASE', 'base');
 define('TYPE_MISSION', 'mission');
+define('TYPE_HAZARD', 'hazard');
 
 function get_icon_label(string $icon): string {
     $map = [
@@ -58,26 +59,6 @@ function get_card_catalog(): array {
             'value' => 3,
             'stars' => 0,
             'description' => '$3',
-        ],
-        'safehouse' => [
-            'id' => 'safehouse',
-            'name' => 'Safehouse',
-            'type' => 'base',
-            'tier' => 0,
-            'stars' => 0,
-            'cost' => 0,
-            'indestructible' => true,
-            'description' => 'Can host an Agent. Indestructible.',
-        ],
-        'hideaway' => [
-            'id' => 'hideaway',
-            'name' => 'Hideaway',
-            'type' => 'base',
-            'tier' => 0,
-            'stars' => 0,
-            'cost' => 0,
-            'indestructible' => false,
-            'description' => 'Can host an Agent.',
         ],
         'fundraising' => [
             'id' => 'fundraising',
@@ -422,6 +403,18 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '🔑🔑🥸 ($8)',
         ],
+        'savvy_saboteur' => [
+            'id' => 'savvy_saboteur',
+            'name' => 'Savvy Saboteur',
+            'type' => 'agent',
+            'tier' => 3,
+            'stars' => 0,
+            'cost' => 7,
+            'max_tech' => 0,
+            'icons' => ['disguise', 'disguise', 'muscle'],
+            'always_available' => false,
+            'description' => '🥸🥸💪 ($7)',
+        ],
         'codename_jack' => [
             'id' => 'codename_jack',
             'name' => 'Codename Jack',
@@ -479,12 +472,9 @@ function get_card_catalog(): array {
         'red_tape' => [
             'id' => 'red_tape',
             'name' => 'Red Tape',
-            'type' => 'plot',
+            'type' => 'hazard',
             'tier' => 0,
             'stars' => 0,
-            'cost' => 0,
-            'effect' => 'none',
-            'description' => 'Does nothing',
         ],
         'multitasking' => [
             'id' => 'multitasking',
@@ -534,20 +524,21 @@ function get_card_catalog(): array {
 function build_market_deck(): array {
     $deck = [];
     $market_cards = [
-        'sword_cane' => 2,
-        'bazooka' => 1,
-        'ram' => 2,
-        'holo_projector' => 1,
-        'drone' => 2,
-        'fake_passports' => 2,
-        'motorbike' => 2,
-        'limousine' => 2,
-        'attack_helicopter' => 1,
+        'sword_cane' => 3,
+        'bazooka' => 2,
+        'ram' => 3,
+        'holo_projector' => 2,
+        'drone' => 3,
+        'fake_passports' => 3,
+        'motorbike' => 3,
+        'limousine' => 3,
+        'attack_helicopter' => 2,
         'doorkicker' => 6,
         'reputable_driver' => 6,
-        'speedboat_mechanic' => 6,
+        'speedboat_mechanic' => 4,
         'scuba_infiltrator' => 4,
         'hoodied_hacker' => 4,
+        'savvy_saboteur' => 4,
         'codename_jack' => 1,
         'the_chameleon' => 1,
         'burn_notice' => 6,
@@ -555,7 +546,7 @@ function build_market_deck(): array {
         'para_drop' => 6,
         'multitasking' => 4,
         'training_procedure' => 4,
-        'off_shore_investment' => 8,
+        'off_shore_investment' => 10,
         'orbital_investment' => 8,
     ];
     foreach ($market_cards as $id => $count) {
