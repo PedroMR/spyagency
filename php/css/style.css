@@ -163,7 +163,7 @@ input[type="text"] {
 }
 
 .market-card { cursor: pointer; }
-.market-card:hover {
+.market-card:hover:not(.unaffordable) {
     transform: translateY(-3px);
     box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
 }
