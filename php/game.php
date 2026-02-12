@@ -21,7 +21,6 @@
                 <span id="buys-display"></span>
             </div>
             <div class="game-header-actions">
-                <button id="btn-end-turn" onclick="Actions.endTurn()" style="display:none">End Turn</button>
                 <button id="btn-back-lobby" onclick="location.href='index.php'">Lobby</button>
             </div>
         </div>
@@ -57,9 +56,15 @@
             </div>
 
             <div class="board-bottom">
-                <div class="section deck-section">
-                    <h3>Deck</h3>
-                    <div id="my-deck-count" class="deck-count-display"></div>
+                <div class="deck-discard-column">
+                    <div class="section deck-section">
+                        <h3>Deck</h3>
+                        <div id="my-deck-count" class="deck-count-display"></div>
+                    </div>
+                    <div class="section discard-section">
+                        <h3>Discard <span id="discard-count" class="deck-count"></span></h3>
+                        <div id="discard-pile"></div>
+                    </div>
                 </div>
 
                 <div class="section hand-section">
@@ -72,9 +77,8 @@
                     <div id="play-area" class="card-row"></div>
                 </div>
 
-                <div class="section discard-section">
-                    <h3>Discard Pile <span id="discard-count" class="deck-count"></span></h3>
-                    <div id="discard-pile"></div>
+                <div class="end-turn-column">
+                    <button id="btn-end-turn" onclick="Actions.endTurn()" disabled>End Turn</button>
                 </div>
             </div>
         </div>

@@ -200,7 +200,8 @@ const UI = {
         document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         const endTurnBtn = document.getElementById('btn-end-turn');
-        endTurnBtn.style.display = s.is_my_turn ? 'inline-block' : 'none';
+        endTurnBtn.style.display = 'inline-block';
+        endTurnBtn.disabled = !s.is_my_turn;
         const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
         document.getElementById('btn-debug-end').style.display = (isLocal && !s.ended) ? 'inline-block' : 'none';
         if (s.is_my_turn) {
