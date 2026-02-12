@@ -10,7 +10,7 @@ The Mission decks are composed of the Mission cards, sorted by tier (1, 2 and 3)
 
 Bases are not shuffled.
 
-There is a marketplace for the Market Deck. 7 cards are offered openly for players. At the end of a player turn the marketplace is refreshed by filling empty slots with cards from the deck. The active player may refresh the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately.
+There is a marketplace for the Market Deck. 7 cards are offered openly for players. At the end of a player turn the marketplace is restocked by filling empty slots with cards from the deck. The active player may restock the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately.
 
 There is a Mission Grid on offer for players to complete. 3 from each Mission Deck.
 
@@ -86,7 +86,7 @@ Agent cards are white.
 
 After we buy a card from the Market there's no point showing the price of that card anymore. We should show the reward for Mission cards we've bought.
 
-Cards in the Market that we can buy (with $ and gems) should be highlighted. Cards that we cannot afford should be lowlighted.
+Cards in the Market that we can buy (with $ and gems) should be highlighted. Cards that we cannot afford should be lowlighted. All cards available for purchase should be ordered in ascending order of cost.
 
 The UI should show which round we're playing, starting at 1 and going up every time it is the initial player's turn.
 
