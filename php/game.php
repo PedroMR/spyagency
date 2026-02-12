@@ -44,8 +44,8 @@
                 <div class="section missions-section">
                     <h3>Mission Grid</h3>
                     <div id="mission-grid" class="mission-grid"></div>
-                    <div class="fundraising-row">
-                        <div id="fundraising-mission" class="card mission-card" onclick="UI.showMissionDialog('fundraising')">
+                    <div class="heist-row">
+                        <div id="heist-mission" class="card mission-card" onclick="UI.showMissionDialog('heist')">
                         </div>
                     </div>
                 </div>

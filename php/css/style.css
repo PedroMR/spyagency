@@ -177,7 +177,7 @@ input[type="text"] {
 .mission-grid { display: flex; flex-direction: column; gap: 8px; }
 .mission-tier h4 { font-size: 12px; margin-bottom: 4px; }
 .mission-tier-cards { display: flex; gap: 6px; flex-wrap: wrap; }
-.fundraising-row { margin-top: 8px; border-top: 1px solid #444; padding-top: 8px; }
+.heist-row { margin-top: 8px; border-top: 1px solid #444; padding-top: 8px; }
 
 /* Market actions */
 .market-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: flex-start; }
@@ -337,19 +337,19 @@ input[type="text"] {
     margin-top: 2px;
 }
 
-/* Fundraising reward table */
-.fundraising-table {
+/* Heist reward table */
+.heist-table {
     width: 100%;
     margin: 8px 0;
     border-collapse: collapse;
     font-size: 14px;
 }
-.fundraising-table th, .fundraising-table td {
+.heist-table th, .heist-table td {
     padding: 4px 12px;
     border: 1px solid #444;
     text-align: center;
 }
-.fundraising-table th {
+.heist-table th {
     background: #2a2a4a;
     color: #ffd700;
 }

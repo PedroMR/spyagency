@@ -56,7 +56,7 @@ const UI = {
         this.renderTurnInfo();
         this.renderMarketplace();
         this.renderMissionGrid();
-        this.renderFundraising();
+        this.renderHeist();
         this.renderOpponents();
         this.renderHand();
         this.renderPlayArea();
@@ -269,10 +269,10 @@ const UI = {
         container.innerHTML = html;
     },
 
-    renderFundraising() {
-        const card = this.catalog['fundraising'];
+    renderHeist() {
+        const card = this.catalog['heist'];
         const reqIcons = (card.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
-        const el = document.getElementById('fundraising-mission');
+        const el = document.getElementById('heist-mission');
         el.innerHTML = `<div class="card-name">${esc(card.name)}</div>
             <div class="card-req">${reqIcons}</div>
             <div class="card-reward">💎 1-3</div>
@@ -615,12 +615,12 @@ const UI = {
         }
 
         const reqIcons = (mission.requirements || []).map(r => r === 'any' ? '❓' : (this.iconMap[r] || r)).join('');
-        const isFundraising = (mission.gems || 0) > 0;
+        const isHeist = (mission.gems || 0) > 0;
 
-        let html = `<h3>Complete: ${esc(mission.name)}</h3>`;
+        let html = `<h3>Run: ${esc(mission.name)}</h3>`;
         html += `<p>Requires: ${reqIcons}</p>`;
-        if (isFundraising) {
-            html += `<table class="fundraising-table">
+        if (isHeist) {
+            html += `<table class="heist-table">
                 <tr><th>Icons</th><th>Gems</th></tr>
                 <tr><td>1-2</td><td>💎 1</td></tr>
                 <tr><td>3-4</td><td>💎 2</td></tr>

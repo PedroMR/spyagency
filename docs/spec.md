@@ -41,7 +41,7 @@ To complete a Mission the player plays one or more Agents with Tech. The number 
 
 Some Missions and Plots will reward the Player with gems (💎). Gems are kept between turns, and may be cashed in for the same amount in money ($). 1 gem = 1 money. This should be done "just in time", at moment of purchase. The game can ask the player if they're willing to spend X gems to purchase the thing, and allow them to cancel.
 
-"Fundraising" is a special mission. It immediately rewards the player with gems, but is not added to their deck. Fundraising is always available. If the agent(s) committed to it feature 1 or 2 icons, Fundraising rewards 1 gem. If 3 or 4 icons, two gems, and if 5 or more icons, three gems are rewarded. Any more icons bear no extra reward. The gem rewards for Fundraising should be visible in a table when that mission is selected.
+"Heist" is a special mission. It immediately rewards the player with gems, but is not added to their deck. Heist is always available. If the agent(s) committed to it feature 1 or 2 icons, Heist rewards 1 gem. If 3 or 4 icons, two gems, and if 5 or more icons, three gems are rewarded. Any more icons bear no extra reward. The gem rewards for Heist should be visible in a table when that mission is selected.
 
 To buy a card the player spends the required amount of money ($) and takes the card, adding it to their discard pile. The space left by the purchased card is only refilled at the end of the turn.
 

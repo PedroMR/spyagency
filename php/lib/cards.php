@@ -16,7 +16,6 @@ define('TYPE_TECH', 'tech');
 define('TYPE_PLOT', 'plot');
 define('TYPE_BASE', 'base');
 define('TYPE_MISSION', 'mission');
-define('TYPE_HAZARD', 'hazard');
 
 function get_icon_label(string $icon): string {
     $map = [
@@ -60,9 +59,9 @@ function get_card_catalog(): array {
             'stars' => 0,
             'description' => '$3',
         ],
-        'fundraising' => [
-            'id' => 'fundraising',
-            'name' => 'Fundraising',
+        'heist' => [
+            'id' => 'heist',
+            'name' => 'Heist',
             'type' => 'mission',
             'tier' => 0,
             'stars' => 0,

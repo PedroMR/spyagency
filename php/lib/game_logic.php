@@ -565,7 +565,7 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         unset($slot);
     }
 
-    // Handle Fundraising: award gems, card does NOT go into deck
+    // Handle Heist: award gems, card does NOT go into deck
     $mission_gems = $mission['gems'] ?? 0;
     if ($mission_gems > 0) {
         // Count total icons committed
@@ -582,7 +582,7 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
             $gems_awarded = 1;
         }
         $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + $gems_awarded;
-        $game['log'][] = $game['players'][$pi]['name'] . " completed Fundraising ({$total_icons} icons) and earned {$gems_awarded} gem(s)!";
+        $game['log'][] = $game['players'][$pi]['name'] . " completed Heist ({$total_icons} icons) and earned {$gems_awarded} gem(s)!";
     } else {
         // Normal mission: add mission card to discard (it has stars and/or value)
         $game['players'][$pi]['discard'][] = $mission_id;
