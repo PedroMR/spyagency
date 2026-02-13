@@ -246,6 +246,11 @@ const UI = {
 
         const banner = document.getElementById('final-round-banner');
         banner.style.display = s.final_round ? 'block' : 'none';
+
+        const resignBtn = document.getElementById('btn-resign');
+        if (resignBtn) {
+            resignBtn.textContent = s.ended ? 'Lobby' : 'Resign';
+        }
     },
 
     renderMarketplace() {
@@ -814,6 +819,18 @@ const UI = {
     closeModal() {
         if (this.state && this.state.ended) return;
         document.getElementById('modal-overlay').style.display = 'none';
+    },
+
+    confirmResign() {
+        if (this.state && this.state.ended) {
+            location.href = 'index.php';
+            return;
+        }
+        if (confirm('Are you sure you want to resign? You will be removed from the game.')) {
+            Actions.resign().then(() => {
+                location.href = 'index.php';
+            });
+        }
     },
 
     showError(msg) {

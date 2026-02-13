@@ -704,6 +704,60 @@ function action_vote_rematch(array &$game, int $pi, array $params): array {
     return ['ok' => true];
 }
 
+function action_resign(array &$game, int $pi, array $params): array {
+    $name = $game['players'][$pi]['name'];
+    $game['log'][] = "{$name} resigned from the game!";
+
+    // Remove the player
+    array_splice($game['players'], $pi, 1);
+    $num_players = count($game['players']);
+
+    // If only 1 (or 0) players left, end the game
+    if ($num_players <= 1) {
+        finalize_game($game);
+        return ['ok' => true];
+    }
+
+    // Adjust current_player index
+    $cp = $game['current_player'];
+    if ($pi < $cp) {
+        // Removed player was before current player, shift down
+        $game['current_player'] = $cp - 1;
+    } elseif ($pi === $cp) {
+        // The resigning player was the current player — next player takes over
+        // If we removed the last index, wrap to 0
+        $game['current_player'] = $cp % $num_players;
+        // Reset turn state for new current player
+        $next = &$game['players'][$game['current_player']];
+        $next_name = $next['name'];
+        $game['log'][] = "It's now {$next_name}'s turn.";
+    }
+    // If pi > cp, current_player index stays the same
+
+    // Adjust final_round_starter if set
+    if (isset($game['final_round_starter'])) {
+        $frs = $game['final_round_starter'];
+        if ($pi < $frs) {
+            $game['final_round_starter'] = $frs - 1;
+        } elseif ($pi === $frs) {
+            // The player who triggered final round left; use next player
+            $game['final_round_starter'] = $frs % $num_players;
+        }
+    }
+
+    // Adjust first_player if set
+    if (isset($game['first_player'])) {
+        $fp = $game['first_player'];
+        if ($pi < $fp) {
+            $game['first_player'] = $fp - 1;
+        } elseif ($pi === $fp) {
+            $game['first_player'] = $fp % $num_players;
+        }
+    }
+
+    return ['ok' => true];
+}
+
 function process_action(array &$game, string $token, string $action, array $params): array {
     $pi = find_player_index($game, $token);
     if ($pi < 0) return ['ok' => false, 'error' => 'Player not found'];
@@ -711,6 +765,16 @@ function process_action(array &$game, string $token, string $action, array $para
     // Rematch voting works after the game ends
     if ($action === 'vote_rematch') {
         $result = action_vote_rematch($game, $pi, $params);
+        if ($result['ok'] ?? false) $game['version']++;
+        return $result;
+    }
+
+    // Resign works any time (not just your turn), but not after game ended
+    if ($action === 'resign') {
+        if ($game['ended'] ?? false) {
+            return ['ok' => false, 'error' => 'Game is already over'];
+        }
+        $result = action_resign($game, $pi, $params);
         if ($result['ok'] ?? false) $game['version']++;
         return $result;
     }

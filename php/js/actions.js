@@ -74,4 +74,8 @@ const Actions = {
     debugEndGame() {
         return this.send('debug_end_game', {});
     },
+
+    resign() {
+        return this.send('resign', {});
+    }
 };

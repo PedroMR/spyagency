@@ -21,7 +21,7 @@
                 <span id="buys-display"></span>
             </div>
             <div class="game-header-actions">
-                <button id="btn-back-lobby" onclick="location.href='index.php'">Lobby</button>
+                <button id="btn-resign" onclick="UI.confirmResign()">Resign</button>
             </div>
         </div>
 
