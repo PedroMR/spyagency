@@ -117,7 +117,7 @@ input[type="text"] {
 .board-top { display: flex; gap: 12px; flex-wrap: wrap; }
 .board-top > .section { flex: 1; min-width: 300px; }
 .board-top > .opponents-section { flex: 0 0 180px; min-width: 160px; max-width: 200px; font-size: 11px; }
-.board-bottom { display: flex; gap: 12px; flex-wrap: wrap; }
+.board-bottom { display: flex; gap: 12px; flex-wrap: wrap; position: sticky; bottom: 0px;}
 .board-bottom > .section { flex: 1; min-width: 250px; }
 
 .section {
