@@ -59,7 +59,7 @@
                 <div class="deck-discard-column">
                     <div class="section deck-section">
                         <h3>Deck</h3>
-                        <div id="my-deck-count" class="deck-count-display"></div>
+                        <h3 id="my-deck-count" class="deck-count-display"></h3>
                     </div>
                     <div class="section discard-section">
                         <h3>Discard <span id="discard-count" class="deck-count"></span></h3>
@@ -68,6 +68,7 @@
                 </div>
 
                 <div class="section hand-section">
+                    <div class="my-resources" id="my-resources">$6 💎7</div>
                     <h3>Your Hand</h3>
                     <div id="my-hand" class="card-row"></div>
                 </div>

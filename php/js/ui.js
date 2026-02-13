@@ -208,9 +208,10 @@ const UI = {
         turnEl.textContent = s.is_my_turn ? "Your Turn!" : `${currentName}'s turn`;
         turnEl.className = s.is_my_turn ? 'your-turn' : 'other-turn';
 
+        document.getElementById('my-resources').textContent = `$${me.money} 💎 ${me.gems}`;
         document.getElementById('money-display').textContent = `$${me.money}`;
         document.getElementById('gems-display').textContent = `💎 ${me.gems}`;
-        document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
+        //document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         const endTurnBtn = document.getElementById('btn-end-turn');
         endTurnBtn.style.display = 'inline-block';
