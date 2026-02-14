@@ -196,7 +196,15 @@ function pollWaitingRoom() {
         const data = await apiGet(API_BASE + 'api/room_list.php');
         if (!data.ok) return;
         const room = data.rooms.find(r => r.id === currentRoomId);
-        if (!room) return;
+        if (!room) {
+            // Room was deleted (everyone left)
+            clearInterval(roomPollInterval);
+            currentRoomId = null;
+            document.getElementById('waiting-room').style.display = 'none';
+            document.getElementById('lobby-actions').style.display = 'block';
+            refreshRooms();
+            return;
+        }
         if (room.status === 'started') {
             clearInterval(roomPollInterval);
             sessionStorage.setItem('spy_game_id', room.game_id);
@@ -204,9 +212,26 @@ function pollWaitingRoom() {
             window.location.href = 'game.php?game_id=' + encodeURIComponent(room.game_id) + '&token=' + encodeURIComponent(getToken());
             return;
         }
+        // Update host status (in case host left and we got promoted)
+        const isHost = room.host === getToken();
+        document.getElementById('btn-start').style.display = isHost ? 'inline-block' : 'none';
+        document.getElementById('waiting-msg').style.display = isHost ? 'none' : 'block';
         const el = document.getElementById('waiting-players');
         el.innerHTML = '<ul>' + room.players.map(n => `<li>${escHtml(n)}</li>`).join('') + '</ul>';
     }, 1500);
+}
+
+async function leaveRoom() {
+    if (!currentRoomId) return;
+    await apiPost(API_BASE + 'api/room_leave.php', {
+        room_id: currentRoomId,
+        token: getToken(),
+    });
+    if (roomPollInterval) clearInterval(roomPollInterval);
+    currentRoomId = null;
+    document.getElementById('waiting-room').style.display = 'none';
+    document.getElementById('lobby-actions').style.display = 'block';
+    refreshRooms();
 }
 
 async function startGame() {

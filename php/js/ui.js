@@ -1,6 +1,7 @@
 // Discreet click sound using Web Audio API
 function playClick() {
     try {
+        console.log("playClick");
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -32,6 +33,28 @@ function playBell() {
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
             osc.start(t);
             osc.stop(t + 0.6);
+        });
+    } catch (e) {}
+}
+
+// Low chime to nudge player to end turn
+function playChime() {
+    try {
+        console.log("playChime");
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const t = ctx.currentTime;
+        [330, 262].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            const start = t + i * 0.15;
+            gain.gain.setValueAtTime(0.12, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+            osc.start(start);
+            osc.stop(start + 0.4);
         });
     } catch (e) {}
 }
@@ -154,6 +177,16 @@ const UI = {
             await Actions.playMoney(cid);
         }
         this._autoPlaying = false;
+        // Re-evaluate glow after a short delay to avoid overlapping with click sounds
+        setTimeout(() => {
+            if (this.state && this.state.is_my_turn) {
+                const endTurnBtn = document.getElementById('btn-end-turn');
+                const shouldGlow = this._shouldEndTurn();
+                const wasGlowing = endTurnBtn.classList.contains('glow');
+                endTurnBtn.classList.toggle('glow', shouldGlow);
+                if (shouldGlow && !wasGlowing) playChime();
+            }
+        }, 500);
     },
 
     _shouldEndTurn() {
@@ -219,7 +252,10 @@ const UI = {
         const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
         document.getElementById('btn-debug-end').style.display = (isLocal && !s.ended) ? 'inline-block' : 'none';
         if (s.is_my_turn) {
-            endTurnBtn.classList.toggle('glow', this._shouldEndTurn());
+            const shouldGlow = this._shouldEndTurn();
+            const wasGlowing = endTurnBtn.classList.contains('glow');
+            endTurnBtn.classList.toggle('glow', shouldGlow);
+            if (shouldGlow && !wasGlowing) playChime();
         } else {
             endTurnBtn.classList.remove('glow');
         }

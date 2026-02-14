@@ -12,6 +12,7 @@ if (is_dir($rooms_dir)) {
                 'id' => $room['id'],
                 'name' => $room['name'],
                 'status' => $room['status'],
+                'host' => $room['host'] ?? null,
                 'player_count' => count($room['players']),
                 'players' => array_map(fn($p) => $p['name'], $room['players']),
                 'game_id' => $room['game_id'],

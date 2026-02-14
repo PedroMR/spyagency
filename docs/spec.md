@@ -70,7 +70,7 @@ I should be able to spend gems implicitly, without needing a "Cash Gems" button.
 The UI should show an area with my discard pile, showing the number of cards and which card is on top.
 The maraketplace UI should highlight which cards you have enough money to purchase.
 
-When starting the game, randomize which player will go first.
+When starting the game, randomize which player will go first. Also shuffle the position of all players.
 
 Every time the user clicks a button we should hear a discreet "click" sound.
 

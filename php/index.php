@@ -38,6 +38,7 @@
             <div id="waiting-players"></div>
             <button id="btn-start" style="display:none" onclick="startGame()">Start Game</button>
             <p id="waiting-msg">Waiting for host to start...</p>
+            <button id="btn-back-out" onclick="leaveRoom()" style="margin-top:12px">Back Out</button>
         </div>
     </div>
 
