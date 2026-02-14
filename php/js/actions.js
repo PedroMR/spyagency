@@ -77,5 +77,9 @@ const Actions = {
 
     resign() {
         return this.send('resign', {});
+    },
+
+    defendAttack(choice, cardId) {
+        return this.send('defend_attack', {choice: choice, card_id: cardId || ''});
     }
 };

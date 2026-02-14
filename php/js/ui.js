@@ -139,8 +139,24 @@ const UI = {
         this.renderLog();
         this.renderGameOver();
 
+        // Show attack defense dialog or waiting indicator
+        if (state.attack_pending) {
+            if (state.attack_must_defend) {
+                this.showDefenseDialog();
+            } else {
+                this.showAttackWaiting();
+            }
+        } else {
+            // Close modal if attack just resolved (was previously pending)
+            if (this._attackWasPending) {
+                document.getElementById('modal-overlay').style.display = 'none';
+                this._defenseDialogShown = false;
+            }
+        }
+        this._attackWasPending = state.attack_pending;
+
         // Auto-play money and money-only mission cards with 1s delay
-        if (state.is_my_turn && !this._autoPlaying && this._lastTurnNumber !== state.turn_number) {
+        if (state.is_my_turn && !state.attack_pending && !this._autoPlaying && this._lastTurnNumber !== state.turn_number) {
             this._lastTurnNumber = state.turn_number;
             playBell();
             this._scheduleAutoPlay();
@@ -248,7 +264,7 @@ const UI = {
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         const endTurnBtn = document.getElementById('btn-end-turn');
         endTurnBtn.style.display = 'inline-block';
-        endTurnBtn.disabled = !s.is_my_turn;
+        endTurnBtn.disabled = !s.is_my_turn || s.attack_pending;
         const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
         document.getElementById('btn-debug-end').style.display = (isLocal && !s.ended) ? 'inline-block' : 'none';
         if (s.is_my_turn) {
@@ -555,6 +571,7 @@ const UI = {
 
     onHandClick(cardId) {
         if (!this.state.is_my_turn) return;
+        if (this.state.attack_pending) return;
         const card = this.catalog[cardId];
 
         switch (card.type) {
@@ -847,6 +864,55 @@ const UI = {
         this.closeModal();
     },
 
+    showDefenseDialog() {
+        const s = this.state;
+        const me = s.players[s.my_index];
+        const attackerName = s.attack_attacker_name;
+
+        if (!this._defenseDialogShown) {
+            playBell();
+            this._defenseDialogShown = true;
+        }
+
+        let html = `<h3>${esc(attackerName)} played Paperwork!</h3>`;
+        html += `<p>Defend or suffer a Red Tape.</p>`;
+
+        // Sentinel options (reveal, stays in hand)
+        const sentinels = me.hand.filter(cid => this.catalog[cid] && (this.catalog[cid].defend));
+        const uniqueSentinels = [...new Set(sentinels)];
+        for (const cid of uniqueSentinels) {
+            const c = this.catalog[cid];
+            html += `<button class="btn-modal" style="background:#1a6a1a;border-color:#2d9a2d" onclick="Actions.defendAttack('sentinel', '${cid}')">
+                Reveal ${esc(c.name)} (stays in hand)
+            </button>`;
+        }
+
+        // Discard agent options
+        const agents = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent' && !(this.catalog[cid].defend));
+        const uniqueAgents = [...new Set(agents)];
+        for (const cid of uniqueAgents) {
+            const c = this.catalog[cid];
+            html += `<button class="btn-modal" onclick="Actions.defendAttack('discard', '${cid}')">
+                Discard ${esc(c.name)} (${this.getCardIcons(c)})
+            </button>`;
+        }
+
+        // Suffer option
+        html += `<button class="btn-modal btn-cancel" onclick="Actions.defendAttack('suffer')">
+            Suffer (gain Red Tape)
+        </button>`;
+
+        this.showModal(html);
+    },
+
+    showAttackWaiting() {
+        const s = this.state;
+        const remaining = s.attack_defenders_remaining;
+        let html = `<h3>Paperwork Attack</h3>`;
+        html += `<p>Waiting for ${remaining} player${remaining !== 1 ? 's' : ''} to defend...</p>`;
+        this.showModal(html);
+    },
+
     showModal(html) {
         document.getElementById('modal-content').innerHTML = html;
         document.getElementById('modal-overlay').style.display = 'flex';
@@ -854,6 +920,7 @@ const UI = {
 
     closeModal() {
         if (this.state && this.state.ended) return;
+        if (this.state && this.state.attack_pending) return;
         document.getElementById('modal-overlay').style.display = 'none';
     },
 

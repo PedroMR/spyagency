@@ -123,13 +123,23 @@ function action_play_plot(array &$game, int $pi, array $params): array {
 
         case 'paperwork':
             $game['players'][$pi]['play_area'][] = $card_id;
-            foreach ($game['players'] as $oi => &$other) {
-                if ($oi !== $pi) {
-                    $other['discard'][] = 'red_tape';
-                }
+            $game['players'][$pi]['money'] += 1;
+            $game['log'][] = $game['players'][$pi]['name'] . " played Paperwork (+\$1) — attacking all opponents!";
+
+            // Build list of defenders (all opponents)
+            $defenders = [];
+            for ($oi = 0; $oi < count($game['players']); $oi++) {
+                if ($oi !== $pi) $defenders[] = $oi;
             }
-            unset($other);
-            $game['log'][] = $game['players'][$pi]['name'] . " played Paperwork — every other player gains a Red Tape!";
+
+            if (count($defenders) > 0) {
+                $game['pending_attack'] = [
+                    'attacker' => $pi,
+                    'card' => 'paperwork',
+                    'defenders' => $defenders,
+                    'responses' => [],
+                ];
+            }
             break;
 
         case 'multitask':
@@ -708,6 +718,34 @@ function action_resign(array &$game, int $pi, array $params): array {
     $name = $game['players'][$pi]['name'];
     $game['log'][] = "{$name} resigned from the game!";
 
+    // Clean up pending attack if exists
+    if (isset($game['pending_attack'])) {
+        $attack = &$game['pending_attack'];
+        // Remove from defenders list
+        $attack['defenders'] = array_values(array_filter($attack['defenders'], fn($d) => $d !== $pi));
+        // Remove response if any
+        unset($attack['responses'][$pi]);
+        // Adjust indices for players after the removed one
+        $new_defenders = [];
+        foreach ($attack['defenders'] as $d) {
+            $new_defenders[] = $d > $pi ? $d - 1 : $d;
+        }
+        $attack['defenders'] = $new_defenders;
+        $new_responses = [];
+        foreach ($attack['responses'] as $d => $r) {
+            $new_responses[$d > $pi ? $d - 1 : $d] = $r;
+        }
+        $attack['responses'] = $new_responses;
+        // Adjust attacker index
+        if ($attack['attacker'] > $pi) {
+            $attack['attacker']--;
+        }
+        // If no defenders left or all responded, clear attack
+        if (empty($attack['defenders']) || count($attack['responses']) >= count($attack['defenders'])) {
+            unset($game['pending_attack']);
+        }
+    }
+
     // Remove the player
     array_splice($game['players'], $pi, 1);
     $num_players = count($game['players']);
@@ -758,6 +796,66 @@ function action_resign(array &$game, int $pi, array $params): array {
     return ['ok' => true];
 }
 
+function action_defend_attack(array &$game, int $pi, array $params): array {
+    if (!isset($game['pending_attack'])) {
+        return ['ok' => false, 'error' => 'No pending attack'];
+    }
+    $attack = &$game['pending_attack'];
+    if (!in_array($pi, $attack['defenders'])) {
+        return ['ok' => false, 'error' => 'You are not a defender in this attack'];
+    }
+    if (isset($attack['responses'][$pi])) {
+        return ['ok' => false, 'error' => 'You already responded to this attack'];
+    }
+
+    $choice = $params['choice'] ?? '';
+    $card_id = $params['card_id'] ?? '';
+    $catalog = get_card_catalog();
+    $name = $game['players'][$pi]['name'];
+
+    switch ($choice) {
+        case 'suffer':
+            $game['players'][$pi]['discard'][] = 'red_tape';
+            $attack['responses'][$pi] = 'suffer';
+            $game['log'][] = "{$name} suffers the Paperwork and gains a Red Tape!";
+            break;
+
+        case 'discard':
+            if (!$card_id || !isset($catalog[$card_id]) || $catalog[$card_id]['type'] !== 'agent') {
+                return ['ok' => false, 'error' => 'Must specify a valid agent to discard'];
+            }
+            if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
+                return ['ok' => false, 'error' => 'Agent not in hand'];
+            }
+            $game['players'][$pi]['discard'][] = $card_id;
+            $attack['responses'][$pi] = 'discard:' . $card_id;
+            $game['log'][] = "{$name} discards {$catalog[$card_id]['name']} to defend against Paperwork!";
+            break;
+
+        case 'sentinel':
+            if (!$card_id || !isset($catalog[$card_id]) || !($catalog[$card_id]['defend'] ?? false)) {
+                return ['ok' => false, 'error' => 'Must specify a valid Sentinel to reveal'];
+            }
+            if (!in_array($card_id, $game['players'][$pi]['hand'])) {
+                return ['ok' => false, 'error' => 'Sentinel not in hand'];
+            }
+            // Sentinel stays in hand — just reveal it
+            $attack['responses'][$pi] = 'sentinel:' . $card_id;
+            $game['log'][] = "{$name} reveals {$catalog[$card_id]['name']} to defend against Paperwork!";
+            break;
+
+        default:
+            return ['ok' => false, 'error' => 'Invalid choice: must be suffer, discard, or sentinel'];
+    }
+
+    // Check if all defenders have responded
+    if (count($attack['responses']) >= count($attack['defenders'])) {
+        unset($game['pending_attack']);
+    }
+
+    return ['ok' => true];
+}
+
 function process_action(array &$game, string $token, string $action, array $params): array {
     $pi = find_player_index($game, $token);
     if ($pi < 0) return ['ok' => false, 'error' => 'Player not found'];
@@ -765,6 +863,16 @@ function process_action(array &$game, string $token, string $action, array $para
     // Rematch voting works after the game ends
     if ($action === 'vote_rematch') {
         $result = action_vote_rematch($game, $pi, $params);
+        if ($result['ok'] ?? false) $game['version']++;
+        return $result;
+    }
+
+    // Defend attack works for non-active players when pending_attack is set
+    if ($action === 'defend_attack') {
+        if ($game['ended'] ?? false) {
+            return ['ok' => false, 'error' => 'Game is over'];
+        }
+        $result = action_defend_attack($game, $pi, $params);
         if ($result['ok'] ?? false) $game['version']++;
         return $result;
     }
@@ -794,6 +902,11 @@ function process_action(array &$game, string $token, string $action, array $para
 
     if ($game['current_player'] !== $pi) {
         return ['ok' => false, 'error' => 'Not your turn'];
+    }
+
+    // Block all actions while an attack is pending
+    if (isset($game['pending_attack'])) {
+        return ['ok' => false, 'error' => 'Waiting for attack responses'];
     }
 
     $result = match($action) {

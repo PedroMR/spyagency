@@ -10,7 +10,10 @@
       "Bash(GIT_DIR=/mnt/shared/code/spies/.git GIT_WORK_TREE=/mnt/shared/code/spies git diff:*)",
       "Bash(GIT_DIR=/mnt/shared/code/spies/.git GIT_WORK_TREE=/mnt/shared/code/spies git status:*)",
       "Bash(GIT_DIR=/mnt/shared/code/spies/.git GIT_WORK_TREE=/mnt/shared/code/spies git log:*)",
-      "Bash(php convert_cards.php:*)"
+      "Bash(php convert_cards.php:*)",
+      "Bash(php -l:*)",
+      "Bash(php:*)",
+      "Bash(node -c:*)"
     ]
   }
 }

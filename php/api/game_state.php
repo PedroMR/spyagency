@@ -117,6 +117,11 @@ $state = [
     'rematch_vote_count' => count($game['rematch_votes'] ?? []),
     'rematch_my_vote' => isset(($game['rematch_votes'] ?? [])[$token]),
     'rematch_game_id' => $game['rematch_game_id'] ?? null,
+    'attack_pending' => isset($game['pending_attack']),
+    'attack_card' => isset($game['pending_attack']) ? $game['pending_attack']['card'] : null,
+    'attack_attacker_name' => isset($game['pending_attack']) ? $game['players'][$game['pending_attack']['attacker']]['name'] : null,
+    'attack_must_defend' => isset($game['pending_attack']) && in_array($my_index, $game['pending_attack']['defenders']) && !isset($game['pending_attack']['responses'][$my_index]),
+    'attack_defenders_remaining' => isset($game['pending_attack']) ? count($game['pending_attack']['defenders']) - count($game['pending_attack']['responses']) : 0,
 ];
 
 send_json(json_success($state));
