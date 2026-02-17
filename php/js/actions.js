@@ -55,12 +55,25 @@ const Actions = {
         return this.send('cash_gems', {amount: amount});
     },
 
-    completeMission(missionId, agentIds, techIds) {
+    completeMission(missionId, agentIds, techIds, useBaseAgent) {
         return this.send('complete_mission', {
             mission_id: missionId,
             agent_ids: agentIds || [],
             tech_ids: techIds || [],
+            use_base_agent: useBaseAgent || false,
         });
+    },
+
+    putAgentInBase(agentId, techIds) {
+        return this.send('put_agent_in_base', {agent_id: agentId, tech_ids: techIds || []});
+    },
+
+    addTechToBase(techIds) {
+        return this.send('add_tech_to_base', {tech_ids: techIds || []});
+    },
+
+    discardBaseAgent() {
+        return this.send('discard_base_agent', {});
     },
 
     endTurn() {

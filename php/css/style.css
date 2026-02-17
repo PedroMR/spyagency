@@ -221,6 +221,9 @@ input[type="text"] {
     margin: 1px;
 }
 .base-empty { color: #666; font-style: italic; font-size: 12px; }
+.base-empty-slot { color: #666; font-style: italic; font-size: 12px; margin-top: 4px; }
+.base-slot.clickable { cursor: pointer; }
+.base-slot.clickable:hover { border-color: #ffd700; background: rgba(40, 40, 80, 0.95); }
 .base-actions { margin-top: 4px; }
 .btn-sm { font-size: 10px; padding: 2px 6px; }
 

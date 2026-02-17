@@ -37,12 +37,24 @@ if ($my_index < 0) {
 function compute_stars(array $player, array $catalog): int {
     $stars = 0;
     $all = array_merge($player['deck'], $player['hand'], $player['discard'], $player['play_area']);
+    // Include cards in base
+    $base = $player['base'] ?? null;
+    if (is_array($base)) {
+        if ($base['agent']) $all[] = $base['agent'];
+        foreach ($base['tech'] ?? [] as $t) $all[] = $t;
+    }
     foreach ($all as $cid) {
         if (isset($catalog[$cid]) && ($catalog[$cid]['stars'] ?? 0) > 0) {
             $stars += $catalog[$cid]['stars'];
         }
     }
     return $stars;
+}
+
+function normalize_base_for_client($raw): array {
+    if (is_string($raw)) return ['card' => $raw, 'agent' => null, 'tech' => []];
+    if (is_array($raw)) return $raw;
+    return ['card' => 'safe_house', 'agent' => null, 'tech' => []];
 }
 
 // Build filtered player data
@@ -67,6 +79,7 @@ foreach ($game['players'] as $i => $p) {
             'backup_agent' => $p['backup_agent'] ?? null,
             'extra_missions' => $p['extra_missions'] ?? 0,
             'missions_this_turn' => $p['missions_this_turn'] ?? 0,
+            'base' => normalize_base_for_client($p['base'] ?? null),
         ];
     } else {
         $players_data[] = [
@@ -79,6 +92,7 @@ foreach ($game['players'] as $i => $p) {
             'money' => $p['money'],
             'gems' => $p['gems'] ?? 0,
             'stars' => $live_stars,
+            'base' => normalize_base_for_client($p['base'] ?? null),
         ];
     }
 }

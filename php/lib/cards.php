@@ -562,6 +562,16 @@ function get_card_catalog(): array {
             'extra_buy' => true,
             'description' => '$3 ($7)',
         ],
+        'safe_house' => [
+            'id' => 'safe_house',
+            'name' => 'Safe House',
+            'type' => 'base',
+            'tier' => 0,
+            'stars' => 0,
+            'cost' => 0,
+            'indestructible' => true,
+            'description' => 'Indestructible',
+        ],
     ];
 }
 

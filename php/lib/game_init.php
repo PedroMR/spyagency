@@ -68,6 +68,7 @@ function init_game(array $players): array {
             'extra_missions' => 0,
             'missions_this_turn' => 0,
             'extra_buys' => 0,
+            'base' => ['card' => 'safe_house', 'agent' => null, 'tech' => []],
         ];
     }
 

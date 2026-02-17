@@ -28,12 +28,9 @@ When it's their turn, a player may play all the cards in their hand in the order
 
 During a player's turn they may complete 1 mission. After that the player may buy 1 card from the marketplace. Some cards may increase these limits.
 
-<!--
-Agent cards can only be played over a free Base card. Each Base card may only hold one Agent. A player may vacate a Base at any time by discarding the Agent that is there and any cards equipped by that Agent.
-
-Tech cards may be equipped to active Agents (in a base). There is a limit to how many Tech cards an Agent may hold at one time. This limit changes according to the Agent in question.
--->
 Agents are played from hand in order to complete a mission. Tech cards can be played with an Agent, but only up to the limit of how many that Agent can hold. This limit changes according to the Agent in question.
+
+Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to complete a mission or be discarded as a whole in order to clear space for another agent.
 
 Plot cards may be played from hand at any time and discarded as soon as their effects have been resolved. If they have an Attack, each player must defend with an agent satisfying the attack requirement or suffer the consequences specified in the card. For example: Ada plays Paperwork. She gains $1. Bob chooses to not defend, so he gains a Red Tape. Charlie discards an agent, so she is safe. Debora reveals a Sentinel, so she doesn't have to discard it and is safe.
 
@@ -49,7 +46,7 @@ Players can spend $3 to buy 1 gem. They may do this as many times as they want.
 
 ### End of player turn
 
-After the player is done playing their cards the Mission Grid and the Market are refilled and the turn of the player to their left begins. When refilling the Market, if a card drawn to refill it matches a card already in it, place the new card on top of the existing stack and draw again. The same procedure applies to the Mission grid, stacking cards if they are the same. <!--Note that Agents in Bases who were not deployed to complete a mission are not discarded; they remain in the player's play area, as well as any Tech equipped onto them. -->
+After the player is done playing their cards the Mission Grid and the Market are refilled and the turn of the player to their left begins. When refilling the Market, if a card drawn to refill it matches a card already in it, place the new card on top of the existing stack and draw again. The same procedure applies to the Mission grid, stacking cards if they are the same. Note that Agents in Bases who were not deployed to complete a mission are not discarded; they remain in the player's play area, as well as any Tech equipped onto them.
 
 The player then discards their whole hand and draws 5 cards. If there are no cards left in the deck the player shuffles their discard pile to make a new deck and resumes drawing.
 
