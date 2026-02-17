@@ -166,6 +166,9 @@ foreach ($rows as $row) {
             $entry['max_tech'] = $row['max_tech'] ?? 0;
             $entry['icons'] = parse_icons_field($row['desc'], $emoji_to_icon);
             $entry['always_available'] = stripos($row['desc'], 'always available') !== false;
+            if (stripos($row['desc'], 'defend') !== false) {
+                $entry['defend'] = true;
+            }
             // Build display description
             $icon_display = preg_replace('/,\s*always available.*/iu', '', trim($row['desc']));
             $entry['description'] = trim($icon_display) . ($entry['always_available'] ? " — Always available (\${$cost_val})" : " (\${$cost_val})");
@@ -200,8 +203,10 @@ foreach ($rows as $row) {
                 $entry['effect'] = 'draw2';
             } elseif (stripos($desc_lower, 'backup') !== false || stripos($desc_lower, 'got your back') !== false || stripos($desc_lower, 'play an agent from your hand') !== false) {
                 $entry['effect'] = 'backup';
-            } elseif (stripos($desc_lower, 'gains a red tape') !== false || stripos($desc_lower, 'red tape') !== false && stripos($desc_lower, 'other player') !== false) {
+            } elseif (stripos($desc_lower, 'gain a red tape') !== false || stripos($desc_lower, 'gains a red tape') !== false) {
                 $entry['effect'] = 'paperwork';
+            } elseif (stripos($desc_lower, 'discard down to') !== false) {
+                $entry['effect'] = 'burglary';
             } elseif (stripos($desc_lower, 'additional mission') !== false) {
                 $entry['effect'] = 'multitask';
             } else {

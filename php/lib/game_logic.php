@@ -142,6 +142,27 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             }
             break;
 
+        case 'burglary':
+            $game['players'][$pi]['play_area'][] = $card_id;
+            $game['players'][$pi]['money'] += 2;
+            $game['log'][] = $game['players'][$pi]['name'] . " played Burglary (+\$2) — attacking all opponents!";
+
+            // Build list of defenders (all opponents)
+            $defenders = [];
+            for ($oi = 0; $oi < count($game['players']); $oi++) {
+                if ($oi !== $pi) $defenders[] = $oi;
+            }
+
+            if (count($defenders) > 0) {
+                $game['pending_attack'] = [
+                    'attacker' => $pi,
+                    'card' => 'burglary',
+                    'defenders' => $defenders,
+                    'responses' => [],
+                ];
+            }
+            break;
+
         case 'multitask':
             $game['players'][$pi]['play_area'][] = $card_id;
             $game['players'][$pi]['extra_missions'] = ($game['players'][$pi]['extra_missions'] ?? 0) + 1;
@@ -813,23 +834,57 @@ function action_defend_attack(array &$game, int $pi, array $params): array {
     $catalog = get_card_catalog();
     $name = $game['players'][$pi]['name'];
 
+    $attack_card = $attack['card'];
+    $attack_name = $catalog[$attack_card]['name'] ?? $attack_card;
+
     switch ($choice) {
         case 'suffer':
-            $game['players'][$pi]['discard'][] = 'red_tape';
-            $attack['responses'][$pi] = 'suffer';
-            $game['log'][] = "{$name} suffers the Paperwork and gains a Red Tape!";
+            if ($attack_card === 'burglary') {
+                $hand = &$game['players'][$pi]['hand'];
+                $target_size = 3;
+                $must_discard = count($hand) - $target_size;
+                if ($must_discard <= 0) {
+                    $attack['responses'][$pi] = 'suffer:none';
+                    $game['log'][] = "{$name} has " . count($hand) . " cards — Burglary has no effect!";
+                } else {
+                    $discard_cards = $params['discard_cards'] ?? [];
+                    if (count($discard_cards) !== $must_discard) {
+                        return ['ok' => false, 'error' => "Must discard exactly {$must_discard} card(s)"];
+                    }
+                    foreach ($discard_cards as $dc) {
+                        if (!remove_from_array($hand, $dc)) {
+                            return ['ok' => false, 'error' => "Card not in hand"];
+                        }
+                        $game['players'][$pi]['discard'][] = $dc;
+                    }
+                    $attack['responses'][$pi] = 'suffer:' . implode(',', $discard_cards);
+                    $game['log'][] = "{$name} suffers Burglary and discards down to 3 cards!";
+                }
+            } else {
+                // Paperwork: gain a Red Tape
+                $game['players'][$pi]['discard'][] = 'red_tape';
+                $attack['responses'][$pi] = 'suffer';
+                $game['log'][] = "{$name} suffers the {$attack_name} and gains a Red Tape!";
+            }
             break;
 
         case 'discard':
             if (!$card_id || !isset($catalog[$card_id]) || $catalog[$card_id]['type'] !== 'agent') {
                 return ['ok' => false, 'error' => 'Must specify a valid agent to discard'];
             }
+            // For Burglary, agent must have muscle or drive icons
+            if ($attack_card === 'burglary') {
+                $agent_icons = $catalog[$card_id]['icons'] ?? [];
+                if (!in_array('muscle', $agent_icons) && !in_array('drive', $agent_icons)) {
+                    return ['ok' => false, 'error' => 'Agent must have 💪 or 🚘 to defend against Burglary'];
+                }
+            }
             if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
                 return ['ok' => false, 'error' => 'Agent not in hand'];
             }
             $game['players'][$pi]['discard'][] = $card_id;
             $attack['responses'][$pi] = 'discard:' . $card_id;
-            $game['log'][] = "{$name} discards {$catalog[$card_id]['name']} to defend against Paperwork!";
+            $game['log'][] = "{$name} discards {$catalog[$card_id]['name']} to defend against {$attack_name}!";
             break;
 
         case 'sentinel':
@@ -841,7 +896,7 @@ function action_defend_attack(array &$game, int $pi, array $params): array {
             }
             // Sentinel stays in hand — just reveal it
             $attack['responses'][$pi] = 'sentinel:' . $card_id;
-            $game['log'][] = "{$name} reveals {$catalog[$card_id]['name']} to defend against Paperwork!";
+            $game['log'][] = "{$name} reveals {$catalog[$card_id]['name']} to defend against {$attack_name}!";
             break;
 
         default:

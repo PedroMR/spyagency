@@ -868,14 +868,28 @@ const UI = {
         const s = this.state;
         const me = s.players[s.my_index];
         const attackerName = s.attack_attacker_name;
+        const attackCard = s.attack_card;
+        const isBurglary = attackCard === 'burglary';
 
         if (!this._defenseDialogShown) {
             playBell();
             this._defenseDialogShown = true;
         }
 
-        let html = `<h3>${esc(attackerName)} played Paperwork!</h3>`;
-        html += `<p>Defend or suffer a Red Tape.</p>`;
+        // If burglary suffer mode is active, show card selection
+        if (this._burglarySufferMode) {
+            this._showBurglaryDiscardSelection();
+            return;
+        }
+
+        const cardName = isBurglary ? 'Burglary' : 'Paperwork';
+        let html = `<h3>${esc(attackerName)} played ${cardName}!</h3>`;
+
+        if (isBurglary) {
+            html += `<p>Defend or discard down to 3 cards.</p>`;
+        } else {
+            html += `<p>Defend or suffer a Red Tape.</p>`;
+        }
 
         // Sentinel options (reveal, stays in hand)
         const sentinels = me.hand.filter(cid => this.catalog[cid] && (this.catalog[cid].defend));
@@ -889,7 +903,13 @@ const UI = {
 
         // Discard agent options
         const agents = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent' && !(this.catalog[cid].defend));
-        const uniqueAgents = [...new Set(agents)];
+        const eligibleAgents = isBurglary
+            ? agents.filter(cid => {
+                const icons = this.catalog[cid].icons || [];
+                return icons.includes('muscle') || icons.includes('drive');
+            })
+            : agents;
+        const uniqueAgents = [...new Set(eligibleAgents)];
         for (const cid of uniqueAgents) {
             const c = this.catalog[cid];
             html += `<button class="btn-modal" onclick="Actions.defendAttack('discard', '${cid}')">
@@ -898,17 +918,100 @@ const UI = {
         }
 
         // Suffer option
-        html += `<button class="btn-modal btn-cancel" onclick="Actions.defendAttack('suffer')">
-            Suffer (gain Red Tape)
+        if (isBurglary) {
+            const mustDiscard = me.hand.length - 3;
+            if (mustDiscard <= 0) {
+                html += `<button class="btn-modal btn-cancel" onclick="Actions.defendAttack('suffer')">
+                    Suffer (no effect — ${me.hand.length} cards in hand)
+                </button>`;
+            } else {
+                html += `<button class="btn-modal btn-cancel" onclick="UI._startBurglarySuffer()">
+                    Suffer (discard ${mustDiscard} card${mustDiscard !== 1 ? 's' : ''})
+                </button>`;
+            }
+        } else {
+            html += `<button class="btn-modal btn-cancel" onclick="Actions.defendAttack('suffer')">
+                Suffer (gain Red Tape)
+            </button>`;
+        }
+
+        this.showModal(html);
+    },
+
+    _startBurglarySuffer() {
+        this._burglarySufferMode = true;
+        this._burglarySelected = [];
+        this._showBurglaryDiscardSelection();
+    },
+
+    _showBurglaryDiscardSelection() {
+        const s = this.state;
+        const me = s.players[s.my_index];
+        const mustDiscard = me.hand.length - 3;
+        const selected = this._burglarySelected || [];
+
+        let html = `<h3>Burglary — Choose ${mustDiscard} card${mustDiscard !== 1 ? 's' : ''} to discard</h3>`;
+        html += `<p>Selected: ${selected.length} / ${mustDiscard}</p>`;
+        html += `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0">`;
+
+        for (let i = 0; i < me.hand.length; i++) {
+            const cid = me.hand[i];
+            const c = this.catalog[cid];
+            if (!c) continue;
+            const isSelected = selected.includes(i);
+            const style = isSelected ? 'background:#8b0000;border-color:#ff4444' : '';
+            html += `<button class="btn-modal" style="min-width:80px;${style}" onclick="UI._toggleBurglaryCard(${i})">
+                ${esc(c.name)}${c.icons ? ' ' + this.getCardIcons(c) : ''}${c.value ? ' $' + c.value : ''}
+            </button>`;
+        }
+        html += `</div>`;
+
+        if (selected.length === mustDiscard) {
+            html += `<button class="btn-modal" style="background:#8b0000;border-color:#ff4444;margin-top:8px" onclick="UI._confirmBurglarySuffer()">
+                Confirm Discard
+            </button>`;
+        }
+
+        html += `<button class="btn-modal" style="margin-top:4px" onclick="UI._cancelBurglarySuffer()">
+            Back
         </button>`;
 
         this.showModal(html);
     },
 
+    _toggleBurglaryCard(index) {
+        const selected = this._burglarySelected || [];
+        const pos = selected.indexOf(index);
+        const me = this.state.players[this.state.my_index];
+        const mustDiscard = me.hand.length - 3;
+        if (pos >= 0) {
+            selected.splice(pos, 1);
+        } else if (selected.length < mustDiscard) {
+            selected.push(index);
+        }
+        this._burglarySelected = selected;
+        this._showBurglaryDiscardSelection();
+    },
+
+    _confirmBurglarySuffer() {
+        const me = this.state.players[this.state.my_index];
+        const discardCards = this._burglarySelected.map(i => me.hand[i]);
+        this._burglarySufferMode = false;
+        this._burglarySelected = [];
+        Actions.defendAttack('suffer', '', discardCards);
+    },
+
+    _cancelBurglarySuffer() {
+        this._burglarySufferMode = false;
+        this._burglarySelected = [];
+        this.showDefenseDialog();
+    },
+
     showAttackWaiting() {
         const s = this.state;
         const remaining = s.attack_defenders_remaining;
-        let html = `<h3>Paperwork Attack</h3>`;
+        const cardName = s.attack_card === 'burglary' ? 'Burglary' : 'Paperwork';
+        let html = `<h3>${cardName} Attack</h3>`;
         html += `<p>Waiting for ${remaining} player${remaining !== 1 ? 's' : ''} to defend...</p>`;
         this.showModal(html);
     },

@@ -42,11 +42,11 @@
 
                 <div class="section missions-section">
                     <h3>Mission Grid</h3>
-                    <div id="mission-grid" class="mission-grid"></div>
                     <div class="heist-row">
                         <div id="heist-mission" class="card mission-card" onclick="UI.showMissionDialog('heist')">
                         </div>
                     </div>
+                    <div id="mission-grid" class="mission-grid"></div>
                 </div>
 
                 <div class="section opponents-section">

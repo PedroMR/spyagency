@@ -79,7 +79,9 @@ const Actions = {
         return this.send('resign', {});
     },
 
-    defendAttack(choice, cardId) {
-        return this.send('defend_attack', {choice: choice, card_id: cardId || ''});
+    defendAttack(choice, cardId, discardCards) {
+        const params = {choice: choice, card_id: cardId || ''};
+        if (discardCards) params.discard_cards = discardCards;
+        return this.send('defend_attack', params);
     }
 };
