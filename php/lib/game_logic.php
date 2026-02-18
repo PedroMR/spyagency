@@ -193,37 +193,54 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             break;
 
         case 'training':
-            // Training Procedure: trash an agent from play, hand or discard areas, gain an agent costing up to $3 more from market
+            // Training Procedure: trash an agent from hand, play area, discard, or base
             $trash_agent = $params['trash_agent'] ?? '';
-            $trash_from = $params['trash_from'] ?? 'hand'; // 'hand', 'play_area', or 'discard'
+            $trash_from = $params['trash_from'] ?? 'hand'; // 'hand', 'play_area', 'discard', or 'base'
             $gain_agent = $params['gain_agent'] ?? '';
             $gain_slot = $params['gain_slot'] ?? -1;
             if (!$trash_agent || !isset($catalog[$trash_agent]) || $catalog[$trash_agent]['type'] !== TYPE_AGENT) {
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Must specify an agent to trash'];
             }
-            $valid_areas = ['hand', 'play_area', 'discard'];
+            $valid_areas = ['hand', 'play_area', 'discard', 'base'];
             if (!in_array($trash_from, $valid_areas)) {
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Invalid trash area'];
             }
-            if (!remove_from_array($game['players'][$pi][$trash_from], $trash_agent)) {
-                $game['players'][$pi]['hand'][] = $card_id;
-                return ['ok' => false, 'error' => 'Agent not found in ' . str_replace('_', ' ', $trash_from)];
+
+            // Remove agent from the chosen area
+            if ($trash_from === 'base') {
+                normalize_base($game['players'][$pi]);
+                $base = &$game['players'][$pi]['base'];
+                if ($base['agent'] !== $trash_agent) {
+                    $game['players'][$pi]['hand'][] = $card_id;
+                    return ['ok' => false, 'error' => 'Agent not found in base'];
+                }
+                // Discard any tech attached to the base agent
+                foreach ($base['tech'] as $tid) {
+                    $game['players'][$pi]['discard'][] = $tid;
+                }
+                $base['agent'] = null;
+                $base['tech'] = [];
+                unset($base);
+            } else {
+                if (!remove_from_array($game['players'][$pi][$trash_from], $trash_agent)) {
+                    $game['players'][$pi]['hand'][] = $card_id;
+                    return ['ok' => false, 'error' => 'Agent not found in ' . str_replace('_', ' ', $trash_from)];
+                }
             }
+
             $trash_cost = $catalog[$trash_agent]['cost'] ?? 0;
             $max_cost = $trash_cost + 3;
 
             // Gain agent: from marketplace slot or always-available
             if (!$gain_agent || !isset($catalog[$gain_agent]) || $catalog[$gain_agent]['type'] !== TYPE_AGENT) {
-                // Restore cards
-                $game['players'][$pi][$trash_from][] = $trash_agent;
+                // Restore agent (put back in discard as best-effort)
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Must specify a valid agent to gain'];
             }
             $gain_cost = $catalog[$gain_agent]['cost'] ?? 0;
             if ($gain_cost > $max_cost) {
-                $game['players'][$pi][$trash_from][] = $trash_agent;
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => "Agent costs \${$gain_cost}, max is \${$max_cost}"];
             }
@@ -235,7 +252,6 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             } elseif ($gain_slot >= 0 && $gain_slot < count($game['marketplace']) && !empty($game['marketplace'][$gain_slot]) && $game['marketplace'][$gain_slot][0] === $gain_agent) {
                 array_shift($game['marketplace'][$gain_slot]);
             } else {
-                $game['players'][$pi][$trash_from][] = $trash_agent;
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Agent not available in marketplace'];
             }

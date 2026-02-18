@@ -467,6 +467,17 @@ input[type="text"] {
 .deck-section h3 { font-size: 12px; }
 .deck-count-display { font-size: 22px; font-weight: bold; color: #ffd700; padding: 4px 0; }
 .discard-section h3 { font-size: 12px; }
+.discard-label {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffd700;
+    padding: 4px 0;
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    text-decoration: underline dotted;
+}
+.discard-label:hover { color: #fff; }
 
 /* End Turn column */
 .end-turn-column { display: flex; align-items: center; }

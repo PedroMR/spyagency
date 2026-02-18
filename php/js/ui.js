@@ -711,20 +711,32 @@ const UI = {
         const discard = me.discard || [];
         const countEl = document.getElementById('discard-count');
         const container = document.getElementById('discard-pile');
-        countEl.textContent = `(${discard.length})`;
+        countEl.textContent = '';
 
         if (discard.length === 0) {
             container.innerHTML = '<span class="muted">Empty</span>';
             return;
         }
-        // Show top card
-        const topId = discard[discard.length - 1];
-        const card = this.catalog[topId];
-        container.innerHTML = `<div class="card played-card" style="--card-color:${this.getCardColor(card)}">
-            <div class="card-name">${esc(card.name)}</div>
-            ${this.getOwnedCardInfo(card)}
-            <div class="card-type">${card.type}</div>
-        </div>`;
+        container.innerHTML = `<span class="discard-label" onclick="UI.showDiscardDialog()">${discard.length} card${discard.length !== 1 ? 's' : ''}</span>`;
+    },
+
+    showDiscardDialog() {
+        const me = this.state.players[this.state.my_index];
+        const discard = me.discard || [];
+        let html = `<h3>Discard Pile (${discard.length} cards)</h3>`;
+        html += '<div class="card-row" style="margin-top:10px">';
+        for (let i = discard.length - 1; i >= 0; i--) {
+            const card = this.catalog[discard[i]];
+            if (!card) continue;
+            html += `<div class="card played-card" style="--card-color:${this.getCardColor(card)}">
+                <div class="card-name">${esc(card.name)}</div>
+                ${this.getOwnedCardInfo(card)}
+                <div class="card-type">${card.type}</div>
+            </div>`;
+        }
+        html += '</div>';
+        html += '<button class="btn-modal btn-cancel" style="margin-top:12px" onclick="UI.closeModal()">Close</button>';
+        this.showModal(html);
     },
 
     renderLog() {
@@ -919,10 +931,12 @@ const UI = {
 
     showTrainingDialog(plotCardId) {
         const me = this.state.players[this.state.my_index];
+        const baseAgent = me.base && me.base.agent ? [me.base.agent] : [];
         const areas = [
             { key: 'hand', label: 'Hand', cards: me.hand.filter(cid => cid !== plotCardId) },
             { key: 'play_area', label: 'Play Area', cards: me.play_area },
             { key: 'discard', label: 'Discard', cards: me.discard },
+            { key: 'base', label: 'Base', cards: baseAgent },
         ];
         let hasAny = false;
         let html = '<h3>Training Procedure: Select agent to trash</h3>';
