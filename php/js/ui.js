@@ -78,12 +78,12 @@ const UI = {
     },
 
     typeColors: {
-        money: '#2d5a1e',
-        agent: '#b8a000',
-        tech: '#1a4a8c',
-        plot: '#0a8a8a',
-        mission: '#6a1b9a',
-        hazard: '#8b0000',
+        money: '#00e676',
+        agent: '#ffd740',
+        tech: '#40c4ff',
+        plot: '#18ffff',
+        mission: '#e040fb',
+        hazard: '#ff1744',
     },
 
     iconSortOrder: { key: 0, drive: 1, disguise: 2, muscle: 3 },
@@ -326,18 +326,20 @@ const UI = {
             const canAfford = (me.money + (me.gems || 0)) >= card.cost;
             const affordable = s.is_my_turn && canAfford && canBuy;
             const unaffordable = s.is_my_turn ? (!canAfford || !canBuy) : true;
-            const affordClass = affordable ? ' affordable' : (unaffordable ? ' unaffordable' : '');
+            const affordClass = unaffordable ? ' unaffordable' : '';
             const stackBadge = count > 1 ? `<div class="stack-count">x${count}</div>` : '';
             const click = affordable ? `onclick="UI.onMarketClick('${cardId}', ${i})"` : '';
             const detail = (card.type === 'agent' || card.type === 'tech') && card.icons
                 ? `<div class="card-icons">${this.getCardIcons(card)}</div>`
                 : `<div class="card-desc">${esc(card.description)}</div>`;
-            return `<div class="card market-card${affordClass}" style="border-color:${this.getCardColor(card)}" ${click}>
-                <div class="card-name">${esc(card.name)}</div>
-                <div class="card-cost">$${card.cost}</div>
-                <div class="card-type">${card.type}</div>
+            return `<div class="card market-card${affordClass}" style="--card-color:${this.getCardColor(card)}" ${click}>
+                <div class="card-row-top">
+                    <span class="card-name">${esc(card.name)}</span>
+                    <span class="card-cost-badge">$${card.cost}</span>
+                </div>
                 ${detail}
                 ${stackBadge}
+                <div class="card-type">${card.type}</div>
             </div>`;
         }).join('') + Array(empties).fill('<div class="card card-empty">Empty</div>').join('');
 
@@ -353,9 +355,11 @@ const UI = {
             const affordable = canBuyAny && totalFunds >= c.cost;
             const dimmed = !affordable ? ' unaffordable' : '';
             const click = affordable ? `onclick="UI.buyAlwaysAvailable('${c.id}', '${c.name}', ${c.cost})"` : '';
-            return `<div class="card always-available-card${dimmed}" style="border-color:#b8a000" ${click}>
-                <div class="card-name">${c.name}</div>
-                <div class="card-cost">$${c.cost}</div>
+            return `<div class="card always-available-card${dimmed}" style="--card-color:#ffd740" ${click}>
+                <div class="card-row-top">
+                    <span class="card-name">${c.name}</span>
+                    <span class="card-cost-badge">$${c.cost}</span>
+                </div>
                 <div class="card-icons">${c.icon}</div>
                 <div class="card-type">agent</div>
             </div>`;
@@ -365,9 +369,11 @@ const UI = {
         const gemAffordable = s.is_my_turn && me.money >= 3;
         const gemDimmed = !gemAffordable ? ' unaffordable' : '';
         const gemClick = gemAffordable ? 'onclick="UI.buyGem()"' : '';
-        alwaysContainer.innerHTML += `<div class="card always-available-card${gemDimmed}" style="border-color:#9c27b0" ${gemClick}>
-            <div class="card-name">Buy Gem</div>
-            <div class="card-cost">$3</div>
+        alwaysContainer.innerHTML += `<div class="card always-available-card${gemDimmed}" style="--card-color:#e040fb" ${gemClick}>
+            <div class="card-row-top">
+                <span class="card-name">Buy Gem</span>
+                <span class="card-cost-badge">$3</span>
+            </div>
             <div class="card-icons">💎</div>
             <div class="card-type">gem</div>
         </div>`;
@@ -390,7 +396,7 @@ const UI = {
                 const money = card.value ? `$${card.value}` : '';
                 const count = missionCounts[mi] || 1;
                 const countBadge = count > 1 ? `<div class="stack-count">×${count}</div>` : '';
-                html += `<div class="card mission-card" onclick="UI.showMissionDialog('${mId}')">
+                html += `<div class="card mission-card" style="--card-color:${this.getCardColor(card)}" onclick="UI.showMissionDialog('${mId}')">
                     <div class="card-name">${esc(card.name)}</div>
                     <div class="card-req">${reqIcons}</div>
                     <div class="card-reward">${stars}${money}</div>
@@ -406,10 +412,10 @@ const UI = {
         const card = this.catalog['heist'];
         const reqIcons = this.formatReqIcons(card.requirements);
         const el = document.getElementById('heist-mission');
+        el.style.setProperty('--card-color', '#e040fb');
         el.innerHTML = `<div class="card-name">${esc(card.name)}</div>
             <div class="card-req">${reqIcons}</div>
-            <div class="card-reward">💎 1-3</div>
-            <div class="card-desc">1-2 icons: 💎1 · 3-4: 💎2 · 5+: 💎3</div>`;
+            <div class="card-reward">💎 1–3</div>`;
     },
 
     renderOpponents() {
@@ -465,7 +471,7 @@ const UI = {
         if (!this.state.is_my_turn) {
             container.innerHTML = me.hand.map(cardId => {
                 const card = this.catalog[cardId];
-                return `<div class="card hand-card" style="border-color:${this.getCardColor(card)}">
+                return `<div class="card hand-card" style="--card-color:${this.getCardColor(card)}">
                     <div class="card-name">${esc(card.name)}</div>
                     <div class="card-type">${card.type}</div>
                     ${this.getOwnedCardInfo(card)}
@@ -475,7 +481,7 @@ const UI = {
         }
         container.innerHTML = me.hand.map(cardId => {
             const card = this.catalog[cardId];
-            return `<div class="card hand-card playable" style="border-color:${this.getCardColor(card)}" onclick="UI.onHandClick('${cardId}')">
+            return `<div class="card hand-card playable" style="--card-color:${this.getCardColor(card)}" onclick="UI.onHandClick('${cardId}')">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-type">${card.type}</div>
                 ${this.getOwnedCardInfo(card)}
@@ -488,9 +494,10 @@ const UI = {
         const container = document.getElementById('play-area');
         container.innerHTML = me.play_area.map(cardId => {
             const card = this.catalog[cardId];
-            return `<div class="card played-card" style="border-color:${this.getCardColor(card)}">
+            return `<div class="card played-card" style="--card-color:${this.getCardColor(card)}">
                 <div class="card-name">${esc(card.name)}</div>
                 ${this.getOwnedCardInfo(card)}
+                <div class="card-type">${card.type}</div>
             </div>`;
         }).join('');
     },
@@ -511,7 +518,7 @@ const UI = {
         let agentHtml = '';
         if (base.agent && this.catalog[base.agent]) {
             const agent = this.catalog[base.agent];
-            agentHtml = `<div class="card played-card" style="border-color:${this.getCardColor(agent)};margin-top:4px">
+            agentHtml = `<div class="card played-card" style="--card-color:${this.getCardColor(agent)};margin-top:4px">
                 <div class="card-name">${esc(agent.name)}</div>
                 <div class="card-type">${agent.type}</div>
                 ${this.getOwnedCardInfo(agent)}
@@ -520,7 +527,7 @@ const UI = {
                 for (const tid of base.tech) {
                     const tech = this.catalog[tid];
                     if (tech) {
-                        agentHtml += `<div class="card played-card" style="border-color:${this.getCardColor(tech)};margin-top:2px;font-size:0.85em">
+                        agentHtml += `<div class="card played-card" style="--card-color:${this.getCardColor(tech)};margin-top:2px;font-size:0.85em">
                             <div class="card-name">${esc(tech.name)}</div>
                             ${this.getOwnedCardInfo(tech)}
                         </div>`;
@@ -713,9 +720,10 @@ const UI = {
         // Show top card
         const topId = discard[discard.length - 1];
         const card = this.catalog[topId];
-        container.innerHTML = `<div class="card played-card" style="border-color:${this.getCardColor(card)}">
+        container.innerHTML = `<div class="card played-card" style="--card-color:${this.getCardColor(card)}">
             <div class="card-name">${esc(card.name)}</div>
             ${this.getOwnedCardInfo(card)}
+            <div class="card-type">${card.type}</div>
         </div>`;
     },
 
