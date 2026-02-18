@@ -92,9 +92,10 @@ const Actions = {
         return this.send('resign', {});
     },
 
-    defendAttack(choice, cardId, discardCards) {
+    defendAttack(choice, cardId, discardCards, discardFrom) {
         const params = {choice: choice, card_id: cardId || ''};
         if (discardCards) params.discard_cards = discardCards;
+        if (discardFrom) params.discard_from = discardFrom;
         return this.send('defend_attack', params);
     }
 };

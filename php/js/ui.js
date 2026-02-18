@@ -1157,7 +1157,7 @@ const UI = {
             </button>`;
         }
 
-        // Discard agent options
+        // Discard agent options (from hand)
         const agents = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent' && !(this.catalog[cid].defend));
         const eligibleAgents = isBurglary
             ? agents.filter(cid => {
@@ -1171,6 +1171,19 @@ const UI = {
             html += `<button class="btn-modal" onclick="Actions.defendAttack('discard', '${cid}')">
                 Discard ${esc(c.name)} (${this.getCardIcons(c)})
             </button>`;
+        }
+
+        // Discard agent from base
+        if (me.base && me.base.agent) {
+            const baseAgent = this.catalog[me.base.agent];
+            const baseIcons = baseAgent.icons || [];
+            const baseEligible = !isBurglary || baseIcons.includes('muscle') || baseIcons.includes('drive');
+            if (baseEligible) {
+                const techNote = (me.base.tech && me.base.tech.length > 0) ? ' + tech' : '';
+                html += `<button class="btn-modal" onclick="Actions.defendAttack('discard', '${me.base.agent}', null, 'base')">
+                    Discard ${esc(baseAgent.name)} from base${techNote} (${this.getCardIcons(baseAgent)})
+                </button>`;
+            }
         }
 
         // Suffer option

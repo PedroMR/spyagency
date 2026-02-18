@@ -1057,6 +1057,7 @@ function action_defend_attack(array &$game, int $pi, array $params): array {
             break;
 
         case 'discard':
+            $discard_from = $params['discard_from'] ?? 'hand'; // 'hand' or 'base'
             if (!$card_id || !isset($catalog[$card_id]) || $catalog[$card_id]['type'] !== 'agent') {
                 return ['ok' => false, 'error' => 'Must specify a valid agent to discard'];
             }
@@ -1067,8 +1068,22 @@ function action_defend_attack(array &$game, int $pi, array $params): array {
                     return ['ok' => false, 'error' => 'Agent must have 💪 or 🚘 to defend against Burglary'];
                 }
             }
-            if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
-                return ['ok' => false, 'error' => 'Agent not in hand'];
+            if ($discard_from === 'base') {
+                normalize_base($game['players'][$pi]);
+                $base = &$game['players'][$pi]['base'];
+                if ($base['agent'] !== $card_id) {
+                    return ['ok' => false, 'error' => 'Agent not in base'];
+                }
+                foreach ($base['tech'] as $tid) {
+                    $game['players'][$pi]['discard'][] = $tid;
+                }
+                $base['agent'] = null;
+                $base['tech'] = [];
+                unset($base);
+            } else {
+                if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
+                    return ['ok' => false, 'error' => 'Agent not in hand'];
+                }
             }
             $game['players'][$pi]['discard'][] = $card_id;
             $attack['responses'][$pi] = 'discard:' . $card_id;
