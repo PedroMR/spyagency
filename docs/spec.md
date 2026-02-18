@@ -56,7 +56,7 @@ The game is over at the end of the round where either of two things have happene
 1) Any of the Mission Decks are empty;
 2) The Market Deck is empty.
 
-At the end of the game, players gather the cards in their deck, discard, play and hand areas. The player with the most stars appearing in their cards wins the game.
+At the end of the game, players gather the cards in their deck, discard, play and hand areas. The player with the most stars appearing in their cards wins the game. If there's a tie, the player with the least mission cards wins the game. If there's still a tie, the players rejoice in their shared victory.
 
 ## Implementation Details
 

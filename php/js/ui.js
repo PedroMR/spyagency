@@ -764,10 +764,22 @@ const UI = {
         const myVote = s.rematch_my_vote || false;
         const onlyOne = totalPlayers < 2;
 
-        let html = '<h2>Game Over!</h2><div class="scores">';
+        const topStars = scores[0].stars;
+        const topMissions = scores[0].missions ?? 0;
+        const starsTied = scores.filter(s => s.stars === topStars).length > 1;
+        const sharedVictory = starsTied && scores.filter(s => s.stars === topStars && (s.missions ?? 0) === topMissions).length > 1;
+
+        let html = `<h2>${sharedVictory ? 'Shared Victory!' : 'Game Over!'}</h2>`;
+        if (starsTied) {
+            html += `<p style="color:#aaa;font-size:13px;margin-bottom:6px">Tiebreaker: fewest missions</p>`;
+        }
+        html += '<div class="scores">';
         scores.forEach((sc, i) => {
-            html += `<div class="score-row ${i === 0 ? 'winner' : ''}">
+            const isWinner = sc.stars === topStars && (sc.missions ?? 0) === topMissions;
+            const missionNote = starsTied ? `<span style="color:#888;font-size:13px">${sc.missions ?? 0} missions</span>` : '';
+            html += `<div class="score-row ${isWinner ? 'winner' : ''}">
                 <span>${i + 1}. ${esc(sc.name)}</span>
+                ${missionNote}
                 <span>${sc.stars} ⭐</span>
             </div>`;
         });

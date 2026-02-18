@@ -6,17 +6,32 @@ function calculate_scores(array &$game): array {
     $scores = [];
     foreach ($game['players'] as &$p) {
         $stars = 0;
-        // Count stars from all cards the player owns (deck + hand + discard + play_area)
-        $all_cards = array_merge($p['deck'], $p['hand'], $p['discard'], $p['play_area']);
+        $missions = 0;
+        // Include base agent/tech in owned cards
+        $base = $p['base'] ?? null;
+        $base_cards = [];
+        if (is_array($base)) {
+            if ($base['agent'] ?? null) $base_cards[] = $base['agent'];
+            foreach ($base['tech'] ?? [] as $t) $base_cards[] = $t;
+        }
+        $all_cards = array_merge($p['deck'], $p['hand'], $p['discard'], $p['play_area'], $base_cards);
         foreach ($all_cards as $card_id) {
-            if (isset($catalog[$card_id]) && ($catalog[$card_id]['stars'] ?? 0) > 0) {
+            if (!isset($catalog[$card_id])) continue;
+            if (($catalog[$card_id]['stars'] ?? 0) > 0) {
                 $stars += $catalog[$card_id]['stars'];
+            }
+            if ($catalog[$card_id]['type'] === TYPE_MISSION) {
+                $missions++;
             }
         }
         $p['stars'] = $stars;
-        $scores[] = ['name' => $p['name'], 'stars' => $stars];
+        $scores[] = ['name' => $p['name'], 'stars' => $stars, 'missions' => $missions];
     }
-    usort($scores, fn($a, $b) => $b['stars'] - $a['stars']);
+    // Sort: most stars first; tiebreaker: fewest missions
+    usort($scores, function ($a, $b) {
+        if ($b['stars'] !== $a['stars']) return $b['stars'] - $a['stars'];
+        return $a['missions'] - $b['missions'];
+    });
     return $scores;
 }
 
@@ -55,7 +70,15 @@ function finalize_game(array &$game): void {
     $game['ended'] = true;
     $game['status'] = 'finished';
     $game['scores'] = calculate_scores($game);
-    $winner = $game['scores'][0]['name'] ?? 'Unknown';
-    $game['log'][] = "Game over! Winner: {$winner} with {$game['scores'][0]['stars']} stars!";
+    $top = $game['scores'][0];
+    $winners = array_values(array_filter($game['scores'], fn($s) =>
+        $s['stars'] === $top['stars'] && $s['missions'] === $top['missions']
+    ));
+    if (count($winners) > 1) {
+        $names = implode(' and ', array_map(fn($s) => $s['name'], $winners));
+        $game['log'][] = "Game over! It's a tie between {$names} with {$top['stars']} stars and {$top['missions']} missions!";
+    } else {
+        $game['log'][] = "Game over! Winner: {$top['name']} with {$top['stars']} stars!";
+    }
     $game['version']++;
 }
