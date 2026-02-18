@@ -36,6 +36,7 @@
         <div id="waiting-room" style="display:none">
             <h3>Waiting Room: <span id="waiting-room-name"></span></h3>
             <div id="waiting-players"></div>
+            <button id="btn-add-ai" style="display:none" onclick="addAI()">Add AI</button>
             <button id="btn-start" style="display:none" onclick="startGame()">Start Game</button>
             <p id="waiting-msg">Waiting for host to start...</p>
             <button id="btn-back-out" onclick="leaveRoom()" style="margin-top:12px">Back Out</button>

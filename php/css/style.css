@@ -465,7 +465,13 @@ input[type="text"] {
 .deck-discard-column { display: flex; flex-direction: column; gap: 6px; flex: 0 0 120px; min-width: 80px; max-width: 120px; }
 .deck-section { text-align: center; }
 .deck-section h3 { font-size: 12px; }
-.deck-count-display { font-size: 22px; font-weight: bold; color: #ffd700; padding: 4px 0; }
+.deck-count-display { 
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #ffd700; 
+    padding: 4px 0; 
+    display: block;
+    text-align: center;
 .discard-section h3 { font-size: 12px; }
 .discard-label {
     font-size: 22px;
@@ -482,5 +488,5 @@ input[type="text"] {
 /* End Turn column */
 .end-turn-column { display: flex; align-items: center; }
 #btn-end-turn { height:100%; font-size: 14px; padding: 12px 20px; }
-#btn-end-turn:disabled { background: #555; border-color: #666; opacity: 0.5; cursor: default; }
+#btn-end-turn:disabled { height: 100%; background: #555; border-color: #666; opacity: 0.5; cursor: default; }
 .my-resources { display: inline-block; text-align: right; float: right;}

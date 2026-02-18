@@ -186,8 +186,18 @@ function showWaitingRoom(roomName, isHost) {
     document.getElementById('waiting-room').style.display = 'block';
     document.getElementById('waiting-room-name').textContent = roomName;
     document.getElementById('btn-start').style.display = isHost ? 'inline-block' : 'none';
+    document.getElementById('btn-add-ai').style.display = isHost ? 'inline-block' : 'none';
     document.getElementById('waiting-msg').style.display = isHost ? 'none' : 'block';
     pollWaitingRoom();
+}
+
+async function addAI() {
+    const res = await apiPost(API_BASE + 'api/room_add_ai.php', {
+        room_id: currentRoomId,
+        token: getToken(),
+    });
+    if (!res.ok) return alert(res.error);
+    lobbyLog('Added AI: ' + res.name);
 }
 
 function pollWaitingRoom() {
@@ -215,9 +225,11 @@ function pollWaitingRoom() {
         // Update host status (in case host left and we got promoted)
         const isHost = room.host === getToken();
         document.getElementById('btn-start').style.display = isHost ? 'inline-block' : 'none';
+        document.getElementById('btn-add-ai').style.display = isHost ? 'inline-block' : 'none';
+        document.getElementById('btn-add-ai').disabled = room.player_count >= 4;
         document.getElementById('waiting-msg').style.display = isHost ? 'none' : 'block';
         const el = document.getElementById('waiting-players');
-        el.innerHTML = '<ul>' + room.players.map(n => `<li>${escHtml(n)}</li>`).join('') + '</ul>';
+        el.innerHTML = '<ul>' + room.players.map(p => `<li>${escHtml(p.name)}${p.is_ai ? ' 🤖' : ''}</li>`).join('') + '</ul>';
     }, 1500);
 }
 

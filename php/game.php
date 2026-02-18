@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="end-turn-column">
-                    <button id="btn-end-turn" onclick="Actions.endTurn()" disabled>End Turn</button>
+                    <button id="btn-end-turn" onclick="Actions.endTurn()" style="height:100%" disabled>End Turn</button>
                 </div>
             </div>
         </div>

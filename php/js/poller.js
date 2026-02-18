@@ -4,6 +4,7 @@ const Poller = {
     version: 0,
     interval: null,
     onUpdate: null,
+    aiTurnInProgress: false,
 
     init(gameId, token, onUpdate) {
         this.gameId = gameId;
@@ -38,8 +39,28 @@ const Poller = {
             if (!data.changed) return;
             this.version = data.version;
             if (this.onUpdate) this.onUpdate(data);
+            if (data.needs_ai_action) {
+                setTimeout(() => this.triggerAiTurn(), 900);
+            }
         } catch (e) {
             console.error('Poll exception:', e);
+        }
+    },
+
+    async triggerAiTurn() {
+        if (this.aiTurnInProgress) return;
+        this.aiTurnInProgress = true;
+        try {
+            await fetch(API_BASE + 'api/game_ai_turn.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ game_id: this.gameId }),
+            });
+            this.pollNow();
+        } catch (e) {
+            console.error('AI turn error:', e);
+        } finally {
+            this.aiTurnInProgress = false;
         }
     },
 };

@@ -56,6 +56,7 @@ function init_game(array $players): array {
         $player_states[] = [
             'token' => $player['token'],
             'name' => $player['name'],
+            'is_ai' => $player['is_ai'] ?? false,
             'deck' => $starter,
             'hand' => $hand,
             'discard' => [],

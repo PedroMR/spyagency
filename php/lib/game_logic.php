@@ -893,11 +893,17 @@ function action_vote_rematch(array &$game, int $pi, array $params): array {
         unset($game['rematch_votes'][$player_token]);
     }
 
-    // Check if all players voted yes and there are at least 2
-    $total_players = count($game['players']);
-    $total_votes = count($game['rematch_votes']);
+    // Check if all HUMAN players voted yes (AI players auto-vote yes)
+    $human_players = array_filter($game['players'], fn($p) => !($p['is_ai'] ?? false));
+    $human_tokens = array_map(fn($p) => $p['token'], $human_players);
+    $human_votes = count(array_filter(
+        $game['rematch_votes'],
+        fn($_, $tok) => in_array($tok, $human_tokens),
+        ARRAY_FILTER_USE_BOTH
+    ));
+    $total_human = count($human_players);
 
-    if ($total_votes >= 2 && $total_votes === $total_players) {
+    if ($human_votes >= 1 && $human_votes === $total_human) {
         // Trigger rematch: create new game in the same room
         $room_id = $game['room_id'] ?? null;
         if ($room_id) {

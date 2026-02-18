@@ -85,6 +85,7 @@ foreach ($game['players'] as $i => $p) {
         $players_data[] = [
             'name' => $p['name'],
             'is_me' => false,
+            'is_ai' => $p['is_ai'] ?? false,
             'hand_count' => count($p['hand']),
             'deck_count' => count($p['deck']),
             'discard_count' => count($p['discard']),
@@ -97,9 +98,27 @@ foreach ($game['players'] as $i => $p) {
     }
 }
 
+// Determine if any AI player needs to act
+$needs_ai_action = false;
+if (!($game['ended'] ?? false) && $game['status'] === 'active') {
+    $cp = $game['current_player'];
+    if (($game['players'][$cp]['is_ai'] ?? false) && !isset($game['pending_attack'])) {
+        $needs_ai_action = true;
+    }
+    if (isset($game['pending_attack'])) {
+        foreach ($game['pending_attack']['defenders'] as $di) {
+            if (!isset($game['pending_attack']['responses'][$di]) && ($game['players'][$di]['is_ai'] ?? false)) {
+                $needs_ai_action = true;
+                break;
+            }
+        }
+    }
+}
+
 $state = [
     'changed' => true,
     'version' => $game['version'],
+    'needs_ai_action' => $needs_ai_action,
     'current_player' => $game['current_player'],
     'my_index' => $my_index,
     'is_my_turn' => $game['current_player'] === $my_index,
@@ -128,7 +147,12 @@ $state = [
     'turn_number' => $game['turn_number'] ?? 1,
     'round' => $game['round'] ?? 1,
     'catalog' => $catalog,
-    'rematch_vote_count' => count($game['rematch_votes'] ?? []),
+    'rematch_vote_count' => count(array_filter(
+        $game['rematch_votes'] ?? [],
+        fn($_, $tok) => !in_array($tok, array_map(fn($p) => $p['token'], array_filter($game['players'], fn($p) => $p['is_ai'] ?? false))),
+        ARRAY_FILTER_USE_BOTH
+    )),
+    'rematch_human_total' => count(array_filter($game['players'], fn($p) => !($p['is_ai'] ?? false))),
     'rematch_my_vote' => isset(($game['rematch_votes'] ?? [])[$token]),
     'rematch_game_id' => $game['rematch_game_id'] ?? null,
     'attack_pending' => isset($game['pending_attack']),

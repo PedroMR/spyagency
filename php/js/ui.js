@@ -425,10 +425,11 @@ const UI = {
             const p = this.state.players[i];
             const isMe = i === this.state.my_index;
             const isActive = i === this.state.current_player;
+            const aiTag = (!isMe && p.is_ai) ? ' 🤖' : '';
             const label = isMe ? `${esc(p.name)} (You)` : esc(p.name);
             const tag = isActive ? ' ▶' : '';
             html += `<div class="opponent ${isActive ? 'active-player' : ''} ${isMe ? 'is-me' : ''}">
-                <h4>${label}${tag}</h4>
+                <h4>${label}${aiTag}${tag}</h4>
                 <div class="opponent-stats">
                     <span>⭐${p.stars}</span>
                     <span>$${p.money}</span>
@@ -759,10 +760,10 @@ const UI = {
         const scores = this.state.scores;
         if (!scores) return;
         const s = this.state;
-        const totalPlayers = s.players.length;
+        const humanTotal = s.rematch_human_total ?? s.players.length;
         const voteCount = s.rematch_vote_count || 0;
         const myVote = s.rematch_my_vote || false;
-        const onlyOne = totalPlayers < 2;
+        const onlyOne = humanTotal < 2;
 
         const topStars = scores[0].stars;
         const topMissions = scores[0].missions ?? 0;
@@ -791,7 +792,7 @@ const UI = {
         html += `<label class="rematch-label ${onlyOne ? 'disabled' : ''}">
             <input type="checkbox" id="rematch-checkbox" ${checked} ${disabled}
                 onchange="UI.onRematchVote(this.checked)">
-            Rematch? <span class="rematch-count">(${voteCount}/${totalPlayers})</span>
+            Rematch? <span class="rematch-count">(${voteCount}/${humanTotal})</span>
         </label>`;
         html += '</div>';
         document.getElementById('modal-content').innerHTML = html;
