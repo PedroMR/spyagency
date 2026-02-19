@@ -329,9 +329,10 @@ const UI = {
             const affordClass = unaffordable ? ' unaffordable' : '';
             const stackBadge = count > 1 ? `<div class="stack-count">x${count}</div>` : '';
             const click = affordable ? `onclick="UI.onMarketClick('${cardId}', ${i})"` : '';
+            const defenderBadge = card.defend ? `<div class="card-defender">DEFENDER</div>` : '';
             const detail = (card.type === 'agent' || card.type === 'tech') && card.icons
-                ? `<div class="card-icons">${this.getCardIcons(card)}</div>`
-                : `<div class="card-desc">${esc(card.description)}</div>`;
+                ? `<div class="card-icons">${this.getCardIcons(card)}</div>${defenderBadge}`
+                : `<div class="card-desc">${esc(card.description)}</div>${defenderBadge}`;
             return `<div class="card market-card${affordClass}" style="--card-color:${this.getCardColor(card)}" ${click}>
                 <div class="card-row-top">
                     <span class="card-name">${esc(card.name)}</span>
@@ -457,7 +458,8 @@ const UI = {
         }
         if (card.type === 'agent') {
             const icons = this.getCardIcons(card);
-            return icons ? `<div class="card-icons">${icons}</div>` : '';
+            const defenderBadge = card.defend ? `<div class="card-defender">DEFENDER</div>` : '';
+            return (icons ? `<div class="card-icons">${icons}</div>` : '') + defenderBadge;
         }
         if (card.type === 'tech') {
             const icons = this.getCardIcons(card);

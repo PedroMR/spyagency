@@ -185,6 +185,15 @@ input[type="text"] {
     padding-top: 2px;
     opacity: 0.85;
 }
+.card-defender {
+    font-size: 8px;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    color: #18ffff;
+    text-transform: uppercase;
+    opacity: 0.9;
+    margin-top: 2px;
+}
 .card-desc { color: #bbb; font-size: 10px; }
 .card-req { font-size: 16px; }
 .icon-group { letter-spacing: -3px; margin-right: 5px; }

@@ -72,6 +72,19 @@ function get_card_catalog(): array {
             'always_available' => true,
             'description' => 'Requires: ❓ — Reward: . Always available.',
         ],
+        'slap_contest' => [
+            'id' => 'slap_contest',
+            'name' => 'Slap Contest',
+            'type' => 'mission',
+            'tier' => 1,
+            'stars' => 1,
+            'cost' => 0,
+            'requirements' => ['muscle', 'muscle'],
+            'value' => 3,
+            'gems' => 0,
+            'always_available' => false,
+            'description' => 'Requires: 💪💪 — Reward: 1⭐ $3',
+        ],
         'narrow_getaway' => [
             'id' => 'narrow_getaway',
             'name' => 'Narrow Getaway',
@@ -619,10 +632,11 @@ function build_market_deck(): array {
 function build_mission_decks(): array {
     $missions = [
         1 => [
-            'narrow_getaway' => 4,
-            'arm_wrestling' => 4,
-            'convent_secrets' => 4,
-            'gate_hacking' => 4,
+            'slap_contest' => 8,
+            'narrow_getaway' => 8,
+            'arm_wrestling' => 8,
+            'convent_secrets' => 8,
+            'gate_hacking' => 8,
         ],
         2 => [
             'train_hijinx' => 4,
