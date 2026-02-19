@@ -70,6 +70,20 @@ const UI = {
     state: null,
     catalog: null,
 
+    _applyFLIPFrom(firstRect, el) {
+        const lastRect = el.getBoundingClientRect();
+        const dx = firstRect.left - lastRect.left;
+        const dy = firstRect.top - lastRect.top;
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+        el.style.transition = 'none';
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+        el.getBoundingClientRect(); // force reflow
+        requestAnimationFrame(() => {
+            el.style.transition = 'transform 0.35s ease';
+            el.style.transform = '';
+        });
+    },
+
     iconMap: {
         drive: '🚘',
         muscle: '💪',
@@ -125,6 +139,14 @@ const UI = {
     _lastTurnNumber: null,
 
     update(state) {
+        // Capture hand card positions and old play area BEFORE re-rendering
+        const oldPlayArea = this.state?.players?.[this.state?.my_index]?.play_area ?? [];
+        const handRects = {};
+        document.querySelectorAll('#my-hand [data-card-id]').forEach(el => {
+            const cid = el.dataset.cardId;
+            if (!handRects[cid]) handRects[cid] = el.getBoundingClientRect();
+        });
+
         this.state = state;
         this.catalog = state.catalog;
         this.renderTurnInfo();
@@ -134,6 +156,17 @@ const UI = {
         this.renderOpponents();
         this.renderHand();
         this.renderPlayArea();
+
+        // Animate newly added play area cards flying from their hand positions
+        const newPlayArea = state.players[state.my_index].play_area;
+        if (newPlayArea.length > oldPlayArea.length) {
+            const allPlayEls = document.querySelectorAll('#play-area [data-card-id]');
+            for (let i = oldPlayArea.length; i < newPlayArea.length; i++) {
+                const rect = handRects[newPlayArea[i]];
+                const el = allPlayEls[i];
+                if (rect && el) this._applyFLIPFrom(rect, el);
+            }
+        }
         this.renderBase();
         this.renderDeck();
         this.renderDiscardPile();
@@ -475,7 +508,7 @@ const UI = {
         if (!this.state.is_my_turn) {
             container.innerHTML = me.hand.map(cardId => {
                 const card = this.catalog[cardId];
-                return `<div class="card hand-card" style="--card-color:${this.getCardColor(card)}">
+                return `<div class="card hand-card" data-card-id="${cardId}" style="--card-color:${this.getCardColor(card)}">
                     <div class="card-name">${esc(card.name)}</div>
                     <div class="card-type">${card.type}</div>
                     ${this.getOwnedCardInfo(card)}
@@ -485,7 +518,7 @@ const UI = {
         }
         container.innerHTML = me.hand.map(cardId => {
             const card = this.catalog[cardId];
-            return `<div class="card hand-card playable" style="--card-color:${this.getCardColor(card)}" onclick="UI.onHandClick('${cardId}')">
+            return `<div class="card hand-card playable" data-card-id="${cardId}" style="--card-color:${this.getCardColor(card)}" onclick="UI.onHandClick('${cardId}')">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-type">${card.type}</div>
                 ${this.getOwnedCardInfo(card)}
@@ -496,14 +529,36 @@ const UI = {
     renderPlayArea() {
         const me = this.state.players[this.state.my_index];
         const container = document.getElementById('play-area');
-        container.innerHTML = me.play_area.map(cardId => {
-            const card = this.catalog[cardId];
-            return `<div class="card played-card" style="--card-color:${this.getCardColor(card)}">
-                <div class="card-name">${esc(card.name)}</div>
-                ${this.getOwnedCardInfo(card)}
-                <div class="card-type">${card.type}</div>
-            </div>`;
-        }).join('');
+        const existing = Array.from(container.children);
+
+        // If cards were only added (not removed/reordered), append new ones to
+        // preserve ongoing CSS transitions on already-animated elements.
+        const canAppend = existing.length <= me.play_area.length &&
+            existing.every((el, i) => el.dataset.cardId === me.play_area[i]);
+
+        if (canAppend) {
+            for (let i = existing.length; i < me.play_area.length; i++) {
+                const cardId = me.play_area[i];
+                const card = this.catalog[cardId];
+                const div = document.createElement('div');
+                div.className = 'card played-card';
+                div.dataset.cardId = cardId;
+                div.style.setProperty('--card-color', this.getCardColor(card));
+                div.innerHTML = `<div class="card-name">${esc(card.name)}</div>
+                    ${this.getOwnedCardInfo(card)}
+                    <div class="card-type">${card.type}</div>`;
+                container.appendChild(div);
+            }
+        } else {
+            container.innerHTML = me.play_area.map(cardId => {
+                const card = this.catalog[cardId];
+                return `<div class="card played-card" data-card-id="${cardId}" style="--card-color:${this.getCardColor(card)}">
+                    <div class="card-name">${esc(card.name)}</div>
+                    ${this.getOwnedCardInfo(card)}
+                    <div class="card-type">${card.type}</div>
+                </div>`;
+            }).join('');
+        }
     },
 
     renderBase() {
