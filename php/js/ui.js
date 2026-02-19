@@ -216,7 +216,8 @@ const UI = {
             const c = this.catalog[cid];
             if (!c) return false;
             if (c.type === 'hazard') return false;
-            if (c.type === 'money' || c.type === 'mission') return true;
+            if (c.type === 'money') return true;
+            if (c.type === 'mission' && (c.value || 0) > 0) return true;
             if (c.type === 'plot') return true;
             return false;
         });
