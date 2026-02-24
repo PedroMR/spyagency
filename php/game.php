@@ -94,7 +94,12 @@
             <h4>Game Log</h4>
             <div id="game-log"></div>
         </div>
-        <button id="btn-debug-end" onclick="Actions.debugEndGame()" style="display:none">Debug: End Game</button>
+        <div id="debug-buttons" style="display:none;gap:6px;margin-top:6px">
+            <button onclick="Actions.debugEndGame()">Debug: End Game</button>
+            <button onclick="Actions.debugAddGems()">+10 💎</button>
+            <button onclick="Actions.debugAddBuys()">+5 Buys</button>
+            <button onclick="Actions.debugAddMissions()">+5 Missions</button>
+        </div>
     </div>
 
     <!-- Modal for mission completion -->

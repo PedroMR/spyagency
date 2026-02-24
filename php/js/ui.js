@@ -303,7 +303,7 @@ const UI = {
         endTurnBtn.style.display = 'inline-block';
         endTurnBtn.disabled = !s.is_my_turn || s.attack_pending;
         const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
-        document.getElementById('btn-debug-end').style.display = (isLocal && !s.ended) ? 'inline-block' : 'none';
+        document.getElementById('debug-buttons').style.display = (isLocal && !s.ended) ? 'flex' : 'none';
         if (s.is_my_turn) {
             const shouldGlow = this._shouldEndTurn();
             const wasGlowing = endTurnBtn.classList.contains('glow');

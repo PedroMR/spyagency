@@ -87,6 +87,9 @@ const Actions = {
     debugEndGame() {
         return this.send('debug_end_game', {});
     },
+    debugAddGems() { return this.send('debug_add_gems', {}); },
+    debugAddBuys() { return this.send('debug_add_buys', {}); },
+    debugAddMissions() { return this.send('debug_add_missions', {}); },
 
     resign() {
         return this.send('resign', {});

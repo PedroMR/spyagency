@@ -1173,6 +1173,23 @@ function process_action(array &$game, string $token, string $action, array $para
         return ['ok' => true];
     }
 
+    // Debug: add gems/buys/missions (only meaningful on your turn, but no turn check here)
+    if ($action === 'debug_add_gems') {
+        $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + 10;
+        $game['version']++;
+        return ['ok' => true];
+    }
+    if ($action === 'debug_add_buys') {
+        $game['players'][$pi]['extra_buys'] = ($game['players'][$pi]['extra_buys'] ?? 0) + 5;
+        $game['version']++;
+        return ['ok' => true];
+    }
+    if ($action === 'debug_add_missions') {
+        $game['players'][$pi]['extra_missions'] = ($game['players'][$pi]['extra_missions'] ?? 0) + 5;
+        $game['version']++;
+        return ['ok' => true];
+    }
+
     if ($game['ended'] ?? false) {
         return ['ok' => false, 'error' => 'Game is over'];
     }
