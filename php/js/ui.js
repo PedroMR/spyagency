@@ -457,19 +457,43 @@ const UI = {
         }
 
         section.style.display = '';
+
+        // Splay: each card is absolutely positioned. The last (most recent) card
+        // sits at top:0 with the highest z-index and is fully visible. Earlier cards
+        // peek out below it showing only their reward line.
+        // Positions are computed so each non-top card shows a consistent STRIP of pixels.
+        const STRIP = 22;       // visible px for each non-top card (reward line)
+        const CARD_H_TOP = 47;  // estimated top card height (name + reward + padding)
+        const CARD_H_REST = 28; // estimated non-top card height (reward + padding only)
+        const N = missionArea.length;
+
+        // Build absolute top positions for each card (index 0 = oldest, N-1 = top/front)
+        const positions = new Array(N);
+        positions[N - 1] = 0;
+        let prevBottom = CARD_H_TOP;
+        for (let i = N - 2; i >= 0; i--) {
+            positions[i] = prevBottom + STRIP - CARD_H_REST;
+            prevBottom = positions[i] + CARD_H_REST;
+        }
+
         let totalIncome = 0;
-        container.innerHTML = missionArea.map(mid => {
+        const html = missionArea.map((mid, i) => {
             const card = this.catalog[mid];
             if (!card) return '';
             const income = card.value || 0;
             totalIncome += income;
-            const incomeHtml = income > 0 ? `<div class="ma-income">$${income}/turn</div>` : '';
-            const starsHtml = card.stars ? `<div class="ma-stars">${card.stars}⭐</div>` : '';
-            return `<div class="mission-area-card">
-                <div class="ma-name">${esc(card.name)}</div>
-                ${starsHtml}${incomeHtml}
+            const isTop = i === N - 1;
+            const stars = card.stars ? `${card.stars}⭐ ` : '';
+            const reward = (stars || income > 0) ? `${stars}${income > 0 ? `$${income}/turn` : ''}` : '';
+            return `<div class="card played-card" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[i]}px;z-index:${i + 1}">
+                ${isTop ? `<div class="card-name">${esc(card.name)}</div>` : ''}
+                ${reward ? `<div class="card-reward">${reward}</div>` : ''}
             </div>`;
         }).join('');
+
+        container.style.position = 'relative';
+        container.style.height = prevBottom + 'px';
+        container.innerHTML = html;
 
         incomeDisplay.textContent = totalIncome > 0 ? `$${totalIncome}/turn` : '';
         incomeDisplay.style.display = totalIncome > 0 ? 'inline' : 'none';
