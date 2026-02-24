@@ -794,6 +794,25 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         unset($slot);
     }
 
+    // Build agent/tech used description for logging
+    $used_names = [];
+    foreach ($agent_ids as $aid) {
+        $used_names[] = $catalog[$aid]['name'] ?? $aid;
+    }
+    if ($backup) {
+        $used_names[] = ($catalog[$backup]['name'] ?? $backup) . ' (backup)';
+    }
+    if ($base_agent_id) {
+        $used_names[] = ($catalog[$base_agent_id]['name'] ?? $base_agent_id) . ' (base)';
+    }
+    foreach ($tech_ids as $tid) {
+        $used_names[] = $catalog[$tid]['name'] ?? $tid;
+    }
+    foreach ($base_tech_ids as $tid) {
+        $used_names[] = ($catalog[$tid]['name'] ?? $tid) . ' (base)';
+    }
+    $used_str = !empty($used_names) ? ' using ' . implode(', ', $used_names) : '';
+
     // Handle Heist: award gems, card does NOT go into deck
     $mission_gems = $mission['gems'] ?? 0;
     if ($mission_gems > 0) {
@@ -811,11 +830,11 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
             $gems_awarded = 1;
         }
         $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + $gems_awarded;
-        $game['log'][] = $game['players'][$pi]['name'] . " completed Heist ({$total_icons} icons) and earned {$gems_awarded} gem(s)!";
+        $game['log'][] = $game['players'][$pi]['name'] . " completed Heist{$used_str} ({$total_icons} icons) and earned {$gems_awarded} gem(s)!";
     } else {
         // Normal mission: add mission card to mission area (provides recurring income)
         $game['players'][$pi]['mission_area'][] = $mission_id;
-        $game['log'][] = $game['players'][$pi]['name'] . " adds {$mission['name']} to their mission area!";
+        $game['log'][] = $game['players'][$pi]['name'] . " completed {$mission['name']}{$used_str}";
     }
 
     $game['players'][$pi]['missions_this_turn'] = $missions_completed + 1;
