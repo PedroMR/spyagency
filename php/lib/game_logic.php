@@ -813,9 +813,9 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + $gems_awarded;
         $game['log'][] = $game['players'][$pi]['name'] . " completed Heist ({$total_icons} icons) and earned {$gems_awarded} gem(s)!";
     } else {
-        // Normal mission: add mission card to discard (it has stars and/or value)
-        $game['players'][$pi]['discard'][] = $mission_id;
-        $game['log'][] = $game['players'][$pi]['name'] . " completed mission {$mission['name']}!";
+        // Normal mission: add mission card to mission area (provides recurring income)
+        $game['players'][$pi]['mission_area'][] = $mission_id;
+        $game['log'][] = $game['players'][$pi]['name'] . " adds {$mission['name']} to their mission area!";
     }
 
     $game['players'][$pi]['missions_this_turn'] = $missions_completed + 1;
@@ -872,6 +872,18 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     }
     $next_name = $game['players'][$game['current_player']]['name'];
     $game['log'][] = "It's now {$next_name}'s turn.";
+
+    // Apply passive mission income for the next player
+    $next_pi = $game['current_player'];
+    $catalog = get_card_catalog();
+    $mission_income = 0;
+    foreach ($game['players'][$next_pi]['mission_area'] ?? [] as $mid) {
+        $mission_income += $catalog[$mid]['value'] ?? 0;
+    }
+    if ($mission_income > 0) {
+        $game['players'][$next_pi]['money'] += $mission_income;
+        $game['log'][] = $game['players'][$next_pi]['name'] . " earns \${$mission_income} from completed missions.";
+    }
 
     return ['ok' => true];
 }

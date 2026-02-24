@@ -36,7 +36,7 @@ if ($my_index < 0) {
 // Compute live star count for a player from all owned cards
 function compute_stars(array $player, array $catalog): int {
     $stars = 0;
-    $all = array_merge($player['deck'], $player['hand'], $player['discard'], $player['play_area']);
+    $all = array_merge($player['deck'], $player['hand'], $player['discard'], $player['play_area'], $player['mission_area'] ?? []);
     // Include cards in base
     $base = $player['base'] ?? null;
     if (is_array($base)) {
@@ -80,6 +80,7 @@ foreach ($game['players'] as $i => $p) {
             'extra_missions' => $p['extra_missions'] ?? 0,
             'missions_this_turn' => $p['missions_this_turn'] ?? 0,
             'base' => normalize_base_for_client($p['base'] ?? null),
+            'mission_area' => $p['mission_area'] ?? [],
         ];
     } else {
         $players_data[] = [
@@ -94,6 +95,7 @@ foreach ($game['players'] as $i => $p) {
             'gems' => $p['gems'] ?? 0,
             'stars' => $live_stars,
             'base' => normalize_base_for_client($p['base'] ?? null),
+            'mission_area' => $p['mission_area'] ?? [],
         ];
     }
 }
@@ -155,6 +157,7 @@ $state = [
     'rematch_human_total' => count(array_filter($game['players'], fn($p) => !($p['is_ai'] ?? false))),
     'rematch_my_vote' => isset(($game['rematch_votes'] ?? [])[$token]),
     'rematch_game_id' => $game['rematch_game_id'] ?? null,
+    'room_id' => $game['room_id'] ?? null,
     'attack_pending' => isset($game['pending_attack']),
     'attack_card' => isset($game['pending_attack']) ? $game['pending_attack']['card'] : null,
     'attack_attacker_name' => isset($game['pending_attack']) ? $game['players'][$game['pending_attack']['attacker']]['name'] : null,

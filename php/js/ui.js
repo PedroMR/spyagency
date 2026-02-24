@@ -167,6 +167,7 @@ const UI = {
                 if (rect && el) this._applyFLIPFrom(rect, el);
             }
         }
+        this.renderMissionArea();
         this.renderBase();
         this.renderDeck();
         this.renderDiscardPile();
@@ -428,7 +429,7 @@ const UI = {
                 const card = this.catalog[mId];
                 const reqIcons = this.formatReqIcons(card.requirements);
                 const stars = card.stars ? `${card.stars}⭐ ` : '';
-                const money = card.value ? `$${card.value}` : '';
+                const money = card.value ? `$${card.value}/turn` : '';
                 const count = missionCounts[mi] || 1;
                 const countBadge = count > 1 ? `<div class="stack-count">×${count}</div>` : '';
                 html += `<div class="card mission-card" style="--card-color:${this.getCardColor(card)}" onclick="UI.showMissionDialog('${mId}')">
@@ -441,6 +442,37 @@ const UI = {
             html += '</div></div>';
         }
         container.innerHTML = html;
+    },
+
+    renderMissionArea() {
+        const me = this.state.players[this.state.my_index];
+        const missionArea = me.mission_area || [];
+        const section = document.getElementById('mission-area-section');
+        const container = document.getElementById('my-mission-area');
+        const incomeDisplay = document.getElementById('mission-income-display');
+
+        if (missionArea.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = '';
+        let totalIncome = 0;
+        container.innerHTML = missionArea.map(mid => {
+            const card = this.catalog[mid];
+            if (!card) return '';
+            const income = card.value || 0;
+            totalIncome += income;
+            const incomeHtml = income > 0 ? `<div class="ma-income">$${income}/turn</div>` : '';
+            const starsHtml = card.stars ? `<div class="ma-stars">${card.stars}⭐</div>` : '';
+            return `<div class="mission-area-card">
+                <div class="ma-name">${esc(card.name)}</div>
+                ${starsHtml}${incomeHtml}
+            </div>`;
+        }).join('');
+
+        incomeDisplay.textContent = totalIncome > 0 ? `$${totalIncome}/turn` : '';
+        incomeDisplay.style.display = totalIncome > 0 ? 'inline' : 'none';
     },
 
     renderHeist() {
@@ -463,12 +495,16 @@ const UI = {
             const aiTag = (!isMe && p.is_ai) ? ' 🤖' : '';
             const label = isMe ? `${esc(p.name)} (You)` : esc(p.name);
             const tag = isActive ? ' ▶' : '';
+            const missionArea = p.mission_area || [];
+            const missionCount = missionArea.length;
+            const missionBadge = missionCount > 0 ? `<span>🎯${missionCount}</span>` : '';
             html += `<div class="opponent ${isActive ? 'active-player' : ''} ${isMe ? 'is-me' : ''}">
                 <h4>${label}${aiTag}${tag}</h4>
                 <div class="opponent-stats">
                     <span>⭐${p.stars}</span>
                     <span>$${p.money}</span>
                     ${p.gems > 0 ? `<span>💎${p.gems}</span>` : ''}
+                    ${missionBadge}
                 </div>
             </div>`;
         }
@@ -1369,7 +1405,12 @@ const UI = {
 
     confirmResign() {
         if (this.state && this.state.ended) {
-            location.href = 'index.php';
+            const roomId = this.state.room_id;
+            if (roomId) {
+                Actions.leaveRoom(roomId).finally(() => { location.href = 'index.php'; });
+            } else {
+                location.href = 'index.php';
+            }
             return;
         }
         if (confirm('Are you sure you want to resign? You will be removed from the game.')) {

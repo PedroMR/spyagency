@@ -61,6 +61,7 @@ function init_game(array $players): array {
             'hand' => $hand,
             'discard' => [],
             'play_area' => [],
+            'mission_area' => [],
             'money' => 0,
             'gems' => 0,
             'stars' => 0,

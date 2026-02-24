@@ -79,6 +79,11 @@
                     <div id="my-base"></div>
                 </div>
 
+                <div class="section mission-area-section" id="mission-area-section" style="display:none">
+                    <h3>Mission Area <span id="mission-income-display" class="mission-income"></span></h3>
+                    <div id="my-mission-area" class="card-row"></div>
+                </div>
+
                 <div class="end-turn-column">
                     <button id="btn-end-turn" onclick="Actions.endTurn()" style="height:100%" disabled>End Turn</button>
                 </div>

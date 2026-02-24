@@ -34,7 +34,9 @@ Every player has a single Base slot. They may play Agent and Tech cards here in 
 
 Plot cards may be played from hand at any time and discarded as soon as their effects have been resolved. If they have an Attack, each player must defend with an agent satisfying the attack requirement or suffer the consequences specified in the card. For example: Ada plays Paperwork. She gains $1. Bob chooses to not defend, so he gains a Red Tape. Charlie discards an agent, so she is safe. Debora reveals a Sentinel, so she doesn't have to discard it and is safe.
 
-To complete a Mission the player plays one or more Agents with Tech. The number of icons in the Agent and all of their Tech needs to match or exceed the requirement of the Mission. The Mission card itself is added to the player's hand -- it is worth the effect indicated. Any cards (Tech or Agent) that offer a choice should be chosen automatically in order to complete the mission, if that's possible.
+To complete a Mission the player plays one or more Agents with Tech. The number of icons in the Agent and all of their Tech needs to match or exceed the requirement of the Mission. The Mission card itself is added to the player's mission area. Every turn it will grant the player the specified bonus or effect.
+
+Any cards (Tech or Agent) that offer a choice should be chosen automatically in order to complete the mission, if that's possible.
 
 Some Missions and Plots will reward the Player with gems (💎). Gems are kept between turns, and may be cashed in for the same amount in money ($). 1 gem = 1 money. This should be done "just in time", at moment of purchase. The game can ask the player if they're willing to spend X gems to purchase the thing, and allow them to cancel.
 

@@ -14,7 +14,7 @@ function calculate_scores(array &$game): array {
             if ($base['agent'] ?? null) $base_cards[] = $base['agent'];
             foreach ($base['tech'] ?? [] as $t) $base_cards[] = $t;
         }
-        $all_cards = array_merge($p['deck'], $p['hand'], $p['discard'], $p['play_area'], $base_cards);
+        $all_cards = array_merge($p['deck'], $p['hand'], $p['discard'], $p['play_area'], $p['mission_area'] ?? [], $base_cards);
         foreach ($all_cards as $card_id) {
             if (!isset($catalog[$card_id])) continue;
             if (($catalog[$card_id]['stars'] ?? 0) > 0) {

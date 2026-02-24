@@ -143,6 +143,53 @@ function ai_pick_best_mission(array &$game, int $pi, array $catalog): ?array {
 }
 
 /**
+ * Score an agent for base storage: more icons and tech slots = more valuable.
+ */
+function ai_agent_base_score(array $card): int {
+    return count($card['icons'] ?? []) * 2 + ($card['max_tech'] ?? 0);
+}
+
+/**
+ * After missions, store the best remaining hand agent in the base if it's
+ * better than whoever is currently there. Equips as much tech as possible.
+ */
+function ai_maybe_use_base(array &$game, int $pi, array $catalog): void {
+    $p = &$game['players'][$pi];
+
+    $hand_agents = array_values(array_filter(
+        $p['hand'],
+        fn($id) => isset($catalog[$id]) && $catalog[$id]['type'] === TYPE_AGENT
+    ));
+    if (empty($hand_agents)) return;
+
+    // Pick the highest-scored hand agent
+    usort($hand_agents, fn($a, $b) => ai_agent_base_score($catalog[$b]) - ai_agent_base_score($catalog[$a]));
+    $best = $hand_agents[0];
+    $best_score = ai_agent_base_score($catalog[$best]);
+
+    // Compare to current base occupant — only replace if strictly better
+    $base = $p['base'] ?? null;
+    if (is_array($base) && ($base['agent'] ?? null)) {
+        $current_score = ai_agent_base_score($catalog[$base['agent']] ?? []);
+        if ($best_score <= $current_score) return;
+    }
+
+    // Pick tech cards to equip (most icons first, up to max_tech slots)
+    $max_tech = $catalog[$best]['max_tech'] ?? 0;
+    $hand_tech = array_values(array_filter(
+        $p['hand'],
+        fn($id) => isset($catalog[$id]) && $catalog[$id]['type'] === TYPE_TECH
+    ));
+    usort($hand_tech, fn($a, $b) => count($catalog[$b]['icons'] ?? []) - count($catalog[$a]['icons'] ?? []));
+    $chosen_tech = array_slice($hand_tech, 0, $max_tech);
+
+    action_put_agent_in_base($game, $pi, [
+        'agent_id' => $best,
+        'tech_ids' => $chosen_tech,
+    ]);
+}
+
+/**
  * Pick the best card to buy from the marketplace.
  * Never buys always-available basic agents (Muscle/Shadow) — leftover money
  * is converted to gems separately in run_ai_turn.
@@ -287,7 +334,12 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 3. Buy best marketplace card if available (loop for extra buys)
+    // 3. Store best remaining agent in base for future turns
+    if (!($game['ended'] ?? false)) {
+        ai_maybe_use_base($game, $pi, $catalog);
+    }
+
+    // 4. Buy best marketplace card if available (loop for extra buys)
     while (true) {
         if ($game['ended'] ?? false) break;
         $buy_params = ai_pick_best_buy($game, $pi, $catalog);
@@ -296,13 +348,13 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 4. Convert leftover money to gems ($3 each) to save up for expensive cards
+    // 5. Convert leftover money to gems ($3 each) to save up for expensive cards
     while (!($game['ended'] ?? false) && $game['players'][$pi]['money'] >= 3) {
         $result = action_buy_gem($game, $pi, []);
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 5. End turn
+    // 6. End turn
     if (!($game['ended'] ?? false)) {
         action_end_turn($game, $pi, []);
     }
@@ -336,6 +388,7 @@ function run_all_ai_actions(array &$game): array {
     // Handle the active AI player's turn
     $pi = $game['current_player'];
     if (!($game['players'][$pi]['is_ai'] ?? false)) {
+        $game['version']++; // AI handled defense — let the client see the cleared attack
         return ['ok' => true];
     }
     if ($game['ended'] ?? false) return ['ok' => true];

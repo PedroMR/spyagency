@@ -92,6 +92,14 @@ const Actions = {
         return this.send('resign', {});
     },
 
+    leaveRoom(roomId) {
+        return fetch(API_BASE + 'api/room_leave.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ room_id: roomId, token: this.token }),
+        }).catch(() => {});
+    },
+
     defendAttack(choice, cardId, discardCards, discardFrom) {
         const params = {choice: choice, card_id: cardId || ''};
         if (discardCards) params.discard_cards = discardCards;

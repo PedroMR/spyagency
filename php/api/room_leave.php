@@ -11,8 +11,7 @@ if (!$room_id || !$token) {
 
 $path = data_path('rooms', $room_id);
 $room = read_json($path);
-if (!$room) send_json(json_error('Room not found'));
-if ($room['status'] !== 'waiting') send_json(json_error('Game already started'));
+if (!$room) send_json(json_success()); // already gone, that's fine
 
 // Find and remove the player
 $found = false;
@@ -25,7 +24,7 @@ $room['players'] = array_values(array_filter($room['players'], function($p) use 
 }));
 
 if (!$found) {
-    send_json(json_error('Player not in room'));
+    send_json(json_success()); // not in room, nothing to do
 }
 
 // If room is now empty, delete it
@@ -34,8 +33,8 @@ if (empty($room['players'])) {
     send_json(json_success());
 }
 
-// If the host left, promote the next player
-if ($room['host'] === $token) {
+// For waiting rooms: promote host if they left
+if ($room['status'] === 'waiting' && $room['host'] === $token) {
     $room['host'] = $room['players'][0]['token'];
 }
 
