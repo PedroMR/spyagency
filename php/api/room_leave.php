@@ -27,9 +27,15 @@ if (!$found) {
     send_json(json_success()); // not in room, nothing to do
 }
 
-// If room is now empty, delete it
+// If room is now empty, delete it and all associated game files
 if (empty($room['players'])) {
     @unlink($path);
+    if ($room['game_id'] ?? null) {
+        @unlink(data_path('games', $room['game_id']));
+    }
+    foreach ($room['previous_game_ids'] ?? [] as $old_id) {
+        @unlink(data_path('games', $old_id));
+    }
     send_json(json_success());
 }
 

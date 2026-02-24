@@ -930,6 +930,7 @@ function action_vote_rematch(array &$game, int $pi, array $params): array {
                 $new_game['room_id'] = $room_id;
                 write_json(data_path('games', $new_game_id), $new_game);
 
+                $room['previous_game_ids'][] = $room['game_id']; // track for cleanup
                 $room['game_id'] = $new_game_id;
                 write_json($room_path, $room);
 
