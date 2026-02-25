@@ -383,7 +383,8 @@ input[type="text"] {
     font-size: 14px;
     text-align: left;
 }
-.btn-modal:hover { background: #3a7bc8; }
+.btn-modal:hover:not(:disabled) { background: #3a7bc8; }
+.btn-modal:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-cancel { background: #555; border-color: #777; }
 .btn-cancel:hover { background: #777; }
 .btn-icon-choice { font-size: 18px; text-align: center; }

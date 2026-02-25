@@ -1224,11 +1224,56 @@ const UI = {
             });
         }
 
-        html += `<button class="btn-modal" style="margin-top:12px;background:#1a8a2d;border-color:#2dbc45" onclick="UI.submitMission('${missionId}')">
+        html += `<button id="btn-run-op" class="btn-modal" style="margin-top:12px;background:#1a8a2d;border-color:#2dbc45" onclick="UI.submitMission('${missionId}')" disabled>
             Run Op
         </button>`;
         html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
         this.showModal(html);
+
+        // Wire up live requirement checking
+        const onChange = () => UI._updateRunOpButton(missionId);
+        document.querySelectorAll('input[name="mission-agent"], input[name="mission-tech"], input[name="mission-use-base-agent"]')
+            .forEach(el => el.addEventListener('change', onChange));
+    },
+
+    _updateRunOpButton(missionId) {
+        const btn = document.getElementById('btn-run-op');
+        if (!btn) return;
+        const mission = this.catalog[missionId];
+        const me = this.state.players[this.state.my_index];
+
+        // Collect selected card IDs
+        const agentIds = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked')).map(cb => cb.value);
+        const techIds  = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
+        const useBase  = document.querySelector('input[name="mission-use-base-agent"]')?.checked || false;
+
+        if (agentIds.length === 0 && !useBase) { btn.disabled = true; return; }
+
+        // Build icon pool
+        const pool = [];
+        agentIds.forEach(aid => (this.catalog[aid]?.icons || []).forEach(ic => pool.push(ic)));
+        techIds.forEach(tid => (this.catalog[tid]?.icons || []).forEach(ic => pool.push(ic)));
+        if (useBase && me.base?.agent) {
+            (this.catalog[me.base.agent]?.icons || []).forEach(ic => pool.push(ic));
+            (me.base.tech || []).forEach(tid => (this.catalog[tid]?.icons || []).forEach(ic => pool.push(ic)));
+        }
+        if (me.backup_agent) {
+            (this.catalog[me.backup_agent]?.icons || []).forEach(ic => pool.push(ic));
+        }
+
+        // Check requirements: satisfy specific icons first, then 'any' with remainder
+        const remaining = [...pool];
+        let ok = true;
+        for (const req of (mission.requirements || [])) {
+            if (req === 'any') continue;
+            const idx = remaining.indexOf(req);
+            if (idx === -1) { ok = false; break; }
+            remaining.splice(idx, 1);
+        }
+        const anyNeeded = (mission.requirements || []).filter(r => r === 'any').length;
+        if (ok && remaining.length < anyNeeded) ok = false;
+
+        btn.disabled = !ok;
     },
 
     submitMission(missionId) {
