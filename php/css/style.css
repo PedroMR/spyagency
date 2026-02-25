@@ -93,11 +93,12 @@ input[type="text"] {
 #btn-debug-end:hover { background: #777; }
 #btn-end-turn.glow {
     animation: end-turn-glow 1.2s ease-in-out infinite;
-    border-color: #ff4444;
+    background: #1a7a2e;
+    border-color: #2dbc45;
 }
 @keyframes end-turn-glow {
-    0%, 100% { box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); background: #8b0000; }
-    50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); background: #cc0000; }
+    0%, 100% { box-shadow: 0 0 8px rgba(45, 188, 69, 0.4); background: #1a7a2e; }
+    50% { box-shadow: 0 0 22px rgba(45, 188, 69, 0.9); background: #22a33c; }
 }
 
 .final-round-banner {
