@@ -383,10 +383,9 @@ const UI = {
         const alwaysContainer = document.getElementById('always-available-cards');
         const canBuyAny = s.is_my_turn && (me.buys_this_turn || 0) < (1 + (me.extra_buys || 0));
         const totalFunds = me.money + (me.gems || 0);
-        const alwaysCards = [
-            { id: 'muscle', name: 'Muscle', cost: 3, icon: '💪' },
-            { id: 'shadow', name: 'Shadow', cost: 4, icon: '🥸' },
-        ];
+        const alwaysCards = Object.values(this.catalog)
+            .filter(c => c.type === 'agent' && c.always_available)
+            .sort((a, b) => a.cost - b.cost);
         alwaysContainer.innerHTML = alwaysCards.map(c => {
             const affordable = canBuyAny && totalFunds >= c.cost;
             const dimmed = !affordable ? ' unaffordable' : '';
@@ -396,7 +395,7 @@ const UI = {
                     <span class="card-name">${c.name}</span>
                     <span class="card-cost-badge">$${c.cost}</span>
                 </div>
-                <div class="card-icons">${c.icon}</div>
+                <div class="card-icons">${this.getCardIcons(c)}</div>
                 <div class="card-type">agent</div>
             </div>`;
         }).join('');

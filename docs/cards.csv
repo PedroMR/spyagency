@@ -1,16 +1,16 @@
 Name,Count,Type,Tier,Cost,Effect / Description,Max Tech
 Heist,20,Mission,,❓,"💎1; Permanently available, can't be scouted.",
-Slap Contest,8,Mission,1,💪💪,1⭐$1,
+Slap Contest,8,Mission,1,💪💪,$1,
 Narrow Getaway,8,Mission,1,🚘💪,1⭐$1,
 Train Hijinx,4,Mission,2,🚘🚘🥸❓,4⭐ +1 op,
 HALO Drop,2,Mission,3,🚘🚘🚘🔑💪❓,9⭐,
-Arm Wrestling,8,Mission,1,💪🥸 ,1⭐$1,
+Arm Wrestling,8,Mission,1,💪🥸 ,$1,
 Fencing Duel,4,Mission,2,💪💪🔑❓,4⭐$2,
 Rooftop Showdown,2,Mission,3,💪💪💪🚘🚘❓,9⭐,
 Convent Secrets,8,Mission,1,🥸🔑,1⭐$2,
 Traveling Troupe,4,Mission,2,🥸🥸🚘❓,4⭐$3,
 Megastar Machinations,2,Mission,3,🥸🥸🥸💪🔑❓,9⭐,
-Gate Hacking,8,Mission,1,🔑🚘,1⭐$1,
+Gate Hacking,8,Mission,1,🔑🚘,2⭐$1,
 Retinal Scan,4,Mission,2,🔑🔑🥸❓,4⭐ +1 buy,
 Embassy Safe,2,Mission,3,🔑🔑🔑🥸🚘❓,9⭐,
 Sword-cane,3,Tech,1,$3,💪🥸 ,
@@ -18,23 +18,24 @@ Bazooka,2,Tech,2,$5,💪💪💪,
 Ram,4,Tech,1,$3,🚘🔑,
 Holo-projector,2,Tech,2,$6,🥸🥸🥸,
 Drone,3,Tech,1,$4,🔑🔑,
+Hacking Deck,2,Tech,2,$8,🔑🔑🔑,
 Grappling Hook,2,Tech,2,$6,💪🔑🚘,
 Fake Passports,4,Tech,1,$4,🔑🥸,
 Motorbike,4,Tech,1,$4,🚘🚘,
 Limousine,3,Tech,1,$6,🚘🚘🥸,
-Attack Helicopter,2,Tech,2,$8,🚘🚘💪💪,
-Muscle,16,Agent,1,$3,"💪, always available",1
-Shadow,16,Agent,1,$4,"🥸, always available",1
+Attack Helicopter,2,Tech,2,$8,🚘🚘🚘💪,
+Muscle Merc,16,Agent,1,$3,"💪, always available",1
+Shadow Merc,16,Agent,1,$4,"🥸, always available",1
 Doorkicker,6,Agent,2,$5,💪🔑,1
 Reputable Driver,6,Agent,2,$5,🥸🚘,1
-Sentinel,4,Agent,3,$7,"🥸💪, Reveal to defend (is not discarded)",
-Speedboat Mechanic,4,Agent,3,$7,💪💪🚘,2
-Scuba Infiltrator,4,Agent,3,$8,🚘🚘🔑,2
-Hoodied Hacker,4,Agent,3,$8,🔑🔑🥸,2
-Savvy Saboteur,4,Agent,3,$7,🥸🥸💪,
-Codename Jack,1,Agent,4,$10,💪🥸🚘🔑,
-The Chameleon,1,Agent,4,$10,🥸🥸🥸🔑,
-Sly Racoon,1,Agent,4,$10,🔑🔑🔑🚘,
+Sentinel,4,Agent,3,$6,"🥸💪, Reveal to defend (is not discarded)",
+Speedboat Mechanic,4,Agent,3,$8,💪💪🚘,2
+Scuba Infiltrator,4,Agent,3,$10,🚘🚘🔑,2
+Hoodied Hacker,4,Agent,3,$10,🔑🔑🥸,2
+Savvy Saboteur,4,Agent,3,$8,🥸🥸💪,
+Codename Jack,1,Agent,4,$12,💪🥸🚘🔑,
+The Chameleon,1,Agent,4,$12,🥸🥸🥸🔑,
+Sly Racoon,1,Agent,4,$12,🔑🔑🔑🚘,
 Burn Notice,6,Plot,2,$4,"Trash a card from your play, discard, or hand areas",
 Paperwork,4,Plot,2,$5,"$1, Attack (❓): players gain a Red Tape",
 Burglary,4,Plot,2,$7,"$2, Attack (💪/🚘): players discard down to 3 cards",
