@@ -256,8 +256,8 @@ function action_play_plot(array &$game, int $pi, array $params): array {
                 return ['ok' => false, 'error' => 'Agent not available in marketplace'];
             }
 
-            // Trash the agent (removed from game), gain the new one to discard
-            $game['players'][$pi]['discard'][] = $gain_agent;
+            // Trash the agent (removed from game), gain the new one directly to hand
+            $game['players'][$pi]['hand'][] = $gain_agent;
             $game['players'][$pi]['play_area'][] = $card_id;
             $game['log'][] = $game['players'][$pi]['name'] . " played Training Procedure: trashed {$catalog[$trash_agent]['name']}, gained {$catalog[$gain_agent]['name']}";
             break;
