@@ -41,7 +41,7 @@
                 </div>
 
                 <div class="section missions-section">
-                    <h3>Mission Grid</h3>
+                    <h3>Op Grid</h3>
                     <div class="heist-row">
                         <div id="heist-mission" class="card mission-card" onclick="UI.showMissionDialog('heist')">
                         </div>
@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="section mission-area-section" id="mission-area-section" style="display:none">
-                    <h3>Mission Area <span id="mission-income-display" class="mission-income"></span></h3>
+                    <h3>Op Area <span id="mission-income-display" class="mission-income"></span></h3>
                     <div id="my-mission-area" class="card-row"></div>
                 </div>
 
@@ -98,7 +98,7 @@
             <button onclick="Actions.debugEndGame()">Debug: End Game</button>
             <button onclick="Actions.debugAddGems()">+10 💎</button>
             <button onclick="Actions.debugAddBuys()">+5 Buys</button>
-            <button onclick="Actions.debugAddMissions()">+5 Missions</button>
+            <button onclick="Actions.debugAddMissions()">+5 Ops</button>
         </div>
     </div>
 

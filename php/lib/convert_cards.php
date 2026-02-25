@@ -207,7 +207,7 @@ foreach ($rows as $row) {
                 $entry['effect'] = 'paperwork';
             } elseif (stripos($desc_lower, 'discard down to') !== false) {
                 $entry['effect'] = 'burglary';
-            } elseif (stripos($desc_lower, 'additional mission') !== false) {
+            } elseif (stripos($desc_lower, 'additional op') !== false) {
                 $entry['effect'] = 'multitask';
             } else {
                 $entry['effect'] = 'none';
@@ -245,11 +245,19 @@ foreach ($rows as $row) {
             $entry['value'] = $value; // mission card itself is worth this much $
             $entry['gems'] = $gems; // gems awarded on completion
             $entry['always_available'] = stripos($row['desc'], 'permanently available') !== false || stripos($row['desc'], 'always available') !== false;
+            if (preg_match('/\+\s*1\s*(mission|op)/i', $row['desc'])) {
+                $entry['extra_mission'] = true;
+            }
+            if (preg_match('/\+\s*1\s*buy/i', $row['desc'])) {
+                $entry['extra_buy'] = true;
+            }
             // Build description
             $req_display = $row['cost_raw'];
             $reward_parts = [];
             if ($stars > 0) $reward_parts[] = "{$stars}⭐";
-            if ($value > 0) $reward_parts[] = "\${$value}";
+            if ($value > 0) $reward_parts[] = "\${$value}/turn";
+            if ($entry['extra_mission'] ?? false) $reward_parts[] = '+1 op/turn';
+            if ($entry['extra_buy'] ?? false) $reward_parts[] = '+1 buy/turn';
             $reward_str = implode(' ', $reward_parts);
             $entry['description'] = "Requires: {$req_display} — Reward: {$reward_str}";
             if ($entry['always_available']) {

@@ -321,7 +321,7 @@ const UI = {
             const missionsAllowed = 1 + (me.extra_missions || 0);
             const missionsDone = me.missions_this_turn || 0;
             const missionsRemaining = missionsAllowed - missionsDone;
-            missionsEl.textContent = `Missions: ${missionsRemaining}`;
+            missionsEl.textContent = `Ops: ${missionsRemaining}`;
             missionsEl.style.display = 'inline';
 
             const buyLimit = 1 + (me.extra_buys || 0);
@@ -429,7 +429,11 @@ const UI = {
                 const card = this.catalog[mId];
                 const reqIcons = this.formatReqIcons(card.requirements);
                 const stars = card.stars ? `${card.stars}⭐ ` : '';
-                const money = card.value ? `$${card.value}/turn` : '';
+                const rewardParts = [];
+                if (card.value) rewardParts.push(`$${card.value}/turn`);
+                if (card.extra_mission) rewardParts.push('+1 op/turn');
+                if (card.extra_buy) rewardParts.push('+1 buy/turn');
+                const money = rewardParts.join(' ');
                 const count = missionCounts[mi] || 1;
                 const countBadge = count > 1 ? `<div class="stack-count">×${count}</div>` : '';
                 html += `<div class="card mission-card" style="--card-color:${this.getCardColor(card)}" onclick="UI.showMissionDialog('${mId}')">
@@ -477,14 +481,22 @@ const UI = {
         }
 
         let totalIncome = 0;
+        let totalExtraMissions = 0;
+        let totalExtraBuys = 0;
         const html = missionArea.map((mid, i) => {
             const card = this.catalog[mid];
             if (!card) return '';
             const income = card.value || 0;
             totalIncome += income;
+            if (card.extra_mission) totalExtraMissions++;
+            if (card.extra_buy) totalExtraBuys++;
             const isTop = i === N - 1;
             const stars = card.stars ? `${card.stars}⭐ ` : '';
-            const reward = (stars || income > 0) ? `${stars}${income > 0 ? `$${income}/turn` : ''}` : '';
+            const rewardParts = [];
+            if (income > 0) rewardParts.push(`$${income}/turn`);
+            if (card.extra_mission) rewardParts.push('+1 op/turn');
+            if (card.extra_buy) rewardParts.push('+1 buy/turn');
+            const reward = (stars || rewardParts.length > 0) ? `${stars}${rewardParts.join(' ')}` : '';
             return `<div class="card played-card" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[i]}px;z-index:${i + 1}">
                 ${isTop ? `<div class="card-name">${esc(card.name)}</div>` : ''}
                 ${reward ? `<div class="card-reward">${reward}</div>` : ''}
@@ -495,8 +507,12 @@ const UI = {
         container.style.height = prevBottom + 'px';
         container.innerHTML = html;
 
-        incomeDisplay.textContent = totalIncome > 0 ? `$${totalIncome}/turn` : '';
-        incomeDisplay.style.display = totalIncome > 0 ? 'inline' : 'none';
+        const summaryParts = [];
+        if (totalIncome > 0) summaryParts.push(`$${totalIncome}/turn`);
+        if (totalExtraMissions > 0) summaryParts.push(`+${totalExtraMissions} op/turn`);
+        if (totalExtraBuys > 0) summaryParts.push(`+${totalExtraBuys} buy/turn`);
+        incomeDisplay.textContent = summaryParts.join(' ');
+        incomeDisplay.style.display = summaryParts.length > 0 ? 'inline' : 'none';
     },
 
     renderHeist() {
@@ -544,8 +560,11 @@ const UI = {
         // For cards in hand/play/discard, show reward instead of cost
         if (card.type === 'mission') {
             const stars = card.stars ? `${card.stars}⭐ ` : '';
-            const money = card.value ? `$${card.value}` : '';
-            return `<div class="card-reward">${stars}${money}</div>`;
+            const rewardParts = [];
+            if (card.value) rewardParts.push(`$${card.value}/turn`);
+            if (card.extra_mission) rewardParts.push('+1 op/turn');
+            if (card.extra_buy) rewardParts.push('+1 buy/turn');
+            return `<div class="card-reward">${stars}${rewardParts.join(' ')}</div>`;
         }
         if (card.type === 'money') {
             return `<div class="card-reward">$${card.value || 0}</div>`;
@@ -890,12 +909,12 @@ const UI = {
 
         let html = `<h2>${sharedVictory ? 'Shared Victory!' : 'Game Over!'}</h2>`;
         if (starsTied) {
-            html += `<p style="color:#aaa;font-size:13px;margin-bottom:6px">Tiebreaker: fewest missions</p>`;
+            html += `<p style="color:#aaa;font-size:13px;margin-bottom:6px">Tiebreaker: fewest ops</p>`;
         }
         html += '<div class="scores">';
         scores.forEach((sc, i) => {
             const isWinner = sc.stars === topStars && (sc.missions ?? 0) === topMissions;
-            const missionNote = starsTied ? `<span style="color:#888;font-size:13px">${sc.missions ?? 0} missions</span>` : '';
+            const missionNote = starsTied ? `<span style="color:#888;font-size:13px">${sc.missions ?? 0} ops</span>` : '';
             html += `<div class="score-row ${isWinner ? 'winner' : ''}">
                 <span>${i + 1}. ${esc(sc.name)}</span>
                 ${missionNote}
@@ -936,7 +955,7 @@ const UI = {
             case 'agent':
             case 'tech':
                 // Agents and tech are played as part of missions, not individually
-                this.showError('Agents and tech are played when completing missions.');
+                this.showError('Agents and tech are played when completing ops.');
                 break;
             case 'plot':
                 this.handlePlotPlay(cardId);
@@ -1128,7 +1147,7 @@ const UI = {
         const missionsAllowed = 1 + (me.extra_missions || 0);
         const missionsDone = me.missions_this_turn || 0;
         if (missionsDone >= missionsAllowed) {
-            this.showError('No missions remaining this turn.');
+            this.showError('No ops remaining this turn.');
             return;
         }
 
@@ -1139,7 +1158,7 @@ const UI = {
         const baseAgent = base && base.agent && this.catalog[base.agent] ? this.catalog[base.agent] : null;
 
         if (handAgents.length === 0 && !baseAgent) {
-            this.showError('No agents available to attempt missions!');
+            this.showError('No agents available to attempt ops!');
             return;
         }
 
@@ -1207,7 +1226,7 @@ const UI = {
         }
 
         html += `<button class="btn-modal" style="margin-top:12px;background:#1a8a2d;border-color:#2dbc45" onclick="UI.submitMission('${missionId}')">
-            Run Mission
+            Run Op
         </button>`;
         html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
         this.showModal(html);

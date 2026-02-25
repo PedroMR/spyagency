@@ -83,7 +83,7 @@ function get_card_catalog(): array {
             'value' => 1,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 💪💪 — Reward: 1⭐ $1',
+            'description' => 'Requires: 💪💪 — Reward: 1⭐ $1/turn',
         ],
         'narrow_getaway' => [
             'id' => 'narrow_getaway',
@@ -96,7 +96,7 @@ function get_card_catalog(): array {
             'value' => 1,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🚘💪 — Reward: 1⭐ $1',
+            'description' => 'Requires: 🚘💪 — Reward: 1⭐ $1/turn',
         ],
         'train_hijinx' => [
             'id' => 'train_hijinx',
@@ -106,10 +106,11 @@ function get_card_catalog(): array {
             'stars' => 4,
             'cost' => 0,
             'requirements' => ['drive', 'drive', 'disguise', 'any'],
-            'value' => 2,
+            'value' => 0,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🚘🚘🥸❓ — Reward: 4⭐ $2',
+            'extra_mission' => true,
+            'description' => 'Requires: 🚘🚘🥸❓ — Reward: 4⭐ +1 op/turn',
         ],
         'halo_drop' => [
             'id' => 'halo_drop',
@@ -135,7 +136,7 @@ function get_card_catalog(): array {
             'value' => 1,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 💪🥸 — Reward: 1⭐ $1',
+            'description' => 'Requires: 💪🥸 — Reward: 1⭐ $1/turn',
         ],
         'fencing_duel' => [
             'id' => 'fencing_duel',
@@ -148,7 +149,7 @@ function get_card_catalog(): array {
             'value' => 2,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 💪💪🔑❓ — Reward: 4⭐ $2',
+            'description' => 'Requires: 💪💪🔑❓ — Reward: 4⭐ $2/turn',
         ],
         'rooftop_showdown' => [
             'id' => 'rooftop_showdown',
@@ -174,7 +175,7 @@ function get_card_catalog(): array {
             'value' => 2,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🥸🔑 — Reward: 1⭐ $2',
+            'description' => 'Requires: 🥸🔑 — Reward: 1⭐ $2/turn',
         ],
         'traveling_troupe' => [
             'id' => 'traveling_troupe',
@@ -187,7 +188,7 @@ function get_card_catalog(): array {
             'value' => 3,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🥸🥸🚘❓ — Reward: 4⭐ $3',
+            'description' => 'Requires: 🥸🥸🚘❓ — Reward: 4⭐ $3/turn',
         ],
         'megastar_machinations' => [
             'id' => 'megastar_machinations',
@@ -213,7 +214,7 @@ function get_card_catalog(): array {
             'value' => 1,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🔑🚘 — Reward: 1⭐ $1',
+            'description' => 'Requires: 🔑🚘 — Reward: 1⭐ $1/turn',
         ],
         'retinal_scan' => [
             'id' => 'retinal_scan',
@@ -223,10 +224,11 @@ function get_card_catalog(): array {
             'stars' => 4,
             'cost' => 0,
             'requirements' => ['key', 'key', 'disguise', 'any'],
-            'value' => 2,
+            'value' => 0,
             'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🔑🔑🥸❓ — Reward: 4⭐ $2',
+            'extra_buy' => true,
+            'description' => 'Requires: 🔑🔑🥸❓ — Reward: 4⭐ +1 buy/turn',
         ],
         'embassy_safe' => [
             'id' => 'embassy_safe',
@@ -541,7 +543,7 @@ function get_card_catalog(): array {
             'stars' => 0,
             'cost' => 6,
             'effect' => 'multitask',
-            'description' => '$2, You may complete an additional mission this turn ($6)',
+            'description' => '$2, You may complete an additional op this turn ($6)',
         ],
         'training_procedure' => [
             'id' => 'training_procedure',

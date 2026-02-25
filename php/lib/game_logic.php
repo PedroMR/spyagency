@@ -173,7 +173,7 @@ function action_play_plot(array &$game, int $pi, array $params): array {
         case 'multitask':
             $game['players'][$pi]['play_area'][] = $card_id;
             $game['players'][$pi]['extra_missions'] = ($game['players'][$pi]['extra_missions'] ?? 0) + 1;
-            $game['log'][] = $game['players'][$pi]['name'] . " played Multitasking — may complete an additional mission this turn!";
+            $game['log'][] = $game['players'][$pi]['name'] . " played Multitasking — may complete an additional op this turn!";
             break;
 
         case 'backup':
@@ -652,7 +652,7 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     $missions_allowed = 1 + ($game['players'][$pi]['extra_missions'] ?? 0);
     $missions_completed = $game['players'][$pi]['missions_this_turn'] ?? 0;
     if ($missions_completed >= $missions_allowed) {
-        return ['ok' => false, 'error' => 'No more missions allowed this turn'];
+        return ['ok' => false, 'error' => 'No more ops allowed this turn'];
     }
 
     // Find mission in grid or check always-available
@@ -672,7 +672,7 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
             }
         }
         if ($found_tier === null) {
-            return ['ok' => false, 'error' => 'Mission not available in grid'];
+            return ['ok' => false, 'error' => 'Op not available in grid'];
         }
     }
 
@@ -892,16 +892,33 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     $next_name = $game['players'][$game['current_player']]['name'];
     $game['log'][] = "It's now {$next_name}'s turn.";
 
-    // Apply passive mission income for the next player
+    // Apply passive mission area bonuses for the next player
     $next_pi = $game['current_player'];
     $catalog = get_card_catalog();
     $mission_income = 0;
+    $mission_extra_missions = 0;
+    $mission_extra_buys = 0;
     foreach ($game['players'][$next_pi]['mission_area'] ?? [] as $mid) {
-        $mission_income += $catalog[$mid]['value'] ?? 0;
+        $mc = $catalog[$mid] ?? [];
+        $mission_income += $mc['value'] ?? 0;
+        if ($mc['extra_mission'] ?? false) $mission_extra_missions++;
+        if ($mc['extra_buy'] ?? false) $mission_extra_buys++;
     }
+    $bonus_parts = [];
     if ($mission_income > 0) {
         $game['players'][$next_pi]['money'] += $mission_income;
-        $game['log'][] = $game['players'][$next_pi]['name'] . " earns \${$mission_income} from completed missions.";
+        $bonus_parts[] = "\${$mission_income}";
+    }
+    if ($mission_extra_missions > 0) {
+        $game['players'][$next_pi]['extra_missions'] = ($game['players'][$next_pi]['extra_missions'] ?? 0) + $mission_extra_missions;
+        $bonus_parts[] = "+{$mission_extra_missions} op";
+    }
+    if ($mission_extra_buys > 0) {
+        $game['players'][$next_pi]['extra_buys'] = ($game['players'][$next_pi]['extra_buys'] ?? 0) + $mission_extra_buys;
+        $bonus_parts[] = "+{$mission_extra_buys} buy";
+    }
+    if (!empty($bonus_parts)) {
+        $game['log'][] = $game['players'][$next_pi]['name'] . " gets " . implode(', ', $bonus_parts) . " from completed ops.";
     }
 
     return ['ok' => true];

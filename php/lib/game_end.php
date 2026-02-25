@@ -76,7 +76,7 @@ function finalize_game(array &$game): void {
     ));
     if (count($winners) > 1) {
         $names = implode(' and ', array_map(fn($s) => $s['name'], $winners));
-        $game['log'][] = "Game over! It's a tie between {$names} with {$top['stars']} stars and {$top['missions']} missions!";
+        $game['log'][] = "Game over! It's a tie between {$names} with {$top['stars']} stars and {$top['missions']} ops!";
     } else {
         $game['log'][] = "Game over! Winner: {$top['name']} with {$top['stars']} stars!";
     }
