@@ -246,9 +246,9 @@ input[type="text"] {
     cursor: pointer;
     flex-direction: row;
     align-items: center;
-    width: 320px;
-    min-width: 320px;
-    max-width: 320px;
+    width: 340px;
+    min-width: 340px;
+    max-width: 380px;
     gap: 8px;
 }
 .mission-card .card-name {

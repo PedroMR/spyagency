@@ -553,7 +553,7 @@ function get_card_catalog(): array {
             'stars' => 0,
             'cost' => 6,
             'effect' => 'training',
-            'description' => 'Trash an agent from your play, hand or discard areas to gain an agent costing up to $3 more from the market ($6)',
+            'description' => 'Trash an agent from your play, hand or discard areas to gain an agent costing up to $3 more from the market directly to your hand ($6)',
         ],
         'off_shore_investment' => [
             'id' => 'off_shore_investment',

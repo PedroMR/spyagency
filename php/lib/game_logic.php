@@ -285,7 +285,7 @@ function action_buy_card(array &$game, int $pi, array $params): array {
         if (!spend_cost($game['players'][$pi], $cost, $log_parts)) {
             return ['ok' => false, 'error' => 'Not enough money/gems'];
         }
-        $game['players'][$pi]['discard'][] = $card_id;
+        $game['players'][$pi]['hand'][] = $card_id;
         $game['players'][$pi]['buys_this_turn'] = ($game['players'][$pi]['buys_this_turn'] ?? 0) + 1;
         $msg = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";
         if (!empty($log_parts)) $msg .= ' (' . implode(', ', $log_parts) . ')';
@@ -835,6 +835,16 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         // Normal mission: add mission card to mission area (provides recurring income)
         $game['players'][$pi]['mission_area'][] = $mission_id;
         $game['log'][] = $game['players'][$pi]['name'] . " completed {$mission['name']}{$used_str}";
+        // Apply mission bonus immediately (including the turn it was completed)
+        if (($mission['value'] ?? 0) > 0) {
+            $game['players'][$pi]['money'] += $mission['value'];
+        }
+        if ($mission['extra_mission'] ?? false) {
+            $game['players'][$pi]['extra_missions'] = ($game['players'][$pi]['extra_missions'] ?? 0) + 1;
+        }
+        if ($mission['extra_buy'] ?? false) {
+            $game['players'][$pi]['extra_buys'] = ($game['players'][$pi]['extra_buys'] ?? 0) + 1;
+        }
     }
 
     $game['players'][$pi]['missions_this_turn'] = $missions_completed + 1;
