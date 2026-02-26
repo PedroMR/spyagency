@@ -143,6 +143,43 @@ body.mobile .final-round-banner {
     color: #ccc;
 }
 
+/* End Turn button lives in the tab bar as the rightmost slot */
+.mob-end-turn-btn {
+    flex: 1;
+    background: #8b0000;
+    border: none;
+    border-top: 3px solid #c00;
+    color: #fff;
+    font-size: 10px;
+    padding: 4px 2px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    border-radius: 0;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.mob-end-turn-btn:hover:not(:disabled) {
+    background: #c00;
+}
+
+.mob-end-turn-btn:disabled {
+    background: #2a2a2a;
+    border-top-color: #444;
+    color: #555;
+    cursor: not-allowed;
+}
+
+.mob-end-turn-btn.glow {
+    animation: end-turn-glow 1.2s ease-in-out infinite;
+    background: #1a7a2e;
+    border-top-color: #2dbc45;
+    color: #fff;
+}
+
 /* Notification dot for background tab activity */
 .mob-tab-btn.has-notification::after {
     content: '';

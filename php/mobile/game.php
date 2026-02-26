@@ -20,13 +20,12 @@
         <button id="btn-resign" class="mob-resign-btn" onclick="UI.confirmResign()">Resign</button>
     </div>
 
-    <!-- Fixed subheader: round, turn, counters, end turn -->
+    <!-- Fixed subheader: round, turn, counters -->
     <div class="mob-subheader">
         <span id="round-display"></span>
         <span id="turn-indicator"></span>
         <span id="missions-display"></span>
         <span id="buys-display"></span>
-        <button id="btn-end-turn" onclick="Actions.endTurn()" disabled>End Turn</button>
     </div>
 
     <!-- Final round banner (fixed, shown when relevant) -->
@@ -113,6 +112,7 @@
         <button class="mob-tab-btn" data-tab="market" onclick="UI.switchTab('market')">🛒<br>Market</button>
         <button class="mob-tab-btn" data-tab="ops" onclick="UI.switchTab('ops')">🎯<br>Ops</button>
         <button class="mob-tab-btn" data-tab="log" onclick="UI.switchTab('log')">📋<br>Log</button>
+        <button id="btn-end-turn" class="mob-end-turn-btn" onclick="Actions.endTurn()" disabled>⏹<br>End Turn</button>
     </div>
 
     <!-- Modal overlay (same structure as desktop) -->
