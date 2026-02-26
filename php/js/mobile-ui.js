@@ -45,15 +45,7 @@ UI._applyFLIPFrom = function() { /* no-op on mobile */ };
 const _desktopUpdate = UI.update.bind(UI);
 
 UI.update = function(state) {
-    // Capture whether a new turn is starting before desktop update changes _lastTurnNumber
-    const wasNewTurn = state.is_my_turn && this._lastTurnNumber !== state.turn_number;
-
     _desktopUpdate(state);
-
-    // Auto-switch to Hand tab when our turn begins
-    if (wasNewTurn) {
-        this.switchTab('hand');
-    }
 
     // Notification dots for background tabs that received updates
     if (this._activeTab !== 'market') this._notifyTab('market');
