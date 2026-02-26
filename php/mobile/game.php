@@ -37,19 +37,6 @@
 
         <!-- Hand tab -->
         <div id="tab-hand" class="mob-tab-panel">
-            <div class="section hand-section">
-                <h3>Your Hand</h3>
-                <div id="my-hand" class="card-row"></div>
-            </div>
-            <div class="section play-area-section">
-                <h3>Play Area</h3>
-                <div id="play-area" class="card-row"></div>
-                <div id="my-base"></div>
-            </div>
-            <div class="section mission-area-section" id="mission-area-section" style="display:none">
-                <h3>Op Area <span id="mission-income-display" class="mission-income"></span></h3>
-                <div id="my-mission-area" class="card-row"></div>
-            </div>
             <div class="mob-deck-discard-row">
                 <div class="section deck-section">
                     <h3>Deck</h3>
@@ -59,6 +46,19 @@
                     <h3>Discard <span id="discard-count" class="deck-count"></span></h3>
                     <div id="discard-pile"></div>
                 </div>
+            </div>
+            <div class="section mission-area-section" id="mission-area-section" style="display:none">
+                <h3>Op Area <span id="mission-income-display" class="mission-income"></span></h3>
+                <div id="my-mission-area" class="card-row"></div>
+            </div>
+            <div class="section play-area-section">
+                <h3>Play Area</h3>
+                <div id="play-area" class="card-row"></div>
+                <div id="my-base"></div>
+            </div>
+            <div class="section hand-section">
+                <h3>Your Hand</h3>
+                <div id="my-hand" class="card-row"></div>
             </div>
         </div>
 
