@@ -104,19 +104,23 @@ function parse_mission_rewards(string $desc): array {
 }
 
 // Parse CSV
+// Columns: Name, Copies, Type, Tier, Cost, Requirements, Effect, Ability, Special, Max Tech
 $rows = [];
 $fh = fopen($csv_path, 'r');
 $header = fgetcsv($fh);
 while (($row = fgetcsv($fh)) !== false) {
-    if (count($row) < 6) continue;
+    if (count($row) < 3) continue;
     $rows[] = [
-        'name' => trim($row[0]),
-        'count' => (int)$row[1],
-        'type' => strtolower(trim($row[2])),
-        'tier' => $row[3] !== '' ? (int)$row[3] : 0,
-        'cost_raw' => trim($row[4]),
-        'desc' => trim($row[5]),
-        'max_tech' => isset($row[6]) && $row[6] !== '' ? (int)$row[6] : null,
+        'name'         => trim($row[0]),
+        'count'        => (int)($row[1] ?? 0),
+        'type'         => strtolower(trim($row[2])),
+        'tier'         => isset($row[3]) && $row[3] !== '' ? (int)$row[3] : 0,
+        'cost_raw'     => trim($row[4] ?? ''),
+        'requirements' => trim($row[5] ?? ''),
+        'effect'       => trim($row[6] ?? ''),
+        'ability'      => trim($row[7] ?? ''),
+        'special'      => trim($row[8] ?? ''),
+        'max_tech'     => isset($row[9]) && $row[9] !== '' ? (int)$row[9] : null,
     ];
 }
 fclose($fh);
@@ -156,22 +160,25 @@ foreach ($rows as $row) {
     switch ($row['type']) {
         case 'base':
             $entry['cost'] = 0;
-            $entry['indestructible'] = stripos($row['desc'], 'indestructible') !== false;
-            $entry['description'] = $row['desc'];
+            $entry['indestructible'] = stripos($row['ability'], 'indestructible') !== false;
+            $entry['description'] = $row['ability'];
+            break;
+
+        case 'hazard':
+            // No extra fields needed
             break;
 
         case 'agent':
             $cost_val = (int)preg_replace('/[^0-9]/', '', $row['cost_raw']);
             $entry['cost'] = $cost_val;
             $entry['max_tech'] = $row['max_tech'] ?? 0;
-            $entry['icons'] = parse_icons_field($row['desc'], $emoji_to_icon);
-            $entry['always_available'] = stripos($row['desc'], 'always available') !== false;
-            if (stripos($row['desc'], 'defend') !== false) {
+            $entry['icons'] = parse_icons_field($row['effect'], $emoji_to_icon);
+            $entry['always_available'] = stripos($row['special'], 'always available') !== false;
+            if (stripos($row['ability'], 'defend') !== false) {
                 $entry['defend'] = true;
             }
-            // Build display description
-            $icon_display = preg_replace('/,\s*always available.*/iu', '', trim($row['desc']));
-            $entry['description'] = trim($icon_display) . ($entry['always_available'] ? " — Always available (\${$cost_val})" : " (\${$cost_val})");
+            $icon_display = trim($row['effect']);
+            $entry['description'] = $icon_display . ($entry['always_available'] ? " — Always available (\${$cost_val})" : " (\${$cost_val})");
             if (!$entry['always_available']) {
                 $market_counts[$id] = $row['count'];
             }
@@ -180,8 +187,8 @@ foreach ($rows as $row) {
         case 'tech':
             $cost_val = (int)preg_replace('/[^0-9]/', '', $row['cost_raw']);
             $entry['cost'] = $cost_val;
-            $entry['icons'] = parse_icons_field($row['desc'], $emoji_to_icon);
-            $icon_display = trim($row['desc']);
+            $entry['icons'] = parse_icons_field($row['effect'], $emoji_to_icon);
+            $icon_display = trim($row['effect']);
             $entry['description'] = "{$icon_display} (\${$cost_val})";
             $market_counts[$id] = $row['count'];
             break;
@@ -189,11 +196,8 @@ foreach ($rows as $row) {
         case 'plot':
             $cost_val = (int)preg_replace('/[^0-9]/', '', $row['cost_raw']);
             $entry['cost'] = $cost_val;
-            // Determine effect from description
-            $desc_lower = strtolower($row['desc']);
-            if (stripos($desc_lower, 'does nothing') !== false || stripos($desc_lower, 'useless') !== false) {
-                $entry['effect'] = 'none';
-            } elseif (stripos($desc_lower, 'trash an agent') !== false && stripos($desc_lower, 'gain an agent') !== false) {
+            $desc_lower = strtolower($row['effect']);
+            if (stripos($desc_lower, 'trash an agent') !== false && stripos($desc_lower, 'gain an agent') !== false) {
                 $entry['effect'] = 'training';
             } elseif (stripos($desc_lower, 'trash') !== false) {
                 $entry['effect'] = 'trash';
@@ -212,7 +216,7 @@ foreach ($rows as $row) {
             } else {
                 $entry['effect'] = 'none';
             }
-            $entry['description'] = $row['desc'] . ($cost_val > 0 ? " (\${$cost_val})" : '');
+            $entry['description'] = $row['effect'] . ($cost_val > 0 ? " (\${$cost_val})" : '');
             if ($row['tier'] > 0) {
                 $market_counts[$id] = $row['count'];
             }
@@ -221,14 +225,12 @@ foreach ($rows as $row) {
         case 'money':
             $cost_val = (int)preg_replace('/[^0-9]/', '', $row['cost_raw']);
             $entry['cost'] = $cost_val;
-            // Extract value from description: "$2" or "$3"
             $value = 0;
-            if (preg_match('/\$(\d+)/', $row['desc'], $m)) {
+            if (preg_match('/\$(\d+)/', $row['effect'], $m)) {
                 $value = (int)$m[1];
             }
             $entry['value'] = $value;
-            // Check for +1 Buy effect
-            if (stripos($row['desc'], '+1 buy') !== false) {
+            if (stripos($row['effect'], '+1 buy') !== false) {
                 $entry['extra_buy'] = true;
             }
             $entry['description'] = "\${$value}" . ($cost_val > 0 ? " (\${$cost_val})" : '');
@@ -239,20 +241,22 @@ foreach ($rows as $row) {
 
         case 'mission':
             $entry['cost'] = 0;
-            $entry['requirements'] = parse_mission_requirements($row['cost_raw'], $emoji_to_icon);
-            [$stars, $value, $gems] = parse_mission_rewards($row['desc']);
+            $entry['requirements'] = parse_mission_requirements($row['requirements'], $emoji_to_icon);
+            [$stars, $value, $gems] = parse_mission_rewards($row['effect']);
+            // Heist uses "💎1-3" — just needs gems > 0 as a flag
+            if ($gems === 0 && preg_match('/💎/u', $row['effect'])) $gems = 1;
             $entry['stars'] = $stars;
-            $entry['value'] = $value; // mission card itself is worth this much $
-            $entry['gems'] = $gems; // gems awarded on completion
-            $entry['always_available'] = stripos($row['desc'], 'permanently available') !== false || stripos($row['desc'], 'always available') !== false;
-            if (preg_match('/\+\s*1\s*(mission|op)/i', $row['desc'])) {
+            $entry['value'] = $value;
+            $entry['gems'] = $gems;
+            $entry['always_available'] = stripos($row['special'], 'permanently available') !== false
+                                      || stripos($row['special'], 'always available') !== false;
+            if (preg_match('/\+\s*1\s*(mission|op)/i', $row['effect'])) {
                 $entry['extra_mission'] = true;
             }
-            if (preg_match('/\+\s*1\s*buy/i', $row['desc'])) {
+            if (preg_match('/\+\s*1\s*buy/i', $row['effect'])) {
                 $entry['extra_buy'] = true;
             }
-            // Build description
-            $req_display = $row['cost_raw'];
+            $req_display = $row['requirements'];
             $reward_parts = [];
             if ($stars > 0) $reward_parts[] = "{$stars}⭐";
             if ($value > 0) $reward_parts[] = "\${$value}/turn";

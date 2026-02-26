@@ -1,48 +1,48 @@
-Name,Count,Type,Tier,Cost,Effect / Description,Max Tech
-Heist,20,Mission,,❓,"💎1; Permanently available, can't be scouted.",
-Slap Contest,8,Mission,1,💪💪,$1,
-Narrow Getaway,8,Mission,1,🚘💪,1⭐$1,
-Train Hijinx,4,Mission,2,🚘🚘🥸❓,4⭐ +1 op,
-HALO Drop,2,Mission,3,🚘🚘🚘🔑💪❓,9⭐,
-Arm Wrestling,8,Mission,1,💪🥸 ,$1,
-Fencing Duel,4,Mission,2,💪💪🔑❓,4⭐$2,
-Rooftop Showdown,2,Mission,3,💪💪💪🚘🚘❓,9⭐,
-Convent Secrets,8,Mission,1,🥸🔑,1⭐$2,
-Traveling Troupe,4,Mission,2,🥸🥸🚘❓,4⭐$3,
-Megastar Machinations,2,Mission,3,🥸🥸🥸💪🔑❓,9⭐,
-Gate Hacking,8,Mission,1,🔑🚘,2⭐$1,
-Retinal Scan,4,Mission,2,🔑🔑🥸❓,4⭐ +1 buy,
-Embassy Safe,2,Mission,3,🔑🔑🔑🥸🚘❓,9⭐,
-Sword-cane,3,Tech,1,$3,💪🥸 ,
-Bazooka,2,Tech,2,$5,💪💪💪,
-Ram,4,Tech,1,$3,🚘🔑,
-Holo-projector,2,Tech,2,$6,🥸🥸🥸,
-Drone,3,Tech,1,$4,🔑🔑,
-Hacking Deck,2,Tech,2,$8,🔑🔑🔑,
-Grappling Hook,2,Tech,2,$6,💪🔑🚘,
-Fake Passports,4,Tech,1,$4,🔑🥸,
-Motorbike,4,Tech,1,$4,🚘🚘,
-Limousine,3,Tech,1,$6,🚘🚘🥸,
-Attack Helicopter,2,Tech,2,$8,🚘🚘🚘💪,
-Muscle Merc,16,Agent,1,$3,"💪, always available",1
-Shadow Merc,16,Agent,1,$4,"🥸, always available",1
-Doorkicker,6,Agent,2,$5,💪🔑,1
-Reputable Driver,6,Agent,2,$5,🥸🚘,1
-Sentinel,4,Agent,3,$6,"🥸💪, Reveal to defend (is not discarded)",
-Speedboat Mechanic,4,Agent,3,$8,💪💪🚘,2
-Scuba Infiltrator,4,Agent,3,$10,🚘🚘🔑,2
-Hoodied Hacker,4,Agent,3,$10,🔑🔑🥸,2
-Savvy Saboteur,4,Agent,3,$8,🥸🥸💪,
-Codename Jack,1,Agent,4,$12,💪🥸🚘🔑,
-The Chameleon,1,Agent,4,$12,🥸🥸🥸🔑,
-Sly Racoon,1,Agent,4,$12,🔑🔑🔑🚘,
-Burn Notice,6,Plot,2,$4,"Trash a card from your play, discard, or hand areas",
-Paperwork,4,Plot,2,$5,"$1, Attack (❓): players gain a Red Tape",
-Burglary,4,Plot,2,$7,"$2, Attack (💪/🚘): players discard down to 3 cards",
-Para-drop,6,Plot,2,$6,Draw two cards,
-Red Tape,20,Hazard,0,0,Does nothing,
-Multitasking,4,Plot,2,$6,"$2, You may complete an additional op this turn",
-Training Procedure,4,Plot,2,$6,"Trash an agent from your play, hand or discard areas to gain an agent costing up to $3 more from the market directly to your hand",
-Off-shore Investment,16,Money,1,$3,"$2, +1 Buy",
-Orbital Investment,10,Money,2,$7,"$3, +1 Buy",
-Safe House,4,Base,0,0,Indestructible,
+Name,Copies,Type,Tier,Cost,Requirements,Effect,Ability,Special,Max Tech
+Muscle Merc,16,Agent,1,$3,,💪,,Always available to buy,1
+Shadow Merc,16,Agent,1,$4,,🥸,,Always available to buy,1
+Doorkicker,6,Agent,2,$5,,💪🔑,,,1
+Reputable Driver,6,Agent,2,$5,,🥸🚘,,,1
+Sentinel,4,Agent,3,$6,,🥸💪,Defender,,1
+Speedboat Mechanic,4,Agent,3,$8,,💪💪🚘,,,2
+Scuba Infiltrator,4,Agent,3,$10,,🚘🚘🔑,,,2
+Hoodied Hacker,4,Agent,3,$10,,🔑🔑🥸,,,2
+Savvy Saboteur,4,Agent,3,$8,,🥸🥸💪,,,2
+Codename Jack,1,Agent,4,$12,,💪🥸🚘🔑,,,2
+The Chameleon,1,Agent,4,$12,,🥸🥸🥸🔑,,,2
+Sly Racoon,1,Agent,4,$12,,🔑🔑🔑🚘,,,2
+Safe House,4,Base,0,0,,,Indestructible,Starter,
+Red Tape,20,Hazard,0,0,,,Does nothing,,
+Heist,1,Mission,,,❓,💎1-3,,Permanently available,
+Slap Contest,8,Mission,1,,💪💪,$1,,,
+Narrow Getaway,8,Mission,1,,🚘💪,1⭐$1,,,
+Train Hijinx,4,Mission,2,,🚘🚘🥸❓,4⭐ +1 op,,,
+HALO Drop,2,Mission,3,,🚘🚘🚘🔑💪❓,9⭐,,,
+Arm Wrestling,8,Mission,1,,💪🥸 ,$1,,,
+Fencing Duel,4,Mission,2,,💪💪🔑❓,4⭐$2,,,
+Rooftop Showdown,2,Mission,3,,💪💪💪🚘🚘❓,9⭐,,,
+Convent Secrets,8,Mission,1,,🥸🔑,1⭐$2,,,
+Traveling Troupe,4,Mission,2,,🥸🥸🚘❓,4⭐$3,,,
+Megastar Machinations,2,Mission,3,,🥸🥸🥸💪🔑❓,9⭐,,,
+Gate Hacking,8,Mission,1,,🔑🚘,2⭐$1,,,
+Retinal Scan,4,Mission,2,,🔑🔑🥸❓,4⭐ +1 buy,,,
+Embassy Safe,2,Mission,3,,🔑🔑🔑🥸🚘❓,9⭐,,,
+Off-shore Investment,16,Money,1,$3,,"$2, +1 Buy",,,
+Orbital Investment,10,Money,2,$7,,"$3, +1 Buy",,,
+Burn Notice,6,Plot,2,$4,,"Trash a card from your play, discard, or hand areas",,,
+Paperwork,4,Plot,2,$5,,"$1, Attack (❓): players gain a Red Tape",,,
+Burglary,4,Plot,2,$7,,"$2, Attack (💪/🚘): players discard down to 3 cards",,,
+Para-drop,6,Plot,2,$6,,Draw two cards,,,
+Multitasking,4,Plot,2,$6,,"$2, You may complete an additional op this turn",,,
+Training Procedure,4,Plot,2,$6,,"Trash an agent from your play, hand or discard areas to gain an agent costing up to $3 more from the market directly to your hand",,,
+Sword-cane,3,Tech,1,$3,,💪🥸 ,,,
+Bazooka,2,Tech,2,$5,,💪💪💪,,,
+Ram,4,Tech,1,$3,,🚘🔑,,,
+Holo-projector,2,Tech,2,$6,,🥸🥸🥸,,,
+Drone,3,Tech,1,$4,,🔑🔑,,,
+Hacking Deck,2,Tech,2,$8,,🔑🔑🔑,,,
+Grappling Hook,2,Tech,2,$6,,💪🔑🚘,,,
+Fake Passports,4,Tech,1,$4,,🔑🥸,,,
+Motorbike,4,Tech,1,$4,,🚘🚘,,,
+Limousine,3,Tech,1,$6,,🚘🚘🥸,,,
+Attack Helicopter,2,Tech,2,$8,,🚘🚘🚘💪,,,
