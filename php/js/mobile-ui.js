@@ -41,7 +41,9 @@ const _desktopEndTurn = Actions.endTurn.bind(Actions);
 Actions.endTurn = function() {
     _desktopEndTurn();
     UI.switchTab('log');
-    // renderLog() will scroll-to-bottom when the updated state arrives
+    // Scroll to bottom immediately, and again when the new state arrives via renderLog()
+    const logPanel = document.getElementById('tab-log');
+    if (logPanel) logPanel.scrollTop = logPanel.scrollHeight;
 };
 
 // ── Skip FLIP animations (hidden tabs have zero rects) ────────────────────────
