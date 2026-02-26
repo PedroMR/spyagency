@@ -93,15 +93,23 @@ body.mobile .final-round-banner {
     bottom: 56px;
     left: 0;
     right: 0;
-    overflow-y: auto;
-    padding: 10px;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden; /* the track handles scrolling per panel */
 }
 
 /* Shift content down when final round banner is showing */
 .mob-content.mob-has-banner {
     top: 118px;
 }
+
+/* Horizontal track — all panels laid out side by side */
+.mob-tabs-track {
+    display: flex;
+    width: 400%; /* 4 panels × 100% */
+    height: 100%;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+}
+
 
 .mob-tab-bar {
     position: fixed;
@@ -194,9 +202,16 @@ body.mobile .final-round-banner {
 }
 
 .mob-tab-panel {
+    width: 25%; /* 1/4 of track = 100% of viewport */
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Deck/discard side-by-side row in Hand tab */

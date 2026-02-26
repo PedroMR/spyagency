@@ -33,6 +33,7 @@
 
     <!-- Scrollable content area -->
     <div class="mob-content" id="mob-content">
+    <div class="mob-tabs-track" id="mob-tabs-track">
 
         <!-- Hand tab -->
         <div id="tab-hand" class="mob-tab-panel">
@@ -62,7 +63,7 @@
         </div>
 
         <!-- Market tab -->
-        <div id="tab-market" class="mob-tab-panel" style="display:none">
+        <div id="tab-market" class="mob-tab-panel">
             <div class="section marketplace-section">
                 <h3>Marketplace <span id="market-deck-count" class="deck-count"></span></h3>
                 <div id="marketplace" class="card-row"></div>
@@ -74,7 +75,7 @@
         </div>
 
         <!-- Ops tab -->
-        <div id="tab-ops" class="mob-tab-panel" style="display:none">
+        <div id="tab-ops" class="mob-tab-panel">
             <div class="section missions-section">
                 <h3>Op Grid</h3>
                 <div class="heist-row">
@@ -85,7 +86,7 @@
         </div>
 
         <!-- Log tab -->
-        <div id="tab-log" class="mob-tab-panel" style="display:none">
+        <div id="tab-log" class="mob-tab-panel">
             <div class="section opponents-section">
                 <h3>Players</h3>
                 <div id="opponents"></div>
@@ -96,6 +97,7 @@
             </div>
         </div>
 
+    </div><!-- /.mob-tabs-track -->
     </div><!-- /.mob-content -->
 
     <!-- Debug buttons (only shown on localhost) -->

@@ -4,28 +4,28 @@
 // ── Tab management ─────────────────────────────────────────────────────────────
 
 UI._activeTab = 'hand';
-UI._tabScrollPositions = {};
 
-UI.switchTab = function(tab) {
-    // Save scroll position of current tab before leaving
-    const content = document.getElementById('mob-content');
-    if (content) this._tabScrollPositions[this._activeTab] = content.scrollTop;
+UI.switchTab = function(tab, animate = true) {
+    const idx = _TAB_ORDER.indexOf(tab);
+    if (idx === -1) return;
 
-    // Hide all panels
-    document.querySelectorAll('.mob-tab-panel').forEach(el => { el.style.display = 'none'; });
-    // Show selected panel
-    const panel = document.getElementById('tab-' + tab);
-    if (panel) panel.style.display = 'flex';
+    // Slide the track to the target panel
+    const track = document.getElementById('mob-tabs-track');
+    if (track) {
+        track.style.transition = animate
+            ? 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            : 'none';
+        track.style.transform = `translateX(-${idx * 25}%)`;
+    }
+
     // Update tab button states
     document.querySelectorAll('.mob-tab-btn').forEach(btn => {
         const isActive = btn.dataset.tab === tab;
         btn.classList.toggle('active', isActive);
         if (isActive) btn.classList.remove('has-notification');
     });
-    this._activeTab = tab;
 
-    // Restore saved scroll position for this tab
-    if (content) content.scrollTop = this._tabScrollPositions[tab] ?? 0;
+    this._activeTab = tab;
 };
 
 UI._notifyTab = function(tab) {
@@ -213,39 +213,84 @@ UI.confirmResign = function() {
     }
 };
 
-// ── Swipe left/right to switch tabs ──────────────────────────────────────────
+// ── Swipe left/right to switch tabs (with live drag tracking) ────────────────
 
 const _TAB_ORDER = ['hand', 'market', 'ops', 'log'];
 
+// Override renderLog so the Log panel scrolls to bottom (not the inner #game-log)
+const _desktopRenderLog = UI.renderLog.bind(UI);
+UI.renderLog = function() {
+    _desktopRenderLog();
+    const logPanel = document.getElementById('tab-log');
+    if (logPanel) logPanel.scrollTop = logPanel.scrollHeight;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const content = document.getElementById('mob-content');
-    if (!content) return;
+    const track  = document.getElementById('mob-tabs-track');
+    if (!content || !track) return;
 
     let touchStartX = 0;
     let touchStartY = 0;
+    let startOffset = 0;      // track translateX at touch start (px)
+    let isDragging  = false;  // true once we've committed to a horizontal drag
+    let axisLocked  = false;  // true once we've decided vertical vs horizontal
+
+    function panelWidth() {
+        return content.offsetWidth;
+    }
+
+    function offsetForTab(tab) {
+        return -_TAB_ORDER.indexOf(tab) * panelWidth();
+    }
 
     content.addEventListener('touchstart', e => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
+        touchStartX  = e.touches[0].clientX;
+        touchStartY  = e.touches[0].clientY;
+        startOffset  = offsetForTab(UI._activeTab);
+        isDragging   = false;
+        axisLocked   = false;
+        track.style.transition = 'none';
     }, { passive: true });
 
-    content.addEventListener('touchend', e => {
-        const dx = e.changedTouches[0].clientX - touchStartX;
-        const dy = e.changedTouches[0].clientY - touchStartY;
+    content.addEventListener('touchmove', e => {
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
 
-        // Ignore if more vertical than horizontal (scrolling)
-        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-
-        const current = _TAB_ORDER.indexOf(UI._activeTab);
-        if (dx < 0) {
-            // Swipe left → next tab
-            const next = _TAB_ORDER[current + 1];
-            if (next) UI.switchTab(next);
-        } else {
-            // Swipe right → previous tab
-            const prev = _TAB_ORDER[current - 1];
-            if (prev) UI.switchTab(prev);
+        if (!axisLocked) {
+            if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return; // too small to decide
+            axisLocked = true;
+            isDragging = Math.abs(dx) > Math.abs(dy);
         }
+
+        if (!isDragging) return; // vertical — let the panel scroll naturally
+
+        e.preventDefault();
+
+        const current  = _TAB_ORDER.indexOf(UI._activeTab);
+        const minX = -((_TAB_ORDER.length - 1) * panelWidth());
+        const maxX = 0;
+
+        // Add slight resistance at the edges
+        let newX = startOffset + dx;
+        if (newX > maxX) newX = maxX + (newX - maxX) * 0.25;
+        if (newX < minX) newX = minX + (newX - minX) * 0.25;
+
+        track.style.transform = `translateX(${newX}px)`;
+    }, { passive: false });
+
+    content.addEventListener('touchend', e => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const current = _TAB_ORDER.indexOf(UI._activeTab);
+        let target = current;
+
+        if (dx < -40 && current < _TAB_ORDER.length - 1) target = current + 1;
+        else if (dx > 40 && current > 0)                  target = current - 1;
+
+        UI.switchTab(_TAB_ORDER[target]);
     }, { passive: true });
 });
 
