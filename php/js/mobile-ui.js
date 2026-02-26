@@ -4,8 +4,13 @@
 // ── Tab management ─────────────────────────────────────────────────────────────
 
 UI._activeTab = 'hand';
+UI._tabScrollPositions = {};
 
 UI.switchTab = function(tab) {
+    // Save scroll position of current tab before leaving
+    const content = document.getElementById('mob-content');
+    if (content) this._tabScrollPositions[this._activeTab] = content.scrollTop;
+
     // Hide all panels
     document.querySelectorAll('.mob-tab-panel').forEach(el => { el.style.display = 'none'; });
     // Show selected panel
@@ -18,6 +23,9 @@ UI.switchTab = function(tab) {
         if (isActive) btn.classList.remove('has-notification');
     });
     this._activeTab = tab;
+
+    // Restore saved scroll position for this tab
+    if (content) content.scrollTop = this._tabScrollPositions[tab] ?? 0;
 };
 
 UI._notifyTab = function(tab) {
