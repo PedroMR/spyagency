@@ -82,14 +82,14 @@
                 </div>
                 <div id="mission-grid" class="mission-grid"></div>
             </div>
-            <div class="section opponents-section">
-                <h3>Players</h3>
-                <div id="opponents"></div>
-            </div>
         </div>
 
         <!-- Log tab -->
         <div id="tab-log" class="mob-tab-panel" style="display:none">
+            <div class="section opponents-section">
+                <h3>Players</h3>
+                <div id="opponents"></div>
+            </div>
             <div class="section mob-log-section">
                 <h4>Game Log</h4>
                 <div id="game-log"></div>
