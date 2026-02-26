@@ -213,5 +213,41 @@ UI.confirmResign = function() {
     }
 };
 
+// ── Swipe left/right to switch tabs ──────────────────────────────────────────
+
+const _TAB_ORDER = ['hand', 'market', 'ops', 'log'];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const content = document.getElementById('mob-content');
+    if (!content) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    content.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    content.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+
+        // Ignore if more vertical than horizontal (scrolling)
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+
+        const current = _TAB_ORDER.indexOf(UI._activeTab);
+        if (dx < 0) {
+            // Swipe left → next tab
+            const next = _TAB_ORDER[current + 1];
+            if (next) UI.switchTab(next);
+        } else {
+            // Swipe right → previous tab
+            const prev = _TAB_ORDER[current - 1];
+            if (prev) UI.switchTab(prev);
+        }
+    }, { passive: true });
+});
+
 // MobileUI is the patched UI object — aliased here for clarity.
 const MobileUI = UI;
