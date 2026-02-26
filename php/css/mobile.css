@@ -232,14 +232,13 @@ body.mobile .final-round-banner {
     background: rgba(34, 34, 68, 0.97);
 }
 
-/* Game log in Log tab — taller than desktop */
+/* Game log section fills remaining panel height */
 body.mobile .mob-log-section {
-    min-height: 200px;
+    flex: 1;
 }
 
 body.mobile #game-log {
     max-height: none;
-    min-height: 150px;
 }
 
 /* ── Card overrides ────────────────────────────────────────── */
