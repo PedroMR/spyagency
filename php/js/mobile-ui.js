@@ -27,6 +27,15 @@ UI._notifyTab = function(tab) {
     }
 };
 
+// ── Wrap Actions.endTurn — switch to Log tab on end turn ─────────────────────
+
+const _desktopEndTurn = Actions.endTurn.bind(Actions);
+Actions.endTurn = function() {
+    _desktopEndTurn();
+    UI.switchTab('log');
+    // renderLog() will scroll-to-bottom when the updated state arrives
+};
+
 // ── Skip FLIP animations (hidden tabs have zero rects) ────────────────────────
 
 UI._applyFLIPFrom = function() { /* no-op on mobile */ };
