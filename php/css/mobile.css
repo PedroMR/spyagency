@@ -1,0 +1,258 @@
+/* ============================================================
+   mobile.css — loaded after style.css on the mobile game page
+   Requires <body class="mobile"> on the page.
+   ============================================================ */
+
+/* ── Layout shell ─────────────────────────────────────────── */
+
+body.mobile {
+    overflow: hidden; /* only mob-content scrolls */
+    background-attachment: scroll; /* avoid iOS fixed bg flicker */
+}
+
+.mob-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    z-index: 100;
+    background: rgba(17, 17, 40, 0.97);
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+    backdrop-filter: blur(4px);
+}
+
+.mob-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #ffd700;
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.mob-stat {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.mob-resign-btn {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+}
+
+.mob-subheader {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    height: 32px;
+    z-index: 99;
+    background: rgba(22, 33, 62, 0.97);
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 8px;
+    font-size: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.mob-subheader #btn-end-turn {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 3px 10px;
+    height: 24px;
+}
+
+/* Final round banner fixed below subheader */
+body.mobile .final-round-banner {
+    position: fixed;
+    top: 88px;
+    left: 0;
+    right: 0;
+    z-index: 98;
+    margin: 0;
+    border-radius: 0;
+    font-size: 14px;
+    padding: 5px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mob-content {
+    position: fixed;
+    top: 88px;
+    bottom: 56px;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    padding: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Shift content down when final round banner is showing */
+.mob-content.mob-has-banner {
+    top: 118px;
+}
+
+.mob-tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    z-index: 100;
+    background: rgba(17, 17, 40, 0.97);
+    border-top: 1px solid #333;
+    display: flex;
+    backdrop-filter: blur(4px);
+}
+
+.mob-tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    border-top: 3px solid transparent;
+    color: #888;
+    font-size: 10px;
+    padding: 4px 2px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    position: relative;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.mob-tab-btn.active {
+    color: #ffd700;
+    border-top-color: #ffd700;
+}
+
+.mob-tab-btn:hover:not(.active) {
+    color: #ccc;
+}
+
+/* Notification dot for background tab activity */
+.mob-tab-btn.has-notification::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: calc(50% - 14px);
+    width: 7px;
+    height: 7px;
+    background: #00e676;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(0, 230, 118, 0.8);
+}
+
+.mob-tab-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Deck/discard side-by-side row in Hand tab */
+.mob-deck-discard-row {
+    display: flex;
+    gap: 10px;
+}
+
+.mob-deck-discard-row .section {
+    flex: 1;
+}
+
+/* Game log in Log tab — taller than desktop */
+body.mobile .mob-log-section {
+    min-height: 200px;
+}
+
+body.mobile #game-log {
+    max-height: none;
+    min-height: 150px;
+}
+
+/* ── Card overrides ────────────────────────────────────────── */
+
+body.mobile .card {
+    min-width: 80px;
+    max-width: 100px;
+    font-size: 10px;
+}
+
+/* Mission cards as full-width horizontal strips */
+body.mobile .mission-card {
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+    clip-path: none;
+    border-radius: 4px;
+    border-left: 3px solid var(--card-color, #e040fb);
+    padding: 6px 8px 6px 10px;
+    background: linear-gradient(90deg, var(--card-color, #e040fb) 0px, var(--card-color, #e040fb) 3px, rgba(8, 8, 20, 0.97) 3px);
+}
+
+body.mobile .mission-card .card-name {
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 60px;
+    max-width: 100px;
+    font-size: 10px;
+}
+
+body.mobile .mission-card .card-req {
+    font-size: 15px;
+}
+
+body.mobile .mission-card .card-reward {
+    font-size: 11px;
+}
+
+body.mobile .mission-tier-cards {
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Heist mission in Ops tab */
+body.mobile .heist-row .mission-card {
+    margin-bottom: 8px;
+}
+
+/* ── Modal overrides ───────────────────────────────────────── */
+
+body.mobile .modal {
+    width: 96%;
+    max-width: none;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+body.mobile .btn-modal {
+    padding: 12px 10px;
+    font-size: 14px;
+}
+
+/* ── Section adjustments ──────────────────────────────────── */
+
+body.mobile .section h3 {
+    font-size: 13px;
+}
+
+/* Turn indicator animation still applies */
+body.mobile .your-turn {
+    font-size: 12px;
+}
+
+body.mobile .other-turn {
+    font-size: 12px;
+}
