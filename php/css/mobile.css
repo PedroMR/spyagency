@@ -209,6 +209,14 @@ body.mobile .final-round-banner {
     flex: 1;
 }
 
+/* Player list sticks to top of Log tab while log scrolls */
+#tab-log .opponents-section {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(34, 34, 68, 0.97);
+}
+
 /* Game log in Log tab — taller than desktop */
 body.mobile .mob-log-section {
     min-height: 200px;
