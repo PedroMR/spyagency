@@ -58,23 +58,20 @@ Some ops and plots will reward the Player with gems (💎). Gems are kept betwee
 
 "Heist" is a special op and is always available as long as the player has ops available to perform this turn. It rewards the player with gems, but is not added to their op area. The reward in gems depends on the amount of icons in the agents and tech committed to the op &mdash; see the table below. Any icons more than 5 bear no extra reward.
 
-
 | Icons | Reward 
 |-------|--------
 | 1-2   | 1💎    
 | 3-4   | 2💎    
 | 5+    | 3💎    
 
-
-
-There is another way to earn gems: players can spend $3 to buy 1 gem. They may do this as many times as they want during their turn.
+There is another way to earn gems: players can spend $3 to buy 1 gem. They may do this as many times as they want during their turn. This may be useful if they're saving for a bigger spenditure next turn.s
 
 ### Buying cards
 
 To buy a card the player spends the required amount of money ($) and takes the card, adding it to their discard pile. The space left by the purchased card is only refilled at the end of the turn.
 > If the card has the _Primed_ keyword it is instead added to the player's hand.
 
-The active player may restock the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately (including any slots the player may have emptied via purchase). This can be done however many times the player as long as the player can pay for it.
+The active player may restock the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately (including any slots the player may have emptied via purchase). This can be done however many times the player wants as long as they can pay for it.
 
 ### End of Turn
 
