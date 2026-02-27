@@ -34,31 +34,55 @@ During their turn, a player may:
 
 Note that a player may only complete 1 op and purchase 1 card in their turn. This limit can be increased by some cards.
 
-Agents are played from hand in order to complete an op. Tech cards can be played with an Agent, but only up to the limit of how many that Agent can hold (it's listed in the card as a number of _tech slots_).
-
-Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to complete an op or be discarded as a whole in order to clear space for another agent.
-
-Whenever a player _gains_ a card it is added to their Discard Pile. However, if it has the **Primed** keyword, it is added to the player's hand instead.
+### Plots and Attacks
 
 Plot cards may be played from hand at any time and their effects are immediately resolved. If they feature an Attack, each player must defend with an agent satisfying the attack requirement or suffer the consequences specified in the card. 
 
 > Attack example: Ada plays Paperwork. She gains $1. Bob chooses to not defend, so he gains a Red Tape. Charlie discards an agent, so she is safe. Debora reveals a Sentinel, so she doesn't have to discard it and is safe.
 
-The active player may restock the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately.
+Whenever a player _gains_ a card it is added to their Discard Pile. However, if it has the **Primed** keyword, it is added to the player's hand instead.
 
-To complete an Op the player plays one or more Agents with Tech. The number of icons in the Agent and all of their Tech needs to match or exceed the requirement of the Op. The Op card itself is added to the player's op area. Every turn it will grant the player the specified bonus or effect, including the turn when it was purchased.
+### Agents and Ops
 
-Some Ops and Plots will reward the Player with gems (💎). Gems are kept between turns, and may be cashed in for the same amount in money ($). 1 gem = 1 money. This should be done "just in time", at moment of purchase.
+Agents are played from hand in order to complete an op. Tech cards can be played with an Agent, but only up to the limit of how many that Agent can hold (it's listed in the card as a number of _tech slots_).
 
-"Heist" is a special op. It immediately rewards the player with gems, but is not added to their deck. Heist is always available. If the agent(s) committed to it feature 1 or 2 icons, Heist rewards 1 gem. If 3 or 4 icons, two gems, and if 5 or more icons, three gems are rewarded. Any more icons bear no extra reward. The gem rewards for Heist should be visible in a table when that op is selected.
+Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to complete an op or be discarded as a whole in order to clear space for another agent.
 
-Players can spend $3 to buy 1 gem. They may do this as many times as they want.
+To complete an op the player plays one or more Agents with Tech, and has the option of using any agent and tech in their base. The icons in the Agents and all of their Tech needs to match or exceed the requirement of the op. The op card itself is added to the player's op area. Every turn it will grant the player the specified bonus or effect, including the turn when it was purchased.
+
+All agents and tech used to complete an op are left in the play area. They will be discarded at the end of the turn, but not before (w  e don't want agents being used in an op and then coming back the same turn due to a deck out of cards).
+
+Some ops and plots will reward the Player with gems (💎). Gems are kept between turns, and may be cashed in for the same amount in money ($). 1 gem = 1 money. This is done "just in time", at the moment of purchase.
+
+### Heists and Gems
+
+"Heist" is a special op and is always available as long as the player has ops available to perform this turn. It rewards the player with gems, but is not added to their op area. The reward in gems depends on the amount of icons in the agents and tech committed to the op &mdash; see the table below. Any icons more than 5 bear no extra reward.
+
+
+| Icons | Reward 
+|-------|--------
+| 1-2   | 1💎    
+| 3-4   | 2💎    
+| 5+    | 3💎    
+
+
+
+There is another way to earn gems: players can spend $3 to buy 1 gem. They may do this as many times as they want during their turn.
+
+### Buying cards
 
 To buy a card the player spends the required amount of money ($) and takes the card, adding it to their discard pile. The space left by the purchased card is only refilled at the end of the turn.
+> If the card has the _Primed_ keyword it is instead added to the player's hand.
+
+The active player may restock the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately (including any slots the player may have emptied via purchase). This can be done however many times the player as long as the player can pay for it.
 
 ### End of Turn
 
-After the player is done playing their cards the Op Grid and the Market are refilled and the turn of the player to their left begins. When refilling the Market, if a card drawn to refill it matches a card already in it, place the new card on top of the existing stack and draw again. The same procedure applies to the Op grid, stacking cards if they are the same. Note that Agents in Bases who were not deployed to complete an op are not discarded; they remain in the player's play area, as well as any Tech equipped onto them.
+After the player is done playing their turn the Op Grid and the Market are refilled, relevant cards are discarded and the turn of the player to their left begins.
+
+When refilling both the Op Grid and the Market, if a card drawn to refill it matches a card already in it, place the new card on top of the existing stack and draw again.
+
+Now the player discards all the cards in their play area as well as whatever may be left in their hand. Note that Agents in Bases who were not deployed to complete an op are not discarded; they remain in the player's play area, as well as any Tech equipped onto them.
 
 The player then discards their whole hand and draws 5 cards. If there are no cards left in the deck the player shuffles their discard pile to make a new deck and resumes drawing.
 

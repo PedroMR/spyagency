@@ -458,6 +458,10 @@ input[type="text"] {
 .rules-modal-body h3 { font-size: 1.1em; margin: 14px 0 6px; }
 .rules-modal-body h4 { font-size: 1em; margin: 12px 0 4px; }
 .rules-modal-body p  { margin: 0 0 10px; }
+.rules-table { border-collapse: collapse; margin: 8px 0 14px; }
+.rules-table th, .rules-table td { border: 1px solid #555; padding: 4px 12px; text-align: left; }
+.rules-table th { background: rgba(255,215,0,0.12); color: #ffd700; font-size: 0.9em; }
+.rules-table td { font-size: 0.9em; }
 
 /* Modal */
 .modal-overlay {
@@ -589,6 +593,7 @@ input[type="text"] {
     padding: 4px 0; 
     display: block;
     text-align: center;
+}
 .discard-section h3 { font-size: 12px; }
 .discard-label {
     font-size: 22px;
@@ -663,4 +668,4 @@ input[type="text"] {
 .end-turn-column { display: flex; align-items: center; }
 #btn-end-turn { height:100%; font-size: 14px; padding: 12px 20px; }
 #btn-end-turn:disabled { height: 100%; background: #555; border-color: #666; opacity: 0.5; cursor: default; }
-.my-resources { display: inline-block; text-align: right; float: right;}
+.my-resources { display: block; text-align: right; float: right; }

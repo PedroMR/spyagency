@@ -8,35 +8,62 @@ function rules_md_to_html(string $md): string {
     $lines = explode("\n", $md);
     $html  = '';
     $para  = [];
+    $table = [];
 
-    $flush = function() use (&$para, &$html) {
-        if (!$para) return;
-        $text = implode(' ', $para);
-        // Inline: **bold**
+    $inline = function(string $text): string {
         $text = preg_replace('/\*\*(.+?)\*\*/u', '<strong>$1</strong>', $text);
-        // Inline: *italic*
         $text = preg_replace('/\*(.+?)\*/u', '<em>$1</em>', $text);
-        $html .= '<p>' . $text . '</p>';
+        return $text;
+    };
+
+    $flush = function() use (&$para, &$html, $inline) {
+        if (!$para) return;
+        $html .= '<p>' . $inline(implode(' ', $para)) . '</p>';
         $para  = [];
     };
 
+    $flushTable = function() use (&$table, &$html) {
+        if (!$table) return;
+        $parseRow = fn($line) => array_map('trim', explode('|', trim($line, "| \t")));
+        $rows = array_values(array_filter($table, fn($r) => !preg_match('/^\|[\s|:-]+\|/', trim($r))));
+        if (!$rows) { $table = []; return; }
+        $html .= '<table class="rules-table">';
+        $html .= '<thead><tr>';
+        foreach ($parseRow($rows[0]) as $cell)
+            $html .= '<th>' . htmlspecialchars($cell, ENT_QUOTES) . '</th>';
+        $html .= '</tr></thead><tbody>';
+        for ($i = 1; $i < count($rows); $i++) {
+            $html .= '<tr>';
+            foreach ($parseRow($rows[$i]) as $cell)
+                $html .= '<td>' . htmlspecialchars($cell, ENT_QUOTES) . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table>';
+        $table = [];
+    };
+
     foreach ($lines as $line) {
-        if (preg_match('/^### (.+)/u', $line, $m)) {
+        if (preg_match('/^\|/', trim($line))) {
             $flush();
+            $table[] = $line;
+        } elseif (preg_match('/^### (.+)/u', $line, $m)) {
+            $flush(); $flushTable();
             $html .= '<h4>' . htmlspecialchars($m[1], ENT_QUOTES) . '</h4>';
         } elseif (preg_match('/^## (.+)/u', $line, $m)) {
-            $flush();
+            $flush(); $flushTable();
             $html .= '<h3>' . htmlspecialchars($m[1], ENT_QUOTES) . '</h3>';
         } elseif (preg_match('/^# (.+)/u', $line, $m)) {
-            $flush();
+            $flush(); $flushTable();
             $html .= '<h2>' . htmlspecialchars($m[1], ENT_QUOTES) . '</h2>';
         } elseif (trim($line) === '') {
-            $flush();
+            $flush(); $flushTable();
         } else {
+            $flushTable();
             $para[] = htmlspecialchars(trim($line), ENT_QUOTES);
         }
     }
     $flush();
+    $flushTable();
     return $html;
 }
 
