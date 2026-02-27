@@ -17,6 +17,7 @@
         <span id="gems-display" class="mob-stat"></span>
         <span id="stars-display" class="mob-stat"></span>
         <span id="my-resources" style="display:none"></span>
+        <button class="rules-btn" onclick="rulesOpen()" style="font-size:13px;padding:4px 8px">📖</button>
         <button id="btn-resign" class="mob-resign-btn" onclick="UI.confirmResign()">Resign</button>
     </div>
 
@@ -124,6 +125,7 @@
         </div>
     </div>
 
+    <?php include __DIR__.'/../lib/rules_widget.php'; ?>
     <script>window._API_BASE = '../';</script>
     <script src="../js/config.js?v=<?= filemtime(__DIR__.'/../js/config.js') ?>"></script>
     <script src="../js/actions.js?v=<?= filemtime(__DIR__.'/../js/actions.js') ?>"></script>

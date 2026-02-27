@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="lobby-container">
-        <h1>🕵️ Spy Agency</h1>
+        <h1>🕵️ Spy Agency <button class="rules-btn" onclick="rulesOpen()" style="float:right;margin-top:4px">📖 Rules</button></h1>
 
         <div class="player-setup" id="player-setup">
             <label for="player-name">Your Name:</label>
@@ -44,6 +44,7 @@
 
     <div id="lobby-log" style="max-width:600px;margin:20px auto;padding:10px;background:#111128;border-radius:8px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:11px;color:#aaa;display:none;"></div>
 
+    <?php include __DIR__.'/lib/rules_widget.php'; ?>
     <script src="js/config.js?v=<?= filemtime(__DIR__.'/js/config.js') ?>"></script>
     <script src="js/lobby.js?v=<?= filemtime(__DIR__.'/js/lobby.js') ?>"></script>
 </body>

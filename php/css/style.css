@@ -388,6 +388,68 @@ input[type="text"] {
 }
 .ui-toast.visible { opacity: 1; }
 
+/* Rules button & overlay */
+.rules-btn {
+    background: rgba(42, 42, 74, 0.9);
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.rules-btn:hover { background: rgba(60, 60, 100, 0.95); }
+
+.rules-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 4000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.rules-modal {
+    background: rgba(26, 26, 58, 0.98);
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 620px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+.rules-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #444;
+    flex-shrink: 0;
+}
+.rules-modal-header button {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.rules-modal-header button:hover { color: #fff; background: none; }
+.rules-modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 14px;
+    color: #ddd;
+}
+.rules-modal-body h2 { font-size: 1.3em; margin: 16px 0 8px; }
+.rules-modal-body h3 { font-size: 1.1em; margin: 14px 0 6px; }
+.rules-modal-body h4 { font-size: 1em; margin: 12px 0 4px; }
+.rules-modal-body p  { margin: 0 0 10px; }
+
 /* Modal */
 .modal-overlay {
     position: fixed;

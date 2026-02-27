@@ -27,6 +27,7 @@
                 <span id="buys-display"></span>
             </div>
             <div class="game-header-actions">
+                <button class="rules-btn" onclick="rulesOpen()">📖 Rules</button>
                 <button id="btn-resign" onclick="UI.confirmResign()">Resign</button>
             </div>
         </div>
@@ -115,6 +116,7 @@
         </div>
     </div>
 
+    <?php include __DIR__.'/lib/rules_widget.php'; ?>
     <script src="js/config.js?v=<?= filemtime(__DIR__.'/js/config.js') ?>"></script>
     <script src="js/actions.js?v=<?= filemtime(__DIR__.'/js/actions.js') ?>"></script>
     <script src="js/ui.js?v=<?= filemtime(__DIR__.'/js/ui.js') ?>"></script>
