@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div id="lobby-log" style="max-width:600px;margin:20px auto;padding:10px;background:#111128;border-radius:8px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:11px;color:#aaa;"></div>
+    <div id="lobby-log" style="max-width:600px;margin:20px auto;padding:10px;background:#111128;border-radius:8px;max-height:150px;overflow-y:auto;font-family:monospace;font-size:11px;color:#aaa;display:none;"></div>
 
     <script src="js/config.js?v=<?= filemtime(__DIR__.'/js/config.js') ?>"></script>
     <script src="js/lobby.js?v=<?= filemtime(__DIR__.'/js/lobby.js') ?>"></script>
