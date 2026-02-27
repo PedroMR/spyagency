@@ -366,9 +366,10 @@ const UI = {
             const stackBadge = count > 1 ? `<div class="stack-count">x${count}</div>` : '';
             const click = affordable ? `onclick="UI.onMarketClick('${cardId}', ${i})"` : '';
             const defenderBadge = card.defend ? `<div class="card-defender">DEFENDER</div>` : '';
+            const primedBadge = card.primed ? `<div class="card-primed">PRIMED</div>` : '';
             const detail = (card.type === 'agent' || card.type === 'tech') && card.icons
-                ? `<div class="card-icons">${this.getCardIcons(card)}</div>${defenderBadge}`
-                : `<div class="card-desc">${esc(card.description)}</div>${defenderBadge}`;
+                ? `<div class="card-icons">${this.getCardIcons(card)}</div>${defenderBadge}${primedBadge}`
+                : `<div class="card-desc">${esc(card.description)}</div>${defenderBadge}${primedBadge}`;
             return `<div class="card market-card${affordClass}" style="--card-color:${this.getCardColor(card)}" ${click}>
                 <div class="card-row-top">
                     <span class="card-name">${esc(card.name)}</span>
@@ -391,12 +392,14 @@ const UI = {
             const affordable = canBuyAny && totalFunds >= c.cost;
             const dimmed = !affordable ? ' unaffordable' : '';
             const click = affordable ? `onclick="UI.buyAlwaysAvailable('${c.id}', '${c.name}', ${c.cost})"` : '';
+            const primedBadge = c.primed ? `<div class="card-primed">PRIMED</div>` : '';
             return `<div class="card always-available-card${dimmed}" style="--card-color:#ffd740" ${click}>
                 <div class="card-row-top">
                     <span class="card-name">${c.name}</span>
                     <span class="card-cost-badge">$${c.cost}</span>
                 </div>
                 <div class="card-icons">${this.getCardIcons(c)}</div>
+                ${primedBadge}
                 <div class="card-type">agent</div>
             </div>`;
         }).join('');
@@ -574,11 +577,13 @@ const UI = {
         if (card.type === 'agent') {
             const icons = this.getCardIcons(card);
             const defenderBadge = card.defend ? `<div class="card-defender">DEFENDER</div>` : '';
-            return (icons ? `<div class="card-icons">${icons}</div>` : '') + defenderBadge;
+            const primedBadge = card.primed ? `<div class="card-primed">PRIMED</div>` : '';
+            return (icons ? `<div class="card-icons">${icons}</div>` : '') + defenderBadge + primedBadge;
         }
         if (card.type === 'tech') {
             const icons = this.getCardIcons(card);
-            return icons ? `<div class="card-icons">${icons}</div>` : '';
+            const primedBadge = card.primed ? `<div class="card-primed">PRIMED</div>` : '';
+            return (icons ? `<div class="card-icons">${icons}</div>` : '') + primedBadge;
         }
         return `<div class="card-desc">${esc(card.description)}</div>`;
     },
