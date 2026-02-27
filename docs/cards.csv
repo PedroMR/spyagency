@@ -1,6 +1,6 @@
 Name,ID,Copies,Type,Tier,Cost,Requirements,Effect,Ability,Special,Max Tech
-Muscle Merc,muscle,12,Agent,1,$3,,💪,,Always available to buy,1
-Shadow Merc,shadow,12,Agent,1,$4,,🥸,,Always available to buy,1
+Muscle Merc,muscle,12,Agent,1,$3,,💪,Primed,Always available to buy,1
+Shadow Merc,shadow,12,Agent,1,$4,,🥸,Primed,Always available to buy,1
 Doorkicker,doorkicker,6,Agent,2,$5,,💪🔑,,,1
 Reputable Driver,driver,6,Agent,2,$5,,🥸🚘,,,1
 Sentinel,sentinel,4,Agent,3,$6,,🥸💪,Defender,,1

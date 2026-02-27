@@ -69,6 +69,7 @@ function get_card_catalog(): array {
             'max_tech' => 1,
             'icons' => ['muscle'],
             'always_available' => true,
+            'primed' => true,
             'description' => '💪 — Always available ($3)',
         ],
         'shadow' => [
@@ -81,6 +82,7 @@ function get_card_catalog(): array {
             'max_tech' => 1,
             'icons' => ['disguise'],
             'always_available' => true,
+            'primed' => true,
             'description' => '🥸 — Always available ($4)',
         ],
         'doorkicker' => [

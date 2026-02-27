@@ -306,7 +306,13 @@ function action_buy_card(array &$game, int $pi, array $params): array {
     if (!spend_cost($game['players'][$pi], $cost, $log_parts)) {
         return ['ok' => false, 'error' => 'Not enough money/gems'];
     }
-    $game['players'][$pi]['discard'][] = $card_id;
+    $primed = $catalog[$card_id]['primed'] ?? false;
+    if ($primed) {
+        $game['players'][$pi]['hand'][] = $card_id;
+        $log_parts[] = 'Primed — goes to hand';
+    } else {
+        $game['players'][$pi]['discard'][] = $card_id;
+    }
     array_shift($game['marketplace'][$slot]); // Remove top card from stack
     $game['players'][$pi]['buys_this_turn'] = ($game['players'][$pi]['buys_this_turn'] ?? 0) + 1;
     $msg = $game['players'][$pi]['name'] . " bought {$catalog[$card_id]['name']} for \${$cost}";

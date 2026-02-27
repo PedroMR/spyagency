@@ -184,6 +184,9 @@ foreach ($rows as $row) {
             if (stripos($row['ability'], 'defend') !== false) {
                 $entry['defend'] = true;
             }
+            if (stripos($row['ability'], 'primed') !== false) {
+                $entry['primed'] = true;
+            }
             $icon_display = trim($row['effect']);
             $entry['description'] = $icon_display . ($entry['always_available'] ? " — Always available (\${$cost_val})" : " (\${$cost_val})");
             if (!$entry['always_available']) {
@@ -195,6 +198,9 @@ foreach ($rows as $row) {
             $cost_val = (int)preg_replace('/[^0-9]/', '', $row['cost_raw']);
             $entry['cost'] = $cost_val;
             $entry['icons'] = parse_icons_field($row['effect'], $emoji_to_icon);
+            if (stripos($row['ability'], 'primed') !== false) {
+                $entry['primed'] = true;
+            }
             $icon_display = trim($row['effect']);
             $entry['description'] = "{$icon_display} (\${$cost_val})";
             $market_counts[$id] = $row['count'];
@@ -223,6 +229,9 @@ foreach ($rows as $row) {
             } else {
                 $entry['effect'] = 'none';
             }
+            if (stripos($row['ability'], 'primed') !== false) {
+                $entry['primed'] = true;
+            }
             $entry['description'] = $row['effect'] . ($cost_val > 0 ? " (\${$cost_val})" : '');
             if ($row['tier'] > 0) {
                 $market_counts[$id] = $row['count'];
@@ -239,6 +248,9 @@ foreach ($rows as $row) {
             $entry['value'] = $value;
             if (stripos($row['effect'], '+1 buy') !== false) {
                 $entry['extra_buy'] = true;
+            }
+            if (stripos($row['ability'], 'primed') !== false) {
+                $entry['primed'] = true;
             }
             $entry['description'] = "\${$value}" . ($cost_val > 0 ? " (\${$cost_val})" : '');
             if ($row['tier'] > 0) {

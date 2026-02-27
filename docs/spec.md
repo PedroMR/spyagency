@@ -1,6 +1,10 @@
+# Spy Agency Implementation Spec
+
+See game rules in the `rules.md` file.
+
 ## Implementation Details
 
-See the card list in the "cards.csv" file.
+See the card list in the `cards.csv` file.
 
 I should be able to spend gems implicitly, without needing a "Cash Gems" button. This should happen automatically when I try to buy something I don't have $ for. The remaining balance should be paid for with the necessary gems.  
 
