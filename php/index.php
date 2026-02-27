@@ -18,10 +18,9 @@
             <button id="btn-save-name" onclick="saveName()">Save</button>
         </div>
 
-        <div class="lobby-actions" id="lobby-actions" style="display:none">
-            <p>Welcome, <strong id="display-name"></strong>! <button onclick="logout()" style="font-size:0.8em;margin-left:8px;">Switch Account</button></p>
-
+        <div class="lobby-actions" id="lobby-actions" style="display:none">            
             <div class="create-room">
+                <p>Welcome, <strong id="display-name"></strong>! <button onclick="logout()" style="font-size:0.8em;margin-left:8px;">Switch Account</button></p>
                 <h3>Create a Room</h3>
                 <input type="text" id="room-name" placeholder="Room name..." maxlength="30">
                 <button onclick="createRoom()">Create</button>

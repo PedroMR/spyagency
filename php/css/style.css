@@ -38,6 +38,11 @@ input[type="text"] {
 }
 .lobby-container h1 { text-align: center; margin-bottom: 30px; font-size: 2em; }
 .player-setup, .create-room { margin-bottom: 20px; }
+.player-setup {
+    background-color: rgba(17, 17, 40, 0.85);
+    padding: 16px;
+    border-radius: 8px;
+}
 .player-setup label { display: block; margin-bottom: 6px; }
 .player-setup input { margin-right: 8px; }
 .create-room { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
