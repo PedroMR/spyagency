@@ -8,6 +8,7 @@ body {
 h1, h2, h3, h4 { color: #ffd700; }
 h1 {
     background-color:  rgba(17, 17, 40, 0.85);/* rgba(42, 42, 74, 0.85);*/
+    border-radius: 8px;
     padding: 0.4em 0em;
 }
 button {
@@ -39,9 +40,14 @@ input[type="text"] {
 .player-setup, .create-room { margin-bottom: 20px; }
 .player-setup label { display: block; margin-bottom: 6px; }
 .player-setup input { margin-right: 8px; }
-.create-room { display: flex; gap: 8px; align-items: flex-end; }
+.create-room { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
 .create-room h3 { width: 100%; margin-bottom: 6px; }
-.create-room { flex-wrap: wrap; }
+.create-room, .room-list {
+    background-color: rgba(17, 17, 40, 0.85);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
 .room-item {
     display: flex;
     justify-content: space-between;
