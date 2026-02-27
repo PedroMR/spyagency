@@ -301,6 +301,9 @@ body.mobile .btn-modal {
     font-size: 14px;
 }
 
+/* Toast sits below the fixed mobile header */
+body.mobile .ui-toast { top: 96px; }
+
 /* ── Section adjustments ──────────────────────────────────── */
 
 body.mobile .section h3 {

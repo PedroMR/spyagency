@@ -208,11 +208,12 @@ UI.confirmResign = function() {
         }
         return;
     }
-    if (confirm('Are you sure you want to resign? You will be removed from the game.')) {
-        Actions.resign().then(() => {
-            location.href = '../index.php';
-        });
-    }
+    this.showConfirm(
+        'Are you sure you want to resign? You will be removed from the game.',
+        () => Actions.resign().then(() => { location.href = '../index.php'; }),
+        null,
+        'Resign', true
+    );
 };
 
 // ── Swipe left/right to switch tabs (with live drag tracking) ────────────────

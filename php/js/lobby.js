@@ -1,6 +1,21 @@
 // Fallback if config.js didn't load
 try { API_BASE; } catch(e) { window.API_BASE = ''; }
 
+let _lobbyToastTimer = null;
+function showToast(msg) {
+    let toast = document.getElementById('ui-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'ui-toast';
+        toast.className = 'ui-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('visible');
+    clearTimeout(_lobbyToastTimer);
+    _lobbyToastTimer = setTimeout(() => toast.classList.remove('visible'), 3000);
+}
+
 // Catch all unhandled errors and show them visually
 window.addEventListener('error', function(e) {
     var el = document.getElementById('lobby-log');
@@ -40,7 +55,7 @@ function getPlayerName() {
 
 function saveName() {
     const name = document.getElementById('player-name').value.trim();
-    if (!name) return alert('Enter a name!');
+    if (!name) return showToast('Enter a name!');
     sessionStorage.setItem('spy_name', name);
     showLobby();
 }
@@ -157,14 +172,14 @@ async function apiGet(url) {
 
 async function createRoom() {
     const roomName = document.getElementById('room-name').value.trim();
-    if (!roomName) return alert('Enter a room name');
-    if (roomName.length > 30) return alert('Room name too big (>30)');
+    if (!roomName) return showToast('Enter a room name');
+    if (roomName.length > 30) return showToast('Room name too big (>30 chars)');
     const res = await apiPost(API_BASE + 'api/room_create.php', {
         room_name: roomName,
         player_name: getPlayerName(),
         token: getToken(),
     });
-    if (!res.ok) return alert(res.error);
+    if (!res.ok) return showToast(res.error);
     document.getElementById('room-name').value = '';
     currentRoomId = res.room_id;
     showWaitingRoom(roomName, true);
@@ -176,7 +191,7 @@ async function joinRoom(roomId, roomName) {
         player_name: getPlayerName(),
         token: getToken(),
     });
-    if (!res.ok) return alert(res.error);
+    if (!res.ok) return showToast(res.error);
     currentRoomId = roomId;
     showWaitingRoom(roomName, false);
 }
@@ -196,7 +211,7 @@ async function addAI() {
         room_id: currentRoomId,
         token: getToken(),
     });
-    if (!res.ok) return alert(res.error);
+    if (!res.ok) return showToast(res.error);
     lobbyLog('Added AI: ' + res.name);
 }
 
@@ -251,7 +266,7 @@ async function startGame() {
         room_id: currentRoomId,
         token: getToken(),
     });
-    if (!res.ok) return alert(res.error);
+    if (!res.ok) return showToast(res.error);
     sessionStorage.setItem('spy_game_id', res.game_id);
     sessionStorage.setItem('spy_room_id', currentRoomId);
     window.location.href = 'game.php?game_id=' + encodeURIComponent(res.game_id) + '&token=' + encodeURIComponent(getToken());

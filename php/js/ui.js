@@ -837,10 +837,12 @@ const UI = {
     },
 
     discardBaseAgent() {
-        if (confirm('Discard the agent (and tech) from your base?')) {
-            Actions.discardBaseAgent();
-            this.closeModal();
-        }
+        this.showConfirm(
+            'Discard the agent (and tech) from your base?',
+            () => Actions.discardBaseAgent(),
+            () => this.showBaseAgentDialog(),
+            'Discard', true
+        );
     },
 
     renderDeck() {
@@ -989,9 +991,7 @@ const UI = {
         if (gemsNeeded > 0) {
             msg += `\n(Will spend ${gemsNeeded} gem${gemsNeeded > 1 ? 's' : ''} to cover the difference)`;
         }
-        if (confirm(msg)) {
-            Actions.buyAlwaysAvailable(cardId);
-        }
+        this.showConfirm(msg, () => Actions.buyAlwaysAvailable(cardId), null, `Buy ${name}`);
     },
 
     onMarketClick(cardId, slot) {
@@ -1008,9 +1008,7 @@ const UI = {
         if (gemsNeeded > 0) {
             msg += `\n(Will spend ${gemsNeeded} gem${gemsNeeded > 1 ? 's' : ''} to cover the difference)`;
         }
-        if (confirm(msg)) {
-            Actions.buyCard(cardId, slot);
-        }
+        this.showConfirm(msg, () => Actions.buyCard(cardId, slot), null, `Buy ${card.name}`);
     },
 
     handlePlotPlay(cardId) {
@@ -1490,6 +1488,7 @@ const UI = {
     },
 
     closeModal() {
+        if (this._preventModalClose) return;
         if (this.state && this.state.ended) return;
         if (this.state && this.state.attack_pending) return;
         document.getElementById('modal-overlay').style.display = 'none';
@@ -1505,15 +1504,57 @@ const UI = {
             }
             return;
         }
-        if (confirm('Are you sure you want to resign? You will be removed from the game.')) {
-            Actions.resign().then(() => {
-                location.href = 'index.php';
-            });
-        }
+        this.showConfirm(
+            'Are you sure you want to resign? You will be removed from the game.',
+            () => Actions.resign().then(() => { location.href = 'index.php'; }),
+            null,
+            'Resign', true
+        );
     },
 
     showError(msg) {
-        alert(msg);
+        let toast = document.getElementById('ui-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'ui-toast';
+            toast.className = 'ui-toast';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.classList.add('visible');
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => toast.classList.remove('visible'), 3000);
+    },
+
+    showConfirm(msg, onConfirm, onCancel, confirmLabel = 'Confirm', destructive = false) {
+        this._preventModalClose = true;
+        this._onConfirm = onConfirm;
+        this._onConfirmCancel = onCancel;
+        const btnStyle = destructive
+            ? 'background:#8b0000;border-color:#c00'
+            : 'background:#1a8a2d;border-color:#2dbc45';
+        let html = `<p style="font-size:15px;margin-bottom:16px">${esc(msg)}</p>`;
+        html += `<button class="btn-modal" style="${btnStyle}" onclick="UI._doConfirm()">${esc(confirmLabel)}</button>`;
+        html += `<button class="btn-modal btn-cancel" onclick="UI._doConfirmCancel()">Cancel</button>`;
+        this.showModal(html);
+    },
+
+    _doConfirm() {
+        this._preventModalClose = false;
+        const cb = this._onConfirm;
+        this._onConfirm = null;
+        this._onConfirmCancel = null;
+        this.closeModal();
+        if (cb) cb();
+    },
+
+    _doConfirmCancel() {
+        this._preventModalClose = false;
+        const cb = this._onConfirmCancel;
+        this._onConfirm = null;
+        this._onConfirmCancel = null;
+        if (cb) cb();
+        else this.closeModal();
     },
 };
 

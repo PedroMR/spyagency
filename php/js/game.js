@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = params.get('token') || sessionStorage.getItem('spy_token');
 
     if (!gameId || !token) {
-        alert('No active game. Returning to lobby.');
-        location.href = 'index.php';
+        UI.showError('No active game. Returning to lobby.');
+        setTimeout(() => { location.href = 'index.php'; }, 1500);
         return;
     }
 
