@@ -103,24 +103,31 @@ function parse_mission_rewards(string $desc): array {
     return [$stars, $value, $gems];
 }
 
-// Parse CSV
-// Columns: Name, Copies, Type, Tier, Cost, Requirements, Effect, Ability, Special, Max Tech
+// Parse CSV — columns looked up by header name so order doesn't matter
 $rows = [];
 $fh = fopen($csv_path, 'r');
-$header = fgetcsv($fh);
+$raw_header = fgetcsv($fh);
+$col = array_flip(array_map('strtolower', array_map('trim', $raw_header)));
+
+function col(array $row, array $col, string $key, string $default = ''): string {
+    $i = $col[$key] ?? null;
+    return $i !== null && isset($row[$i]) ? trim($row[$i]) : $default;
+}
+
 while (($row = fgetcsv($fh)) !== false) {
     if (count($row) < 3) continue;
     $rows[] = [
-        'name'         => trim($row[0]),
-        'count'        => (int)($row[1] ?? 0),
-        'type'         => strtolower(trim($row[2])),
-        'tier'         => isset($row[3]) && $row[3] !== '' ? (int)$row[3] : 0,
-        'cost_raw'     => trim($row[4] ?? ''),
-        'requirements' => trim($row[5] ?? ''),
-        'effect'       => trim($row[6] ?? ''),
-        'ability'      => trim($row[7] ?? ''),
-        'special'      => trim($row[8] ?? ''),
-        'max_tech'     => isset($row[9]) && $row[9] !== '' ? (int)$row[9] : null,
+        'id'           => col($row, $col, 'id'),
+        'name'         => col($row, $col, 'name'),
+        'count'        => (int)(col($row, $col, 'copies') ?: 0),
+        'type'         => strtolower(col($row, $col, 'type')),
+        'tier'         => col($row, $col, 'tier') !== '' ? (int)col($row, $col, 'tier') : 0,
+        'cost_raw'     => col($row, $col, 'cost'),
+        'requirements' => col($row, $col, 'requirements'),
+        'effect'       => col($row, $col, 'effect'),
+        'ability'      => col($row, $col, 'ability'),
+        'special'      => col($row, $col, 'special'),
+        'max_tech'     => col($row, $col, 'max tech') !== '' ? (int)col($row, $col, 'max tech') : null,
     ];
 }
 fclose($fh);
@@ -148,7 +155,7 @@ $cards['money_3'] = [
 ];
 
 foreach ($rows as $row) {
-    $id = slug($row['name']);
+    $id = $row['id'] !== '' ? $row['id'] : slug($row['name']);
     $entry = [
         'id' => $id,
         'name' => $row['name'],
@@ -365,9 +372,9 @@ $output .= "}\n\n";
 $output .= "function get_starter_deck(): array {\n";
 $output .= "    \$deck = [];\n";
 $output .= "    for (\$i = 0; \$i < 6; \$i++) \$deck[] = 'money_1';\n";
-$output .= "    \$deck[] = 'muscle_merc';\n";
-$output .= "    \$deck[] = 'muscle_merc';\n";
-$output .= "    \$deck[] = 'shadow_merc';\n";
+$output .= "    \$deck[] = 'muscle';\n";
+$output .= "    \$deck[] = 'muscle';\n";
+$output .= "    \$deck[] = 'shadow';\n";
 $output .= "    \$deck[] = 'red_tape';\n";
 $output .= "    shuffle(\$deck);\n";
 $output .= "    return \$deck;\n";

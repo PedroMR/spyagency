@@ -59,8 +59,8 @@ function get_card_catalog(): array {
             'stars' => 0,
             'description' => '$3',
         ],
-        'muscle_merc' => [
-            'id' => 'muscle_merc',
+        'muscle' => [
+            'id' => 'muscle',
             'name' => 'Muscle Merc',
             'type' => 'agent',
             'tier' => 1,
@@ -71,8 +71,8 @@ function get_card_catalog(): array {
             'always_available' => true,
             'description' => '💪 — Always available ($3)',
         ],
-        'shadow_merc' => [
-            'id' => 'shadow_merc',
+        'shadow' => [
+            'id' => 'shadow',
             'name' => 'Shadow Merc',
             'type' => 'agent',
             'tier' => 1,
@@ -95,8 +95,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '💪🔑 ($5)',
         ],
-        'reputable_driver' => [
-            'id' => 'reputable_driver',
+        'driver' => [
+            'id' => 'driver',
             'name' => 'Reputable Driver',
             'type' => 'agent',
             'tier' => 2,
@@ -120,8 +120,8 @@ function get_card_catalog(): array {
             'defend' => true,
             'description' => '🥸💪 ($6)',
         ],
-        'speedboat_mechanic' => [
-            'id' => 'speedboat_mechanic',
+        'mechanic' => [
+            'id' => 'mechanic',
             'name' => 'Speedboat Mechanic',
             'type' => 'agent',
             'tier' => 3,
@@ -132,8 +132,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '💪💪🚘 ($8)',
         ],
-        'scuba_infiltrator' => [
-            'id' => 'scuba_infiltrator',
+        'scuba' => [
+            'id' => 'scuba',
             'name' => 'Scuba Infiltrator',
             'type' => 'agent',
             'tier' => 3,
@@ -144,8 +144,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '🚘🚘🔑 ($10)',
         ],
-        'hoodied_hacker' => [
-            'id' => 'hoodied_hacker',
+        'hacker' => [
+            'id' => 'hacker',
             'name' => 'Hoodied Hacker',
             'type' => 'agent',
             'tier' => 3,
@@ -156,8 +156,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '🔑🔑🥸 ($10)',
         ],
-        'savvy_saboteur' => [
-            'id' => 'savvy_saboteur',
+        'saboteur' => [
+            'id' => 'saboteur',
             'name' => 'Savvy Saboteur',
             'type' => 'agent',
             'tier' => 3,
@@ -168,8 +168,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '🥸🥸💪 ($8)',
         ],
-        'codename_jack' => [
-            'id' => 'codename_jack',
+        'jack' => [
+            'id' => 'jack',
             'name' => 'Codename Jack',
             'type' => 'agent',
             'tier' => 4,
@@ -180,8 +180,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '💪🥸🚘🔑 ($12)',
         ],
-        'the_chameleon' => [
-            'id' => 'the_chameleon',
+        'chameleon' => [
+            'id' => 'chameleon',
             'name' => 'The Chameleon',
             'type' => 'agent',
             'tier' => 4,
@@ -192,8 +192,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => '🥸🥸🥸🔑 ($12)',
         ],
-        'sly_racoon' => [
-            'id' => 'sly_racoon',
+        'racoon' => [
+            'id' => 'racoon',
             'name' => 'Sly Racoon',
             'type' => 'agent',
             'tier' => 4,
@@ -234,8 +234,8 @@ function get_card_catalog(): array {
             'always_available' => true,
             'description' => 'Requires: ❓ — Reward: . Always available.',
         ],
-        'slap_contest' => [
-            'id' => 'slap_contest',
+        'slap' => [
+            'id' => 'slap',
             'name' => 'Slap Contest',
             'type' => 'mission',
             'tier' => 1,
@@ -247,8 +247,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 💪💪 — Reward: $1/turn',
         ],
-        'narrow_getaway' => [
-            'id' => 'narrow_getaway',
+        'getaway' => [
+            'id' => 'getaway',
             'name' => 'Narrow Getaway',
             'type' => 'mission',
             'tier' => 1,
@@ -260,8 +260,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 🚘💪 — Reward: 1⭐ $1/turn',
         ],
-        'train_hijinx' => [
-            'id' => 'train_hijinx',
+        'hijinx' => [
+            'id' => 'hijinx',
             'name' => 'Train Hijinx',
             'type' => 'mission',
             'tier' => 2,
@@ -274,9 +274,9 @@ function get_card_catalog(): array {
             'extra_mission' => true,
             'description' => 'Requires: 🚘🚘🥸❓ — Reward: 4⭐ +1 op/turn',
         ],
-        'halo_drop' => [
-            'id' => 'halo_drop',
-            'name' => 'HALO Drop',
+        'cargo' => [
+            'id' => 'cargo',
+            'name' => 'Cargo Interception',
             'type' => 'mission',
             'tier' => 3,
             'stars' => 9,
@@ -287,8 +287,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 🚘🚘🚘🔑💪❓ — Reward: 9⭐',
         ],
-        'arm_wrestling' => [
-            'id' => 'arm_wrestling',
+        'wrestling' => [
+            'id' => 'wrestling',
             'name' => 'Arm Wrestling',
             'type' => 'mission',
             'tier' => 1,
@@ -300,8 +300,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 💪🥸 — Reward: $1/turn',
         ],
-        'fencing_duel' => [
-            'id' => 'fencing_duel',
+        'duel' => [
+            'id' => 'duel',
             'name' => 'Fencing Duel',
             'type' => 'mission',
             'tier' => 2,
@@ -313,8 +313,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 💪💪🔑❓ — Reward: 4⭐ $2/turn',
         ],
-        'rooftop_showdown' => [
-            'id' => 'rooftop_showdown',
+        'rooftop' => [
+            'id' => 'rooftop',
             'name' => 'Rooftop Showdown',
             'type' => 'mission',
             'tier' => 3,
@@ -326,8 +326,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 💪💪💪🚘🚘❓ — Reward: 9⭐',
         ],
-        'convent_secrets' => [
-            'id' => 'convent_secrets',
+        'convent' => [
+            'id' => 'convent',
             'name' => 'Convent Secrets',
             'type' => 'mission',
             'tier' => 1,
@@ -339,8 +339,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 🥸🔑 — Reward: 1⭐ $2/turn',
         ],
-        'traveling_troupe' => [
-            'id' => 'traveling_troupe',
+        'troupe' => [
+            'id' => 'troupe',
             'name' => 'Traveling Troupe',
             'type' => 'mission',
             'tier' => 2,
@@ -352,8 +352,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 🥸🥸🚘❓ — Reward: 4⭐ $3/turn',
         ],
-        'megastar_machinations' => [
-            'id' => 'megastar_machinations',
+        'megastar' => [
+            'id' => 'megastar',
             'name' => 'Megastar Machinations',
             'type' => 'mission',
             'tier' => 3,
@@ -365,8 +365,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 🥸🥸🥸💪🔑❓ — Reward: 9⭐',
         ],
-        'gate_hacking' => [
-            'id' => 'gate_hacking',
+        'gate' => [
+            'id' => 'gate',
             'name' => 'Gate Hacking',
             'type' => 'mission',
             'tier' => 1,
@@ -378,8 +378,8 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 🔑🚘 — Reward: 2⭐ $1/turn',
         ],
-        'retinal_scan' => [
-            'id' => 'retinal_scan',
+        'retinal' => [
+            'id' => 'retinal',
             'name' => 'Retinal Scan',
             'type' => 'mission',
             'tier' => 2,
@@ -392,8 +392,8 @@ function get_card_catalog(): array {
             'extra_buy' => true,
             'description' => 'Requires: 🔑🔑🥸❓ — Reward: 4⭐ +1 buy/turn',
         ],
-        'embassy_safe' => [
-            'id' => 'embassy_safe',
+        'embassy' => [
+            'id' => 'embassy',
             'name' => 'Embassy Safe',
             'type' => 'mission',
             'tier' => 3,
@@ -405,28 +405,30 @@ function get_card_catalog(): array {
             'always_available' => false,
             'description' => 'Requires: 🔑🔑🔑🥸🚘❓ — Reward: 9⭐',
         ],
-        'off_shore_investment' => [
-            'id' => 'off_shore_investment',
-            'name' => 'Off-shore Investment',
-            'type' => 'plot',
+        'offshore' => [
+            'id' => 'offshore',
+            'name' => 'Offshore Investment',
+            'type' => 'money',
             'tier' => 1,
             'stars' => 0,
             'cost' => 3,
-            'effect' => 'none',
-            'description' => '$2, +1 Buy ($3)',
+            'value' => 2,
+            'extra_buy' => true,
+            'description' => '$2 ($3)',
         ],
-        'orbital_investment' => [
-            'id' => 'orbital_investment',
+        'orbital' => [
+            'id' => 'orbital',
             'name' => 'Orbital Investment',
-            'type' => 'plot',
+            'type' => 'money',
             'tier' => 2,
             'stars' => 0,
             'cost' => 7,
-            'effect' => 'none',
-            'description' => '$3, +1 Buy ($7)',
+            'value' => 3,
+            'extra_buy' => true,
+            'description' => '$3 ($7)',
         ],
-        'burn_notice' => [
-            'id' => 'burn_notice',
+        'burn' => [
+            'id' => 'burn',
             'name' => 'Burn Notice',
             'type' => 'plot',
             'tier' => 2,
@@ -455,8 +457,8 @@ function get_card_catalog(): array {
             'effect' => 'burglary',
             'description' => '$2, Attack (💪/🚘): players discard down to 3 cards ($7)',
         ],
-        'para_drop' => [
-            'id' => 'para_drop',
+        'paradrop' => [
+            'id' => 'paradrop',
             'name' => 'Para-drop',
             'type' => 'plot',
             'tier' => 2,
@@ -475,8 +477,8 @@ function get_card_catalog(): array {
             'effect' => 'none',
             'description' => '$2, +1 op ($6)',
         ],
-        'training_procedure' => [
-            'id' => 'training_procedure',
+        'training' => [
+            'id' => 'training',
             'name' => 'Training Procedure',
             'type' => 'plot',
             'tier' => 2,
@@ -485,8 +487,8 @@ function get_card_catalog(): array {
             'effect' => 'training',
             'description' => 'Trash an agent from your play, hand or discard areas to gain an agent costing up to $3 more from the market directly to your hand ($6)',
         ],
-        'sword_cane' => [
-            'id' => 'sword_cane',
+        'swordcane' => [
+            'id' => 'swordcane',
             'name' => 'Sword-cane',
             'type' => 'tech',
             'tier' => 1,
@@ -515,8 +517,8 @@ function get_card_catalog(): array {
             'icons' => ['drive', 'key'],
             'description' => '🚘🔑 ($3)',
         ],
-        'holo_projector' => [
-            'id' => 'holo_projector',
+        'holoprojector' => [
+            'id' => 'holoprojector',
             'name' => 'Holo-projector',
             'type' => 'tech',
             'tier' => 2,
@@ -535,8 +537,8 @@ function get_card_catalog(): array {
             'icons' => ['key', 'key'],
             'description' => '🔑🔑 ($4)',
         ],
-        'hacking_deck' => [
-            'id' => 'hacking_deck',
+        'hackingdeck' => [
+            'id' => 'hackingdeck',
             'name' => 'Hacking Deck',
             'type' => 'tech',
             'tier' => 2,
@@ -545,8 +547,8 @@ function get_card_catalog(): array {
             'icons' => ['key', 'key', 'key'],
             'description' => '🔑🔑🔑 ($8)',
         ],
-        'grappling_hook' => [
-            'id' => 'grappling_hook',
+        'grapplinghook' => [
+            'id' => 'grapplinghook',
             'name' => 'Grappling Hook',
             'type' => 'tech',
             'tier' => 2,
@@ -555,8 +557,8 @@ function get_card_catalog(): array {
             'icons' => ['muscle', 'key', 'drive'],
             'description' => '💪🔑🚘 ($6)',
         ],
-        'fake_passports' => [
-            'id' => 'fake_passports',
+        'passports' => [
+            'id' => 'passports',
             'name' => 'Fake Passports',
             'type' => 'tech',
             'tier' => 1,
@@ -585,8 +587,8 @@ function get_card_catalog(): array {
             'icons' => ['drive', 'drive', 'disguise'],
             'description' => '🚘🚘🥸 ($6)',
         ],
-        'attack_helicopter' => [
-            'id' => 'attack_helicopter',
+        'helicopter' => [
+            'id' => 'helicopter',
             'name' => 'Attack Helicopter',
             'type' => 'tech',
             'tier' => 2,
@@ -602,34 +604,34 @@ function build_market_deck(): array {
     $deck = [];
     $market_cards = [
         'doorkicker' => 6,
-        'reputable_driver' => 6,
+        'driver' => 6,
         'sentinel' => 4,
-        'speedboat_mechanic' => 3,
-        'scuba_infiltrator' => 3,
-        'hoodied_hacker' => 3,
-        'savvy_saboteur' => 3,
-        'codename_jack' => 1,
-        'the_chameleon' => 1,
-        'sly_racoon' => 1,
-        'off_shore_investment' => 8,
-        'orbital_investment' => 5,
-        'burn_notice' => 5,
+        'mechanic' => 3,
+        'scuba' => 3,
+        'hacker' => 3,
+        'saboteur' => 3,
+        'jack' => 1,
+        'chameleon' => 1,
+        'racoon' => 1,
+        'offshore' => 8,
+        'orbital' => 5,
+        'burn' => 5,
         'paperwork' => 3,
         'burglary' => 3,
-        'para_drop' => 5,
+        'paradrop' => 5,
         'multitasking' => 2,
-        'training_procedure' => 3,
-        'sword_cane' => 3,
+        'training' => 3,
+        'swordcane' => 3,
         'bazooka' => 2,
         'ram' => 3,
-        'holo_projector' => 2,
+        'holoprojector' => 2,
         'drone' => 3,
-        'hacking_deck' => 2,
-        'grappling_hook' => 2,
-        'fake_passports' => 3,
+        'hackingdeck' => 2,
+        'grapplinghook' => 2,
+        'passports' => 3,
         'motorbike' => 3,
         'limousine' => 3,
-        'attack_helicopter' => 2,
+        'helicopter' => 2,
     ];
     foreach ($market_cards as $id => $count) {
         for ($i = 0; $i < $count; $i++) {
@@ -643,23 +645,23 @@ function build_market_deck(): array {
 function build_mission_decks(): array {
     $missions = [
         1 => [
-            'slap_contest' => 5,
-            'narrow_getaway' => 5,
-            'arm_wrestling' => 5,
-            'convent_secrets' => 5,
-            'gate_hacking' => 5,
+            'slap' => 5,
+            'getaway' => 5,
+            'wrestling' => 5,
+            'convent' => 5,
+            'gate' => 5,
         ],
         2 => [
-            'train_hijinx' => 3,
-            'fencing_duel' => 3,
-            'traveling_troupe' => 3,
-            'retinal_scan' => 3,
+            'hijinx' => 3,
+            'duel' => 3,
+            'troupe' => 3,
+            'retinal' => 3,
         ],
         3 => [
-            'halo_drop' => 2,
-            'rooftop_showdown' => 2,
-            'megastar_machinations' => 2,
-            'embassy_safe' => 2,
+            'cargo' => 2,
+            'rooftop' => 2,
+            'megastar' => 2,
+            'embassy' => 2,
         ],
     ];
     $decks = [];
@@ -679,9 +681,9 @@ function build_mission_decks(): array {
 function get_starter_deck(): array {
     $deck = [];
     for ($i = 0; $i < 6; $i++) $deck[] = 'money_1';
-    $deck[] = 'muscle_merc';
-    $deck[] = 'muscle_merc';
-    $deck[] = 'shadow_merc';
+    $deck[] = 'muscle';
+    $deck[] = 'muscle';
+    $deck[] = 'shadow';
     $deck[] = 'red_tape';
     shuffle($deck);
     return $deck;

@@ -131,6 +131,7 @@ const UI = {
     },
 
     getCardColor(card) {
+        if (!card) return '#555';
         return this.typeColors[card.type] || '#555';
     },
 
@@ -426,6 +427,7 @@ const UI = {
                 const mId = missions[mi];
                 if (!mId) continue;
                 const card = this.catalog[mId];
+                if (!card) continue;
                 const reqIcons = this.formatReqIcons(card.requirements);
                 const stars = card.stars ? `${card.stars}⭐ ` : '';
                 const rewardParts = [];
@@ -551,11 +553,12 @@ const UI = {
     },
 
     getCardIcons(card) {
-        if (!card.icons) return '';
+        if (!card || !card.icons) return '';
         return this.formatReqIcons(card.icons);
     },
 
     getOwnedCardInfo(card) {
+        if (!card) return '';
         // For cards in hand/play/discard, show reward instead of cost
         if (card.type === 'mission') {
             const stars = card.stars ? `${card.stars}⭐ ` : '';
@@ -586,6 +589,7 @@ const UI = {
         if (!this.state.is_my_turn) {
             container.innerHTML = me.hand.map(cardId => {
                 const card = this.catalog[cardId];
+                if (!card) return '';
                 return `<div class="card hand-card" data-card-id="${cardId}" style="--card-color:${this.getCardColor(card)}">
                     <div class="card-name">${esc(card.name)}</div>
                     <div class="card-type">${card.type}</div>
@@ -596,6 +600,7 @@ const UI = {
         }
         container.innerHTML = me.hand.map(cardId => {
             const card = this.catalog[cardId];
+            if (!card) return '';
             return `<div class="card hand-card playable" data-card-id="${cardId}" style="--card-color:${this.getCardColor(card)}" onclick="UI.onHandClick('${cardId}')">
                 <div class="card-name">${esc(card.name)}</div>
                 <div class="card-type">${card.type}</div>
