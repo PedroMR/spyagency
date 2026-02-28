@@ -458,6 +458,9 @@ input[type="text"] {
 .rules-modal-body h3 { font-size: 1.1em; margin: 14px 0 6px; }
 .rules-modal-body h4 { font-size: 1em; margin: 12px 0 4px; }
 .rules-modal-body p  { margin: 0 0 10px; }
+.rules-modal-body ul { margin: 0 0 10px; padding-left: 20px; }
+.rules-modal-body li { margin-bottom: 4px; }
+.rules-modal-body blockquote { margin: 0 0 10px; padding: 6px 12px; border-left: 3px solid #ffd700; color: #aaa; font-style: italic; }
 .rules-table { border-collapse: collapse; margin: 8px 0 14px; }
 .rules-table th, .rules-table td { border: 1px solid #555; padding: 4px 12px; text-align: left; }
 .rules-table th { background: rgba(255,215,0,0.12); color: #ffd700; font-size: 0.9em; }

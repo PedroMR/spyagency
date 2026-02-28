@@ -28,9 +28,9 @@ Play can now begin. Keep track of who the first player was using the first-playe
 
 During their turn, a player may:
 
-* Play a card from their hand into their Play Area (any number of times);
-* Complete an op in the Op Grid (once per turn);
-* Purchase a card in the Marketplace (once per turn).
+- Play a card from their hand into their Play Area (any number of times);
+- Complete an op in the Op Grid (once per turn);
+- Purchase a card in the Marketplace (once per turn).
 
 Note that a player may only complete 1 op and purchase 1 card in their turn. This limit can be increased by some cards.
 
@@ -71,7 +71,7 @@ There is another way to earn gems: players can spend $3 to buy 1 gem. They may d
 To buy a card the player spends the required amount of money ($) and takes the card, adding it to their discard pile. The space left by the purchased card is only refilled at the end of the turn.
 > If the card has the _Primed_ keyword it is instead added to the player's hand.
 
-The active player may restock the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately (including any slots the player may have emptied via purchase). This can be done however many times the player wants as long as they can pay for it.
+The active player may restock the marketplace by paying $2, which moves all the cards in offer to the bottom of the Market Deck and refills the marketplace immediately (including any slots the player may have emptied via purchase). This can be done however many times the player wants as long as they can pay for it. Note that this still follows the standard restocking procedure, with copies of the same card being stacked atop each other.
 
 ### End of Turn
 

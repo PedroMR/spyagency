@@ -9,10 +9,12 @@ function rules_md_to_html(string $md): string {
     $html  = '';
     $para  = [];
     $table = [];
+    $list  = [];
+    $quote = [];
 
     $inline = function(string $text): string {
-        $text = preg_replace('/\*\*(.+?)\*\*/u', '<strong>$1</strong>', $text);
-        $text = preg_replace('/\*(.+?)\*/u', '<em>$1</em>', $text);
+        $text = preg_replace('/\*\*(.+?)\*\*|__(.+?)__/u', '<strong>$1$2</strong>', $text);
+        $text = preg_replace('/\*(.+?)\*|_(.+?)_/u', '<em>$1$2</em>', $text);
         return $text;
     };
 
@@ -20,6 +22,21 @@ function rules_md_to_html(string $md): string {
         if (!$para) return;
         $html .= '<p>' . $inline(implode(' ', $para)) . '</p>';
         $para  = [];
+    };
+
+    $flushList = function() use (&$list, &$html, $inline) {
+        if (!$list) return;
+        $html .= '<ul>';
+        foreach ($list as $item)
+            $html .= '<li>' . $inline(htmlspecialchars($item, ENT_QUOTES)) . '</li>';
+        $html .= '</ul>';
+        $list = [];
+    };
+
+    $flushQuote = function() use (&$quote, &$html, $inline) {
+        if (!$quote) return;
+        $html .= '<blockquote>' . $inline(implode(' ', $quote)) . '</blockquote>';
+        $quote = [];
     };
 
     $flushTable = function() use (&$table, &$html) {
@@ -44,26 +61,34 @@ function rules_md_to_html(string $md): string {
 
     foreach ($lines as $line) {
         if (preg_match('/^\|/', trim($line))) {
-            $flush();
+            $flush(); $flushList(); $flushQuote();
             $table[] = $line;
+        } elseif (preg_match('/^[*\-] (.+)/u', $line, $m)) {
+            $flush(); $flushTable(); $flushQuote();
+            $list[] = $m[1];
+        } elseif (preg_match('/^> (.+)/u', $line, $m)) {
+            $flush(); $flushTable(); $flushList();
+            $quote[] = htmlspecialchars($m[1], ENT_QUOTES);
         } elseif (preg_match('/^### (.+)/u', $line, $m)) {
-            $flush(); $flushTable();
+            $flush(); $flushTable(); $flushList(); $flushQuote();
             $html .= '<h4>' . htmlspecialchars($m[1], ENT_QUOTES) . '</h4>';
         } elseif (preg_match('/^## (.+)/u', $line, $m)) {
-            $flush(); $flushTable();
+            $flush(); $flushTable(); $flushList(); $flushQuote();
             $html .= '<h3>' . htmlspecialchars($m[1], ENT_QUOTES) . '</h3>';
         } elseif (preg_match('/^# (.+)/u', $line, $m)) {
-            $flush(); $flushTable();
+            $flush(); $flushTable(); $flushList(); $flushQuote();
             $html .= '<h2>' . htmlspecialchars($m[1], ENT_QUOTES) . '</h2>';
         } elseif (trim($line) === '') {
-            $flush(); $flushTable();
+            $flush(); $flushTable(); $flushList(); $flushQuote();
         } else {
-            $flushTable();
+            $flushTable(); $flushList(); $flushQuote();
             $para[] = htmlspecialchars(trim($line), ENT_QUOTES);
         }
     }
     $flush();
     $flushTable();
+    $flushList();
+    $flushQuote();
     return $html;
 }
 
