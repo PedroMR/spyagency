@@ -409,6 +409,11 @@ input[type="text"] {
     white-space: nowrap;
 }
 .rules-btn:hover { background: rgba(60, 60, 100, 0.95); }
+@keyframes rules-pulse {
+    0%, 100% { box-shadow: 0 0 6px 1px rgba(255, 215, 0, 0.3); }
+    50%       { box-shadow: 0 0 14px 4px rgba(255, 215, 0, 0.7); }
+}
+.rules-btn-glow { animation: rules-pulse 2s ease-in-out infinite; }
 
 .rules-overlay {
     position: fixed;
