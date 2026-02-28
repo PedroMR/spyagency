@@ -337,9 +337,11 @@ const UI = {
         const banner = document.getElementById('final-round-banner');
         banner.style.display = s.final_round ? 'block' : 'none';
 
-        document.querySelectorAll('.rules-btn').forEach(btn =>
-            btn.classList.toggle('rules-btn-glow', s.round === 1)
-        );
+        if (!window._rulesOpened) {
+            document.querySelectorAll('.rules-btn').forEach(btn =>
+                btn.classList.toggle('rules-btn-glow', s.round === 1)
+            );
+        }
 
         const resignBtn = document.getElementById('btn-resign');
         if (resignBtn) {

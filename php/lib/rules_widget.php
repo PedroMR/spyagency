@@ -109,6 +109,10 @@ $_rules_html = file_exists($_rules_path)
     </div>
 </div>
 <script>
-function rulesOpen()  { document.getElementById('rules-overlay').style.display = 'flex'; }
+function rulesOpen()  {
+    window._rulesOpened = true;
+    document.querySelectorAll('.rules-btn').forEach(btn => btn.classList.remove('rules-btn-glow'));
+    document.getElementById('rules-overlay').style.display = 'flex';
+}
 function rulesClose() { document.getElementById('rules-overlay').style.display = 'none'; }
 </script>
