@@ -83,6 +83,7 @@ function showLobby() {
 }
 
 let currentRoomId = null;
+let currentPlayerCount = 1;
 let roomPollInterval = null;
 
 function lobbyLog(msg, ...args) {
@@ -243,6 +244,7 @@ function pollWaitingRoom() {
         document.getElementById('btn-add-ai').style.display = isHost ? 'inline-block' : 'none';
         document.getElementById('btn-add-ai').disabled = room.player_count >= 4;
         document.getElementById('waiting-msg').style.display = isHost ? 'none' : 'block';
+        currentPlayerCount = room.player_count;
         const el = document.getElementById('waiting-players');
         el.innerHTML = '<ul>' + room.players.map(p => `<li>${escHtml(p.name)}${p.is_ai ? ' 🤖' : ''}</li>`).join('') + '</ul>';
     }, 1500);
@@ -262,6 +264,13 @@ async function leaveRoom() {
 }
 
 async function startGame() {
+    if (currentPlayerCount < 2) {
+        const aiRes = await apiPost(API_BASE + 'api/room_add_ai.php', {
+            room_id: currentRoomId,
+            token: getToken(),
+        });
+        if (!aiRes.ok) return showToast(aiRes.error);
+    }
     const res = await apiPost(API_BASE + 'api/room_start.php', {
         room_id: currentRoomId,
         token: getToken(),
