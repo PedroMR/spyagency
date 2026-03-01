@@ -858,7 +858,37 @@ const UI = {
 
     renderDeck() {
         const me = this.state.players[this.state.my_index];
-        document.getElementById('my-deck-count').textContent = me.deck_count + (me.deck_count == 1 ? " card" : " cards");
+        const el = document.getElementById('my-deck-count');
+        const label = me.deck_count + (me.deck_count == 1 ? ' card' : ' cards');
+        if (me.deck_count > 0) {
+            el.innerHTML = `<span class="discard-label" onclick="UI.showDeckDialog()">${label}</span>`;
+        } else {
+            el.textContent = label;
+        }
+    },
+
+    showDeckDialog() {
+        const me = this.state.players[this.state.my_index];
+        const deck = [...(me.deck || [])];
+        // Shuffle client-side so draw order isn't revealed
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+        let html = `<h3>Your Deck (${deck.length} card${deck.length !== 1 ? 's' : ''})</h3>`;
+        html += '<div class="card-row" style="margin-top:10px">';
+        for (const cid of deck) {
+            const card = this.catalog[cid];
+            if (!card) continue;
+            html += `<div class="card played-card" style="--card-color:${this.getCardColor(card)}">
+                <div class="card-name">${esc(card.name)}</div>
+                ${this.getOwnedCardInfo(card)}
+                <div class="card-type">${card.type}</div>
+            </div>`;
+        }
+        html += '</div>';
+        html += '<button class="btn-modal btn-cancel" style="margin-top:12px" onclick="UI.closeModal()">Close</button>';
+        this.showModal(html);
     },
 
     renderDiscardPile() {

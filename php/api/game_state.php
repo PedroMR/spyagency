@@ -68,6 +68,7 @@ foreach ($game['players'] as $i => $p) {
             'hand' => $p['hand'],
             'hand_count' => count($p['hand']),
             'deck_count' => count($p['deck']),
+            'deck' => $p['deck'],
             'discard_count' => count($p['discard']),
             'discard' => $p['discard'],
             'play_area' => $p['play_area'],
