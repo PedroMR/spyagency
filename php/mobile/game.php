@@ -70,7 +70,7 @@
                 <div id="marketplace" class="card-row"></div>
                 <div class="market-actions">
                     <div id="always-available-cards" class="card-row"></div>
-                    <button onclick="Actions.refreshMarket()">Restock ($2)</button>
+                    <button id="btn-restock" onclick="Actions.refreshMarket()">Restock ($2)</button>
                 </div>
             </div>
         </div>

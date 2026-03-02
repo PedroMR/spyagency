@@ -354,6 +354,8 @@ const UI = {
         const me = s.players[s.my_index];
         const container = document.getElementById('marketplace');
         document.getElementById('market-deck-count').textContent = `(${s.market_deck_count} left)`;
+        const restockBtn = document.getElementById('btn-restock');
+        if (restockBtn) restockBtn.disabled = !s.is_my_turn || (me.money + (me.gems || 0)) < 2 || s.market_deck_count === 0;
 
         const counts = s.marketplace_counts || [];
         // Build indexed entries, sort by ascending cost
