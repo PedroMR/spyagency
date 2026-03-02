@@ -21,6 +21,7 @@ button {
     font-size: 13px;
 }
 button:hover { background: #3a7bc8; }
+button:disabled { background: #444; border-color: #555; color: #888; cursor: default; opacity: 0.6; }
 input[type="text"] {
     background: rgba(42, 42, 74, 0.85);
     color: #e0e0e0;

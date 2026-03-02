@@ -43,7 +43,7 @@
                     <div id="marketplace" class="card-row"></div>
                     <div class="market-actions">
                         <div id="always-available-cards" class="card-row"></div>
-                        <button id="btn-restock" onclick="Actions.refreshMarket()">Restock ($2)</button>
+                        <button id="btn-restock" onclick="UI.onRestockClick()">Restock ($2)</button>
                     </div>
                 </div>
 
@@ -92,7 +92,7 @@
                 </div>
 
                 <div class="end-turn-column">
-                    <button id="btn-end-turn" onclick="Actions.endTurn()" style="height:100%" disabled>End Turn</button>
+                    <button id="btn-end-turn" onclick="UI.onEndTurnClick()" style="height:100%" disabled>End Turn</button>
                 </div>
             </div>
         </div>

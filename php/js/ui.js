@@ -1537,6 +1537,31 @@ const UI = {
         document.getElementById('modal-overlay').style.display = 'none';
     },
 
+    onRestockClick() {
+        const s = this.state;
+        if (!s || !s.is_my_turn) return;
+        const me = s.players[s.my_index];
+        if ((me.money + (me.gems || 0)) < 2 || s.market_deck_count === 0) return;
+        const btn = document.getElementById('btn-restock');
+        if (btn) btn.disabled = true;
+        Actions.refreshMarket();
+    },
+
+    onEndTurnClick() {
+        const btn = document.getElementById('btn-end-turn');
+        if (btn && !btn.classList.contains('glow')) {
+            const html = `<h3>End Turn?</h3>
+                <p>You still have actions available. Are you sure you want to end your turn?</p>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>
+                    <button class="btn-modal" onclick="UI.closeModal();Actions.endTurn()">End Turn</button>
+                </div>`;
+            this.showModal(html);
+        } else {
+            Actions.endTurn();
+        }
+    },
+
     confirmResign() {
         if (this.state && this.state.ended) {
             const roomId = this.state.room_id;
