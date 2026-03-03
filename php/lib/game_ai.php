@@ -62,6 +62,9 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
         $base_tech_ids = $base['tech'] ?? [];
     }
 
+    // Icons from completed ops count once per unique op (mirrors action_complete_mission)
+    $mission_area_ids = array_unique($player['mission_area'] ?? []);
+
     // Try without base agent first, then with
     foreach ([false, true] as $use_base) {
         if ($use_base && !$base_agent_id) continue;
@@ -86,7 +89,8 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
                     $all_cards[] = $base_agent_id;
                     $all_cards = array_merge($all_cards, $base_tech_ids);
                 }
-                $resolution = auto_resolve_choices($mission['requirements'], $all_cards, $catalog);
+                $check_cards = array_merge($all_cards, $mission_area_ids);
+                $resolution = auto_resolve_choices($mission['requirements'], $check_cards, $catalog);
                 if ($resolution !== null) {
                     return [
                         'agent_ids' => $hand_agents,

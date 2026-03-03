@@ -218,7 +218,7 @@ foreach ($rows as $row) {
                 $entry['effect'] = 'recall';
             } elseif (stripos($desc_lower, 'draw two') !== false || stripos($desc_lower, 'draw 2') !== false) {
                 $entry['effect'] = 'draw2';
-            } elseif (stripos($desc_lower, 'backup') !== false || stripos($desc_lower, 'got your back') !== false || stripos($desc_lower, 'play an agent from your hand') !== false) {
+            } elseif (stripos($desc_lower, 'backup') !== false || stripos($desc_lower, 'got your back') !== false || stripos($desc_lower, 'play an agent from your hand') !== false || stripos($desc_lower, 'additional agent from your hand') !== false) {
                 $entry['effect'] = 'backup';
             } elseif (stripos($desc_lower, 'gain a red tape') !== false || stripos($desc_lower, 'gains a red tape') !== false) {
                 $entry['effect'] = 'paperwork';

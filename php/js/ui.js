@@ -1132,7 +1132,8 @@ const UI = {
             this.showError('No agents in hand to use as backup!');
             return;
         }
-        let html = '<h3>Got Your Back! Select backup agent:</h3>';
+        const plotCard = this.catalog[plotCardId];
+        let html = `<h3>${esc(plotCard?.name || 'Select backup agent')}:</h3>`;
         const unique = [...new Set(agents)];
         unique.forEach(cid => {
             const c = this.catalog[cid];
