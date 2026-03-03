@@ -761,8 +761,8 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         $all_card_ids = array_merge($all_card_ids, $base_tech_ids);
     }
 
-    // For requirement checking, also include mission area cards — their icons count
-    $check_card_ids = array_merge($all_card_ids, $game['players'][$pi]['mission_area'] ?? []);
+    // For requirement checking, include mission area icons — but only once per unique op
+    $check_card_ids = array_merge($all_card_ids, array_unique($game['players'][$pi]['mission_area'] ?? []));
 
     // Auto-resolve icon choices
     $resolution = auto_resolve_choices($mission['requirements'], $check_card_ids, $catalog);

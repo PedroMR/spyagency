@@ -475,20 +475,28 @@ const UI = {
 
         section.style.display = '';
 
-        // Splay: each card is absolutely positioned. The last (most recent) card
-        // sits at top:0 with the highest z-index and is fully visible. Earlier cards
-        // peek out below it showing only their reward line.
-        // Positions are computed so each non-top card shows a consistent STRIP of pixels.
-        const STRIP = 22;       // visible px for each non-top card (reward line)
-        const CARD_H_TOP = 47;  // estimated top card height (name + reward + padding)
-        const CARD_H_REST = 28; // estimated non-top card height (reward + padding only)
-        const N = missionArea.length;
+        // Unique op names splay vertically (each shows its reward strip).
+        // Duplicate copies of the same op splay horizontally, covering the
+        // previous copy's reward — icons are only rewarded once per unique op.
+        const STRIP = 22;       // visible px for each non-top group (reward line)
+        const CARD_H_TOP = 47;  // estimated top group height (name + reward + padding)
+        const CARD_H_REST = 28; // estimated non-top group height (reward only)
+        const H_OFFSET = 12;    // horizontal px offset per duplicate copy
 
-        // Build absolute top positions for each card (index 0 = oldest, N-1 = top/front)
-        const positions = new Array(N);
-        positions[N - 1] = 0;
+        // Group by card id, preserving first-occurrence order
+        const groupOrder = [];
+        const groupCounts = {};
+        for (const mid of missionArea) {
+            if (!groupCounts[mid]) { groupOrder.push(mid); groupCounts[mid] = 0; }
+            groupCounts[mid]++;
+        }
+        const G = groupOrder.length;
+
+        // Vertical positions per group (G-1 = topmost/front)
+        const positions = new Array(G);
+        positions[G - 1] = 0;
         let prevBottom = CARD_H_TOP;
-        for (let i = N - 2; i >= 0; i--) {
+        for (let i = G - 2; i >= 0; i--) {
             positions[i] = prevBottom + STRIP - CARD_H_REST;
             prevBottom = positions[i] + CARD_H_REST;
         }
@@ -496,14 +504,18 @@ const UI = {
         let totalIncome = 0;
         let totalExtraMissions = 0;
         let totalExtraBuys = 0;
-        const html = missionArea.map((mid, i) => {
+        const htmlParts = [];
+
+        groupOrder.forEach((mid, gi) => {
             const card = this.catalog[mid];
-            if (!card) return '';
+            if (!card) return;
+            const count = groupCounts[mid];
             const income = card.value || 0;
-            totalIncome += income;
-            if (card.extra_mission) totalExtraMissions++;
-            if (card.extra_buy) totalExtraBuys++;
-            const isTop = i === N - 1;
+            totalIncome += income * count;
+            if (card.extra_mission) totalExtraMissions += count;
+            if (card.extra_buy) totalExtraBuys += count;
+
+            const isTopGroup = gi === G - 1;
             const stars = card.stars ? `${card.stars}⭐ ` : '';
             const rewardParts = [];
             if (income > 0) rewardParts.push(`$${income}/turn`);
@@ -511,15 +523,21 @@ const UI = {
             if (card.extra_buy) rewardParts.push('+1 buy/turn');
             if (card.icons && card.icons.length) rewardParts.push(this.formatReqIcons(card.icons));
             const reward = (stars || rewardParts.length > 0) ? `${stars}${rewardParts.join(' ')}` : '';
-            return `<div class="card played-card" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[i]}px;z-index:${i + 1}">
-                ${isTop ? `<div class="card-name">${esc(card.name)}</div>` : ''}
-                ${reward ? `<div class="card-reward">${reward}</div>` : ''}
-            </div>`;
-        }).join('');
+            for (let ci = 0; ci < count; ci++) {
+                const isTopCard = ci === count - 1;
+                const z = (gi + 1) * 10 + ci;
+                htmlParts.push(`<div class="card played-card" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[gi]}px;left:${ci * H_OFFSET}px;z-index:${z}">`);
+                if (isTopCard) {
+                    if (isTopGroup) htmlParts.push(`<div class="card-name">${esc(card.name)}</div>`);
+                    if (reward) htmlParts.push(`<div class="card-reward">${reward}</div>`);
+                }
+                htmlParts.push('</div>');
+            }
+        });
 
         container.style.position = 'relative';
         container.style.height = prevBottom + 'px';
-        container.innerHTML = html;
+        container.innerHTML = htmlParts.join('');
 
         const summaryParts = [];
         if (totalIncome > 0) summaryParts.push(`$${totalIncome}/turn`);
@@ -1223,7 +1241,7 @@ const UI = {
             </table>`;
         }
         // Show icons contributed by completed ops in mission area
-        const missionAreaIcons = (me.mission_area || []).flatMap(mid => this.catalog[mid]?.icons || []);
+        const missionAreaIcons = [...new Set(me.mission_area || [])].flatMap(mid => this.catalog[mid]?.icons || []);
         if (missionAreaIcons.length > 0) {
             html += `<p>From completed ops: ${this.formatReqIcons(missionAreaIcons)}</p>`;
         }
@@ -1313,8 +1331,8 @@ const UI = {
         if (me.backup_agent) {
             (this.catalog[me.backup_agent]?.icons || []).forEach(ic => pool.push(ic));
         }
-        // Icons from completed ops in the mission area also count
-        (me.mission_area || []).forEach(mid => (this.catalog[mid]?.icons || []).forEach(ic => pool.push(ic)));
+        // Icons from completed ops count once per unique op name
+        [...new Set(me.mission_area || [])].forEach(mid => (this.catalog[mid]?.icons || []).forEach(ic => pool.push(ic)));
 
         // Check requirements: satisfy specific icons first, then 'any' with remainder
         const remaining = [...pool];
