@@ -445,6 +445,7 @@ const UI = {
                 if (card.value) rewardParts.push(`$${card.value}/turn`);
                 if (card.extra_mission) rewardParts.push('+1 op/turn');
                 if (card.extra_buy) rewardParts.push('+1 buy/turn');
+                if (card.icons && card.icons.length) rewardParts.push(this.formatReqIcons(card.icons));
                 const money = rewardParts.join(' ');
                 const count = missionCounts[mi] || 1;
                 const countBadge = count > 1 ? `<div class="stack-count">×${count}</div>` : '';
@@ -508,6 +509,7 @@ const UI = {
             if (income > 0) rewardParts.push(`$${income}/turn`);
             if (card.extra_mission) rewardParts.push('+1 op/turn');
             if (card.extra_buy) rewardParts.push('+1 buy/turn');
+            if (card.icons && card.icons.length) rewardParts.push(this.formatReqIcons(card.icons));
             const reward = (stars || rewardParts.length > 0) ? `${stars}${rewardParts.join(' ')}` : '';
             return `<div class="card played-card" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[i]}px;z-index:${i + 1}">
                 ${isTop ? `<div class="card-name">${esc(card.name)}</div>` : ''}

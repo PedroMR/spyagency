@@ -275,12 +275,24 @@ foreach ($rows as $row) {
             if (preg_match('/\+\s*1\s*buy/i', $row['effect'])) {
                 $entry['extra_buy'] = true;
             }
+            // Parse icon rewards from effect field (icons the op contributes to future ops)
+            $icon_rewards = array_values(array_filter(
+                parse_icons_field($row['effect'], $emoji_to_icon),
+                fn($i) => is_string($i) && $i !== 'any'
+            ));
+            if (!empty($icon_rewards)) {
+                $entry['icons'] = $icon_rewards;
+            }
             $req_display = $row['requirements'];
             $reward_parts = [];
             if ($stars > 0) $reward_parts[] = "{$stars}⭐";
             if ($value > 0) $reward_parts[] = "\${$value}/turn";
             if ($entry['extra_mission'] ?? false) $reward_parts[] = '+1 op/turn';
             if ($entry['extra_buy'] ?? false) $reward_parts[] = '+1 buy/turn';
+            if (!empty($icon_rewards)) {
+                $icon_to_emoji = array_flip($emoji_to_icon);
+                $reward_parts[] = implode('', array_map(fn($i) => $icon_to_emoji[$i] ?? $i, $icon_rewards));
+            }
             $reward_str = implode(' ', $reward_parts);
             $entry['description'] = "Requires: {$req_display} — Reward: {$reward_str}";
             if ($entry['always_available']) {

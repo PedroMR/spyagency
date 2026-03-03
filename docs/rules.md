@@ -48,7 +48,7 @@ Agents are played from hand in order to complete an op. Tech cards can be played
 
 Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to complete an op or be discarded as a whole in order to clear space for another agent.
 
-To complete an op the player plays one or more Agents with Tech, and has the option of using any agent and tech in their base. The icons in the Agents and all of their Tech needs to match or exceed the requirement of the op. The op card itself is added to the player's op area. Every turn it will grant the player the specified bonus or effect, including the turn when it was purchased.
+To complete an op the player plays exactly one Agent with Tech, and has the option of using the agent and tech in their base. The icons in the Agent and all of their Tech, plus the icons in the player's Op Area, need to match or exceed the requirement of the op. The op card itself is added to the player's op area. Every turn it will grant the player the specified bonus or effect, including the turn when it was purchased.
 
 All agents and tech used to complete an op are left in the play area. They will be discarded at the end of the turn, but not before (w  e don't want agents being used in an op and then coming back the same turn due to a deck out of cards).
 

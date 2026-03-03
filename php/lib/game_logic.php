@@ -755,8 +755,11 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         $all_card_ids = array_merge($all_card_ids, $base_tech_ids);
     }
 
+    // For requirement checking, also include mission area cards — their icons count
+    $check_card_ids = array_merge($all_card_ids, $game['players'][$pi]['mission_area'] ?? []);
+
     // Auto-resolve icon choices
-    $resolution = auto_resolve_choices($mission['requirements'], $all_card_ids, $catalog);
+    $resolution = auto_resolve_choices($mission['requirements'], $check_card_ids, $catalog);
     if ($resolution === null) {
         return ['ok' => false, 'error' => 'Cards do not meet mission requirements'];
     }
