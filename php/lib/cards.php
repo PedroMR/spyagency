@@ -258,11 +258,10 @@ function get_card_catalog(): array {
             'stars' => 0,
             'cost' => 0,
             'requirements' => ['muscle', 'disguise'],
-            'value' => 0,
+            'value' => 1,
             'gems' => 0,
             'always_available' => false,
-            'icons' => ['drive'],
-            'description' => 'Requires: 💪🥸 — Reward: 🚘',
+            'description' => 'Requires: 💪🥸 — Reward: $1/turn',
         ],
         'convent' => [
             'id' => 'convent',
@@ -275,8 +274,7 @@ function get_card_catalog(): array {
             'value' => 1,
             'gems' => 0,
             'always_available' => false,
-            'icons' => ['drive'],
-            'description' => 'Requires: 🥸🔑 — Reward: 1⭐ $1/turn 🚘',
+            'description' => 'Requires: 🥸🔑 — Reward: 1⭐ $1/turn',
         ],
         'gate' => [
             'id' => 'gate',
@@ -303,8 +301,8 @@ function get_card_catalog(): array {
             'value' => 0,
             'gems' => 0,
             'always_available' => false,
-            'icons' => ['key', 'muscle'],
-            'description' => 'Requires: 🚘🚘🥸❓ — Reward: 4⭐ 🔑💪',
+            'icons' => ['key'],
+            'description' => 'Requires: 🚘🚘🥸❓ — Reward: 4⭐ 🔑',
         ],
         'duel' => [
             'id' => 'duel',
@@ -317,8 +315,8 @@ function get_card_catalog(): array {
             'value' => 0,
             'gems' => 0,
             'always_available' => false,
-            'icons' => ['disguise', 'disguise'],
-            'description' => 'Requires: 💪💪🔑❓ — Reward: 4⭐ 🥸🥸',
+            'icons' => ['disguise'],
+            'description' => 'Requires: 💪💪🔑❓ — Reward: 4⭐ 🥸',
         ],
         'troupe' => [
             'id' => 'troupe',
@@ -331,8 +329,8 @@ function get_card_catalog(): array {
             'value' => 0,
             'gems' => 0,
             'always_available' => false,
-            'icons' => ['disguise', 'key'],
-            'description' => 'Requires: 🥸🥸🚘❓ — Reward: 4⭐ 🥸🔑',
+            'icons' => ['drive'],
+            'description' => 'Requires: 🥸🥸🚘❓ — Reward: 4⭐ 🚘',
         ],
         'retinal' => [
             'id' => 'retinal',
@@ -345,8 +343,8 @@ function get_card_catalog(): array {
             'value' => 0,
             'gems' => 0,
             'always_available' => false,
-            'icons' => ['key', 'drive'],
-            'description' => 'Requires: 🔑🔑🥸❓ — Reward: 4⭐ 🔑🚘',
+            'icons' => ['key'],
+            'description' => 'Requires: 🔑🔑🥸❓ — Reward: 4⭐ 🔑',
         ],
         'cargo' => [
             'id' => 'cargo',
@@ -674,7 +672,7 @@ function build_market_deck(): array {
 function build_mission_decks(): array {
     $missions = [
         1 => [
-            'slap' => 5,
+            'slap' => 0,
             'getaway' => 5,
             'wrestling' => 5,
             'convent' => 5,

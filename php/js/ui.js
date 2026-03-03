@@ -526,7 +526,7 @@ const UI = {
             for (let ci = 0; ci < count; ci++) {
                 const isTopCard = ci === count - 1;
                 const z = (gi + 1) * 10 + ci;
-                htmlParts.push(`<div class="card played-card" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[gi]}px;left:${ci * H_OFFSET}px;z-index:${z}">`);
+                htmlParts.push(`<div class="card played-card" title="${esc(card.name)}" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[gi]}px;left:${ci * H_OFFSET}px;z-index:${z}">`);
                 if (isTopCard) {
                     if (isTopGroup) htmlParts.push(`<div class="card-name">${esc(card.name)}</div>`);
                     if (reward) htmlParts.push(`<div class="card-reward">${reward}</div>`);
