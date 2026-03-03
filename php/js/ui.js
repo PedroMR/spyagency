@@ -523,10 +523,11 @@ const UI = {
             if (card.extra_buy) rewardParts.push('+1 buy/turn');
             if (card.icons && card.icons.length) rewardParts.push(this.formatReqIcons(card.icons));
             const reward = (stars || rewardParts.length > 0) ? `${stars}${rewardParts.join(' ')}` : '';
+            const cardHeight = isTopGroup ? CARD_H_TOP : CARD_H_REST;
             for (let ci = 0; ci < count; ci++) {
                 const isTopCard = ci === count - 1;
                 const z = (gi + 1) * 10 + ci;
-                htmlParts.push(`<div class="card played-card" title="${esc(card.name)}" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[gi]}px;left:${ci * H_OFFSET}px;z-index:${z}">`);
+                htmlParts.push(`<div class="card played-card" title="${esc(card.name)}" style="--card-color:${this.getCardColor(card)};position:absolute;top:${positions[gi]}px;left:${ci * H_OFFSET}px;z-index:${z};min-height:${cardHeight}px">`);
                 if (isTopCard) {
                     if (isTopGroup) htmlParts.push(`<div class="card-name">${esc(card.name)}</div>`);
                     if (reward) htmlParts.push(`<div class="card-reward">${reward}</div>`);
