@@ -70,6 +70,8 @@ function send_json(array $data): void {
     exit;
 }
 
+require_once __DIR__ . '/../lib/game_log.php';
+
 function gen_id(): string {
     return bin2hex(random_bytes(8));
 }

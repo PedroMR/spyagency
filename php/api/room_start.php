@@ -19,6 +19,7 @@ if (count($room['players']) < 2) send_json(json_error('Need at least 2 players')
 
 $game_id = gen_id();
 $game = init_game($room['players']);
+$game['id'] = $game_id;
 $game['room_id'] = $room_id;
 
 write_json(data_path('games', $game_id), $game);
@@ -26,5 +27,8 @@ write_json(data_path('games', $game_id), $game);
 $room['status'] = 'started';
 $room['game_id'] = $game_id;
 write_json($path, $room);
+
+$player_names = implode(', ', array_map(fn($p) => $p['name'] . ($p['is_ai'] ? ' (AI)' : ''), $game['players']));
+game_log("GAME STARTED [{$game_id}] Players: {$player_names}");
 
 send_json(json_success(['game_id' => $game_id]));

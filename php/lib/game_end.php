@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/cards.php';
+require_once __DIR__ . '/game_log.php';
 
 function calculate_scores(array &$game): array {
     $catalog = get_card_catalog();
@@ -81,4 +82,11 @@ function finalize_game(array &$game): void {
         $game['log'][] = "Game over! Winner: {$top['name']} with {$top['stars']} stars!";
     }
     $game['version']++;
+
+    $game_id = $game['id'] ?? 'unknown';
+    $score_parts = array_map(
+        fn($s) => "{$s['name']}: {$s['stars']}⭐ {$s['missions']} ops",
+        $game['scores']
+    );
+    game_log("GAME ENDED  [{$game_id}] " . implode(' | ', $score_parts));
 }
