@@ -40,7 +40,7 @@ const Poller = {
             this.version = data.version;
             if (this.onUpdate) this.onUpdate(data);
             if (data.needs_ai_action) {
-                setTimeout(() => this.triggerAiTurn(), 900);
+                setTimeout(() => this.triggerAiTurn(), 2000);
             }
         } catch (e) {
             console.error('Poll exception:', e);

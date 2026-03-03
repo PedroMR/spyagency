@@ -702,9 +702,15 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         }
     }
 
-    // Must have at least one agent (from hand or base)
+    // Must have at least one agent (from hand or base), and at most one hand agent
     if (empty($agent_ids) && !$base_agent_id) {
         return ['ok' => false, 'error' => 'Must commit at least one agent'];
+    }
+    if (count($agent_ids) > 1) {
+        return ['ok' => false, 'error' => 'Only one agent can be used per op'];
+    }
+    if (!empty($agent_ids) && $base_agent_id) {
+        return ['ok' => false, 'error' => 'Cannot use both a hand agent and the base agent in the same op'];
     }
 
     // Validate all agent_ids are agents in hand

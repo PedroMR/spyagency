@@ -1222,9 +1222,27 @@ const UI = {
                 <tr><td>5+</td><td>💎 3</td></tr>
             </table>`;
         }
-        html += '<p>Select agents and tech from your hand:</p>';
+        // Show icons contributed by completed ops in mission area
+        const missionAreaIcons = (me.mission_area || []).flatMap(mid => this.catalog[mid]?.icons || []);
+        if (missionAreaIcons.length > 0) {
+            html += `<p>From completed ops: ${this.formatReqIcons(missionAreaIcons)}</p>`;
+        }
 
-        // Base agent option
+        html += '<p>Select an agent:</p>';
+
+        // All agents as a single radio group (hand + base)
+        const uniqueAgents = [...new Set(handAgents)];
+        uniqueAgents.forEach(cid => {
+            const c = this.catalog[cid];
+            const count = handAgents.filter(x => x === cid).length;
+            const icons = this.getCardIcons(c);
+            for (let i = 0; i < count; i++) {
+                html += `<label class="mission-select-item">
+                    <input type="radio" name="mission-agent" value="${cid}" data-max-tech="${c.max_tech || 0}">
+                    ${esc(c.name)} (${icons}) [tech slots: ${c.max_tech || 0}]
+                </label>`;
+            }
+        });
         if (baseAgent) {
             const baseIcons = this.getCardIcons(baseAgent);
             const baseTechDesc = base.tech && base.tech.length > 0
@@ -1233,27 +1251,13 @@ const UI = {
                     return c ? `${esc(c.name)} (${this.getCardIcons(c)})` : t;
                 }).join(', ')
                 : '';
-            html += `<h4>Base Agent</h4>
-            <label class="mission-select-item">
-                <input type="checkbox" name="mission-use-base-agent" id="mission-use-base-agent">
+            const baseTech = base.tech ? base.tech.reduce((s, t) => s + (this.catalog[t]?.max_tech || 0), 0) : 0;
+            const baseMaxTech = (baseAgent.max_tech || 0) + baseTech;
+            html += `<label class="mission-select-item">
+                <input type="radio" name="mission-agent" value="__base__" data-max-tech="${baseMaxTech}">
                 ${esc(baseAgent.name)} (${baseIcons})${baseTechDesc} <em style="color:#888">(from base)</em>
             </label>`;
         }
-
-        // Checkboxes for agents
-        html += '<h4>Agents</h4>';
-        const uniqueAgents = [...new Set(handAgents)];
-        uniqueAgents.forEach(cid => {
-            const c = this.catalog[cid];
-            const count = handAgents.filter(x => x === cid).length;
-            const icons = this.getCardIcons(c);
-            for (let i = 0; i < count; i++) {
-                html += `<label class="mission-select-item">
-                    <input type="checkbox" name="mission-agent" value="${cid}" data-max-tech="${c.max_tech || 0}">
-                    ${esc(c.name)} (${icons}) [tech slots: ${c.max_tech || 0}]
-                </label>`;
-            }
-        });
 
         // Checkboxes for tech
         if (handTech.length > 0) {
@@ -1280,7 +1284,7 @@ const UI = {
 
         // Wire up live requirement checking
         const onChange = () => UI._updateRunOpButton(missionId);
-        document.querySelectorAll('input[name="mission-agent"], input[name="mission-tech"], input[name="mission-use-base-agent"]')
+        document.querySelectorAll('input[name="mission-agent"], input[name="mission-tech"]')
             .forEach(el => el.addEventListener('change', onChange));
     },
 
@@ -1291,11 +1295,12 @@ const UI = {
         const me = this.state.players[this.state.my_index];
 
         // Collect selected card IDs
-        const agentIds = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked')).map(cb => cb.value);
-        const techIds  = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
-        const useBase  = document.querySelector('input[name="mission-use-base-agent"]')?.checked || false;
+        const selectedAgent = document.querySelector('input[name="mission-agent"]:checked')?.value || null;
+        const techIds = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
+        const useBase = selectedAgent === '__base__';
+        const agentIds = (!useBase && selectedAgent) ? [selectedAgent] : [];
 
-        if (agentIds.length === 0 && !useBase) { btn.disabled = true; return; }
+        if (!selectedAgent) { btn.disabled = true; return; }
 
         // Build icon pool
         const pool = [];
@@ -1308,6 +1313,8 @@ const UI = {
         if (me.backup_agent) {
             (this.catalog[me.backup_agent]?.icons || []).forEach(ic => pool.push(ic));
         }
+        // Icons from completed ops in the mission area also count
+        (me.mission_area || []).forEach(mid => (this.catalog[mid]?.icons || []).forEach(ic => pool.push(ic)));
 
         // Check requirements: satisfy specific icons first, then 'any' with remainder
         const remaining = [...pool];
@@ -1325,12 +1332,10 @@ const UI = {
     },
 
     submitMission(missionId) {
-        const agentBoxes = document.querySelectorAll('input[name="mission-agent"]:checked');
-        const techBoxes = document.querySelectorAll('input[name="mission-tech"]:checked');
-        const useBaseAgentBox = document.querySelector('input[name="mission-use-base-agent"]');
-        const agentIds = Array.from(agentBoxes).map(cb => cb.value);
-        const techIds = Array.from(techBoxes).map(cb => cb.value);
-        const useBaseAgent = useBaseAgentBox ? useBaseAgentBox.checked : false;
+        const selectedAgent = document.querySelector('input[name="mission-agent"]:checked')?.value || null;
+        const techIds = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
+        const useBaseAgent = selectedAgent === '__base__';
+        const agentIds = (!useBaseAgent && selectedAgent) ? [selectedAgent] : [];
 
         if (agentIds.length === 0 && !useBaseAgent) {
             this.showError('Select at least one agent.');

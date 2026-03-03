@@ -66,7 +66,7 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
     foreach ([false, true] as $use_base) {
         if ($use_base && !$base_agent_id) continue;
 
-        $agent_subsets = ai_all_subsets($agents, count($agents));
+        $agent_subsets = ai_all_subsets($agents, 1); // only one hand agent allowed per op
         foreach ($agent_subsets as $hand_agents) {
             if (empty($hand_agents) && !$use_base) continue;
 
