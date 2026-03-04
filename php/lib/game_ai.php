@@ -65,6 +65,9 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
     // Icons from completed ops count once per unique op (mirrors action_complete_mission)
     $mission_area_ids = array_unique($player['mission_area'] ?? []);
 
+    // Backup agent already in play (e.g. from Reinforcements played earlier this turn)
+    $backup_id = $player['backup_agent'] ?? null;
+
     // Try without base agent first, then with
     foreach ([false, true] as $use_base) {
         if ($use_base && !$base_agent_id) continue;
@@ -88,6 +91,9 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
                 if ($use_base) {
                     $all_cards[] = $base_agent_id;
                     $all_cards = array_merge($all_cards, $base_tech_ids);
+                }
+                if ($backup_id) {
+                    $all_cards[] = $backup_id;
                 }
                 $check_cards = array_merge($all_cards, $mission_area_ids);
                 $resolution = auto_resolve_choices($mission['requirements'], $check_cards, $catalog);
@@ -144,6 +150,72 @@ function ai_pick_best_mission(array &$game, int $pi, array $catalog): ?array {
     }
 
     return $best;
+}
+
+/**
+ * Play all no-target plot cards (Para-drop, Multitasking, Paperwork, Burglary).
+ * Returns true if any were played.
+ */
+function ai_play_simple_plots(array &$game, int $pi, array $catalog): bool {
+    $played = false;
+    // Snapshot hand — it may change as we play cards
+    $snap = $game['players'][$pi]['hand'];
+    foreach ($snap as $cid) {
+        if (!isset($catalog[$cid]) || $catalog[$cid]['type'] !== TYPE_PLOT) continue;
+        $effect = $catalog[$cid]['effect'] ?? '';
+        if (!in_array($effect, ['draw2', 'multitask', 'paperwork', 'burglary'])) continue;
+        if (!in_array($cid, $game['players'][$pi]['hand'])) continue; // already played
+        $result = action_play_plot($game, $pi, ['card_id' => $cid]);
+        if ($result['ok'] ?? false) $played = true;
+    }
+    return $played;
+}
+
+/**
+ * If the player has Reinforcements in hand and a backup agent would help complete
+ * an available mission, play Reinforcements with the best such agent.
+ */
+function ai_maybe_play_reinforcements(array &$game, int $pi, array $catalog): void {
+    $p = &$game['players'][$pi];
+    if ($p['backup_agent'] ?? null) return; // already have one
+
+    // Find a Reinforcements card in hand
+    $reinf_id = null;
+    foreach ($p['hand'] as $cid) {
+        if (isset($catalog[$cid]) && ($catalog[$cid]['effect'] ?? '') === 'backup') {
+            $reinf_id = $cid;
+            break;
+        }
+    }
+    if (!$reinf_id) return;
+
+    // Candidate backup agents (other agents in hand)
+    $hand_agents = array_values(array_filter(
+        $p['hand'],
+        fn($id) => $id !== $reinf_id && isset($catalog[$id]) && $catalog[$id]['type'] === TYPE_AGENT
+    ));
+    if (empty($hand_agents)) return;
+
+    // Score each agent by icon count (more icons = better backup)
+    usort($hand_agents, fn($a, $b) =>
+        count($catalog[$b]['icons'] ?? []) - count($catalog[$a]['icons'] ?? [])
+    );
+
+    // Try the top candidate — see if it would unlock any mission
+    foreach ($hand_agents as $backup_candidate) {
+        // Temporarily simulate having the backup
+        $p['backup_agent'] = $backup_candidate;
+        $mission = ai_pick_best_mission($game, $pi, $catalog);
+        $p['backup_agent'] = null;
+        if ($mission !== null) {
+            // This backup agent helps — play Reinforcements with it
+            action_play_plot($game, $pi, [
+                'card_id' => $reinf_id,
+                'agent_card_id' => $backup_candidate,
+            ]);
+            return;
+        }
+    }
 }
 
 /**
@@ -316,10 +388,9 @@ function ai_handle_defense(array &$game, int $pi, array $catalog): void {
 /**
  * Run a complete AI turn for player $pi.
  */
-function run_ai_turn(array &$game, int $pi, array $catalog): void {
-    // 1. Play all money cards and valued missions from hand
-    $hand_snapshot = $game['players'][$pi]['hand'];
-    foreach ($hand_snapshot as $cid) {
+function ai_play_money_cards(array &$game, int $pi, array $catalog): void {
+    $snap = $game['players'][$pi]['hand'];
+    foreach ($snap as $cid) {
         if (!isset($catalog[$cid])) continue;
         $type = $catalog[$cid]['type'];
         $is_money = $type === TYPE_MONEY;
@@ -328,8 +399,23 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
             action_play_money($game, $pi, ['card_id' => $cid]);
         }
     }
+}
 
-    // 2. Complete missions (loop in case extra missions are available)
+function run_ai_turn(array &$game, int $pi, array $catalog): void {
+    // 1. Play money cards and valued missions
+    ai_play_money_cards($game, $pi, $catalog);
+
+    // 2. Play simple plot cards (Para-drop draws more cards; Multitasking grants extra op;
+    //    Paperwork/Burglary attack opponents and generate money)
+    ai_play_simple_plots($game, $pi, $catalog);
+
+    // Para-drop may have added cards to hand — play any newly drawn money
+    ai_play_money_cards($game, $pi, $catalog);
+
+    // 3. Play Reinforcements if it would unlock an otherwise-uncompletable mission
+    ai_maybe_play_reinforcements($game, $pi, $catalog);
+
+    // 4. Complete missions (loop in case Multitasking or extra_missions allow more)
     while (true) {
         if ($game['ended'] ?? false) break;
         $mission_params = ai_pick_best_mission($game, $pi, $catalog);
@@ -338,12 +424,12 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 3. Store best remaining agent in base for future turns
+    // 5. Store best remaining agent in base for future turns
     if (!($game['ended'] ?? false)) {
         ai_maybe_use_base($game, $pi, $catalog);
     }
 
-    // 4. Buy best marketplace card if available (loop for extra buys)
+    // 6. Buy best marketplace card if available (loop for extra buys)
     while (true) {
         if ($game['ended'] ?? false) break;
         $buy_params = ai_pick_best_buy($game, $pi, $catalog);
@@ -352,13 +438,13 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 5. Convert leftover money to gems ($3 each) to save up for expensive cards
+    // 7. Convert leftover money to gems ($3 each) to save up for expensive cards
     while (!($game['ended'] ?? false) && $game['players'][$pi]['money'] >= 3) {
         $result = action_buy_gem($game, $pi, []);
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 6. End turn
+    // 8. End turn
     if (!($game['ended'] ?? false)) {
         action_end_turn($game, $pi, []);
     }
