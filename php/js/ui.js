@@ -295,7 +295,7 @@ const UI = {
         turnEl.textContent = s.is_my_turn ? "Your Turn!" : `${currentName}'s turn`;
         turnEl.className = s.is_my_turn ? 'your-turn' : 'other-turn';
 
-        document.getElementById('my-resources').textContent = `$${me.money} 💎 ${me.gems}`;
+        let myResources = `$${me.money} 💎 ${me.gems}`;
         document.getElementById('money-display').textContent = `$${me.money}`;
         document.getElementById('gems-display').textContent = `💎 ${me.gems}`;
         //document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
@@ -313,9 +313,9 @@ const UI = {
         } else {
             endTurnBtn.classList.remove('glow');
         }
-
+        
         document.getElementById('round-display').textContent = `Round ${s.round || 1}`;
-
+        
         const missionsEl = document.getElementById('missions-display');
         const buysEl = document.getElementById('buys-display');
         if (s.is_my_turn) {
@@ -324,16 +324,19 @@ const UI = {
             const missionsRemaining = missionsAllowed - missionsDone;
             missionsEl.textContent = `Ops: ${missionsRemaining}`;
             missionsEl.style.display = 'inline';
-
+            
             const buyLimit = 1 + (me.extra_buys || 0);
             const buysRemaining = buyLimit - (me.buys_this_turn || 0);
             buysEl.textContent = `Buys: ${buysRemaining}`;
             buysEl.style.display = 'inline';
+
+            myResources += ` Ops: ${missionsRemaining} Buys: ${buysRemaining}`;
         } else {
             missionsEl.style.display = 'none';
             buysEl.style.display = 'none';
         }
-
+        document.getElementById('my-resources').textContent = myResources;
+        
         const banner = document.getElementById('final-round-banner');
         banner.style.display = s.final_round ? 'block' : 'none';
 
