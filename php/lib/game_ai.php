@@ -60,13 +60,6 @@ function ai_needed_icons(array $game, int $pi, array $catalog): array {
     foreach (array_unique($p['mission_area'] ?? []) as $mid) {
         foreach ($catalog[$mid]['icons'] ?? [] as $ic) $pool[] = $ic;
     }
-    $base = $p['base'] ?? null;
-    if (is_array($base) && ($base['agent'] ?? null)) {
-        foreach ($catalog[$base['agent']]['icons'] ?? [] as $ic) $pool[] = $ic;
-        foreach ($base['tech'] ?? [] as $tid) {
-            foreach ($catalog[$tid]['icons'] ?? [] as $ic) $pool[] = $ic;
-        }
-    }
     if ($p['backup_agent'] ?? null) {
         foreach ($catalog[$p['backup_agent']]['icons'] ?? [] as $ic) $pool[] = $ic;
     }
@@ -116,9 +109,9 @@ function ai_needed_icons(array $game, int $pi, array $catalog): array {
 }
 
 /**
- * Find a valid agent+tech combo from the player's hand (and optionally base) that
- * satisfies the given cumulative requirements array.
- * Returns ['agent_ids' => [...], 'tech_ids' => [...], 'use_base_agent' => bool] or null.
+ * Find a valid agent+tech combo from the player's hand that satisfies
+ * the given cumulative requirements array.
+ * Returns ['agent_ids' => [...], 'tech_ids' => [...]] or null.
  */
 function ai_find_mission_combo_for_reqs(array $player, array $requirements, array $catalog): ?array {
     $agents = array_values(array_filter(
@@ -130,52 +123,31 @@ function ai_find_mission_combo_for_reqs(array $player, array $requirements, arra
         fn($id) => isset($catalog[$id]) && $catalog[$id]['type'] === TYPE_TECH
     ));
 
-    $base_agent_id = null;
-    $base_tech_ids = [];
-    $base = $player['base'] ?? null;
-    if (is_array($base) && ($base['agent'] ?? null)) {
-        $base_agent_id = $base['agent'];
-        $base_tech_ids = $base['tech'] ?? [];
-    }
-
     $mission_area_ids = array_unique($player['mission_area'] ?? []);
     $backup_id = $player['backup_agent'] ?? null;
 
-    foreach ([false, true] as $use_base) {
-        if ($use_base && !$base_agent_id) continue;
+    $agent_subsets = ai_all_subsets($agents, 2); // up to two hand agents per op
+    foreach ($agent_subsets as $hand_agents) {
+        if (empty($hand_agents)) continue;
 
-        $agent_subsets = ai_all_subsets($agents, 2); // up to two hand agents per op
-        foreach ($agent_subsets as $hand_agents) {
-            if (empty($hand_agents) && !$use_base) continue;
+        $max_tech = 0;
+        foreach ($hand_agents as $aid) {
+            $max_tech += $catalog[$aid]['max_tech'] ?? 0;
+        }
 
-            $max_tech = 0;
-            foreach ($hand_agents as $aid) {
-                $max_tech += $catalog[$aid]['max_tech'] ?? 0;
+        $tech_subsets = ai_all_subsets($tech, min($max_tech, count($tech)));
+        foreach ($tech_subsets as $hand_tech) {
+            $all_cards = array_merge($hand_agents, $hand_tech);
+            if ($backup_id) {
+                $all_cards[] = $backup_id;
             }
-            if ($use_base) {
-                $base_max = $catalog[$base_agent_id]['max_tech'] ?? 0;
-                $max_tech += max(0, $base_max - count($base_tech_ids));
-            }
-
-            $tech_subsets = ai_all_subsets($tech, min($max_tech, count($tech)));
-            foreach ($tech_subsets as $hand_tech) {
-                $all_cards = array_merge($hand_agents, $hand_tech);
-                if ($use_base) {
-                    $all_cards[] = $base_agent_id;
-                    $all_cards = array_merge($all_cards, $base_tech_ids);
-                }
-                if ($backup_id) {
-                    $all_cards[] = $backup_id;
-                }
-                $check_cards = array_merge($all_cards, $mission_area_ids);
-                $resolution = auto_resolve_choices($requirements, $check_cards, $catalog);
-                if ($resolution !== null) {
-                    return [
-                        'agent_ids' => $hand_agents,
-                        'tech_ids' => $hand_tech,
-                        'use_base_agent' => $use_base,
-                    ];
-                }
+            $check_cards = array_merge($all_cards, $mission_area_ids);
+            $resolution = auto_resolve_choices($requirements, $check_cards, $catalog);
+            if ($resolution !== null) {
+                return [
+                    'agent_ids' => $hand_agents,
+                    'tech_ids' => $hand_tech,
+                ];
             }
         }
     }
@@ -331,53 +303,6 @@ function ai_maybe_play_reinforcements(array &$game, int $pi, array $catalog): vo
 }
 
 /**
- * Score an agent for base storage: more icons and tech slots = more valuable.
- */
-function ai_agent_base_score(array $card): int {
-    return count($card['icons'] ?? []) * 2 + ($card['max_tech'] ?? 0);
-}
-
-/**
- * After missions, store the best remaining hand agent in the base if it's
- * better than whoever is currently there. Equips as much tech as possible.
- */
-function ai_maybe_use_base(array &$game, int $pi, array $catalog): void {
-    $p = &$game['players'][$pi];
-
-    $hand_agents = array_values(array_filter(
-        $p['hand'],
-        fn($id) => isset($catalog[$id]) && $catalog[$id]['type'] === TYPE_AGENT
-    ));
-    if (empty($hand_agents)) return;
-
-    // Pick the highest-scored hand agent
-    usort($hand_agents, fn($a, $b) => ai_agent_base_score($catalog[$b]) - ai_agent_base_score($catalog[$a]));
-    $best = $hand_agents[0];
-    $best_score = ai_agent_base_score($catalog[$best]);
-
-    // Compare to current base occupant — only replace if strictly better
-    $base = $p['base'] ?? null;
-    if (is_array($base) && ($base['agent'] ?? null)) {
-        $current_score = ai_agent_base_score($catalog[$base['agent']] ?? []);
-        if ($best_score <= $current_score) return;
-    }
-
-    // Pick tech cards to equip (most icons first, up to max_tech slots)
-    $max_tech = $catalog[$best]['max_tech'] ?? 0;
-    $hand_tech = array_values(array_filter(
-        $p['hand'],
-        fn($id) => isset($catalog[$id]) && $catalog[$id]['type'] === TYPE_TECH
-    ));
-    usort($hand_tech, fn($a, $b) => count($catalog[$b]['icons'] ?? []) - count($catalog[$a]['icons'] ?? []));
-    $chosen_tech = array_slice($hand_tech, 0, $max_tech);
-
-    action_put_agent_in_base($game, $pi, [
-        'agent_id' => $best,
-        'tech_ids' => $chosen_tech,
-    ]);
-}
-
-/**
  * Pick the best card to buy from the marketplace.
  * Never buys always-available basic agents (Muscle/Shadow) — leftover money
  * is converted to gems separately in run_ai_turn.
@@ -454,26 +379,6 @@ function ai_handle_defense(array &$game, int $pi, array $catalog): void {
         $game['log'][] = "{$name} discards {$catalog[$cid]['name']} to defend against {$attack_name}!";
         if (count($attack['responses']) >= count($attack['defenders'])) unset($game['pending_attack']);
         return;
-    }
-
-    // Try base agent
-    if (is_array($p['base'] ?? null) && ($p['base']['agent'] ?? null)) {
-        $baid = $p['base']['agent'];
-        $eligible = true;
-        if ($attack_card === 'burglary') {
-            $icons = $catalog[$baid]['icons'] ?? [];
-            if (!in_array('muscle', $icons) && !in_array('drive', $icons)) $eligible = false;
-        }
-        if ($eligible) {
-            foreach ($p['base']['tech'] ?? [] as $tid) $p['discard'][] = $tid;
-            $p['discard'][] = $baid;
-            $p['base']['agent'] = null;
-            $p['base']['tech'] = [];
-            $attack['responses'][$pi] = 'discard:' . $baid;
-            $game['log'][] = "{$name} discards {$catalog[$baid]['name']} from base to defend!";
-            if (count($attack['responses']) >= count($attack['defenders'])) unset($game['pending_attack']);
-            return;
-        }
     }
 
     // Suffer the attack
@@ -556,12 +461,7 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 5. Store best remaining agent in base for future turns
-    if (!($game['ended'] ?? false)) {
-        ai_maybe_use_base($game, $pi, $catalog);
-    }
-
-    // 6. Buy best marketplace card if available (loop for extra buys)
+    // 5. Buy best marketplace card if available (loop for extra buys)
     while (true) {
         if ($game['ended'] ?? false) break;
         $buy_params = ai_pick_best_buy($game, $pi, $catalog);
@@ -570,13 +470,13 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 7. Convert leftover money to gems ($3 each) to save up for expensive cards
+    // 6. Convert leftover money to gems ($3 each) to save up for expensive cards
     while (!($game['ended'] ?? false) && $game['players'][$pi]['money'] >= 3) {
         $result = action_buy_gem($game, $pi, []);
         if (!($result['ok'] ?? false)) break;
     }
 
-    // 8. End turn
+    // 7. End turn
     if (!($game['ended'] ?? false)) {
         action_end_turn($game, $pi, []);
     }

@@ -769,8 +769,14 @@ const UI = {
 
     renderLog() {
         const container = document.getElementById('game-log');
+        const scroller = container.parentElement;
+        const prevCount = this._logCount || 0;
+        const newCount = this.state.log.length;
         container.innerHTML = this.state.log.map(l => `<div class="log-entry">${esc(l)}</div>`).join('');
-        container.scrollTop = container.scrollHeight;
+        if (newCount > prevCount) {
+            scroller.scrollTop = scroller.scrollHeight;
+        }
+        this._logCount = newCount;
     },
 
     renderGameOver() {
@@ -1087,15 +1093,21 @@ const UI = {
         const segNums = ['①', '②', '③'];
         segs.forEach((seg, i) => {
             const cumReqs = segs.slice(0, i + 1).flatMap(s => s.requirements || []);
-            const cumRewParts = [];
+            let totStars = 0, totGems = 0, totMoney = 0, totCards = 0, totTrashes = 0;
             for (let j = 0; j <= i; j++) {
                 const s = segs[j];
-                if (s.stars)   cumRewParts.push(`${s.stars}⭐`);
-                if (s.gems)    cumRewParts.push(`${s.gems}💎`);
-                if (s.money)   cumRewParts.push(`$${s.money}`);
-                if (s.cards)   cumRewParts.push(`${s.cards}🎴`);
-                if (s.trashes) cumRewParts.push(`${s.trashes}✖️`);
+                totStars   += s.stars   || 0;
+                totGems    += s.gems    || 0;
+                totMoney   += s.money   || 0;
+                totCards   += s.cards   || 0;
+                totTrashes += s.trashes || 0;
             }
+            const cumRewParts = [];
+            if (totStars)   cumRewParts.push(`${totStars}⭐`);
+            if (totGems)    cumRewParts.push(`${totGems}💎`);
+            if (totMoney)   cumRewParts.push(`$${totMoney}`);
+            if (totCards)   cumRewParts.push(`${totCards}🎴`);
+            if (totTrashes) cumRewParts.push(`${totTrashes}✖️`);
             const cumRew = cumRewParts.join(' ');
             html += `<label class="mission-select-item seg-option" data-seg="${i + 1}">
                 <input type="radio" name="mission-seg" value="${i + 1}" ${i === 0 ? 'checked' : ''}>

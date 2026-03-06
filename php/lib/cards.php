@@ -231,7 +231,7 @@ function get_card_catalog(): array {
             'always_available' => false,
             'segments' => [
                 ['requirements' => ['drive', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
-                ['requirements' => ['drive', 'disguise'], 'stars' => 1, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['muscle', 'key'], 'stars' => 1, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['key', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
             ],
             'requirements' => [],
@@ -275,8 +275,8 @@ function get_card_catalog(): array {
             'gems' => 0,
             'description' => 'Seg1: 1🎴 | Seg2: 2⭐ 1🎴 | Seg3: 5⭐ 1✖️',
         ],
-        'gate' => [
-            'id' => 'gate',
+        'embassy' => [
+            'id' => 'embassy',
             'name' => 'Embassy Safe',
             'type' => 'mission',
             'tier' => 1,
@@ -447,9 +447,9 @@ function get_card_catalog(): array {
             'type' => 'tech',
             'tier' => 1,
             'stars' => 0,
-            'cost' => 3,
+            'cost' => 4,
             'icons' => ['drive', 'key'],
-            'description' => '🚘🔑 ($3)',
+            'description' => '🚘🔑 ($4)',
         ],
         'holoprojector' => [
             'id' => 'holoprojector',
@@ -592,7 +592,7 @@ function build_ops_deck(): array {
         'getaway' => 1,
         'wrestling' => 1,
         'convent' => 1,
-        'gate' => 1,
+        'embassy' => 1,
         'hijinx' => 1,
     ];
     $deck = [];
