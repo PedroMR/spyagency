@@ -3,26 +3,24 @@ require_once __DIR__ . '/cards.php';
 
 function init_game(array $players): array {
     $market_deck = build_market_deck();
-    $mission_decks = build_mission_decks();
+    $ops_deck = build_ops_deck();
 
-    // Fill mission grid: 3 slots per tier, each slot is a stack (array of card IDs)
-    // When a drawn card matches an existing slot, stack it and draw again
-    $mission_grid = [1 => [], 2 => [], 3 => []];
-    foreach ([1, 2, 3] as $tier) {
-        while (count($mission_grid[$tier]) < 3 && !empty($mission_decks[$tier])) {
-            $drawn = array_shift($mission_decks[$tier]);
-            $stacked = false;
-            foreach ($mission_grid[$tier] as &$slot) {
-                if (!empty($slot) && $slot[0] === $drawn) {
-                    $slot[] = $drawn;
-                    $stacked = true;
-                    break;
-                }
+    // Fill ops grid: 3 slots, each is a stack of card IDs
+    // When a drawn card matches an existing slot, stack it on top
+    $ops_grid = [];
+    while (count($ops_grid) < 3 && !empty($ops_deck)) {
+        $drawn = array_shift($ops_deck);
+        $stacked = false;
+        foreach ($ops_grid as &$slot) {
+            if (!empty($slot) && $slot[0] === $drawn) {
+                $slot[] = $drawn;
+                $stacked = true;
+                break;
             }
-            unset($slot);
-            if (!$stacked) {
-                $mission_grid[$tier][] = [$drawn];
-            }
+        }
+        unset($slot);
+        if (!$stacked) {
+            $ops_grid[] = [$drawn];
         }
     }
 
@@ -70,6 +68,8 @@ function init_game(array $players): array {
             'extra_missions' => 0,
             'missions_this_turn' => 0,
             'extra_buys' => 0,
+            'extra_draws' => 0,
+            'pending_trashes' => 0,
             'base' => ['card' => 'safe_house', 'agent' => null, 'tech' => []],
         ];
     }
@@ -81,8 +81,8 @@ function init_game(array $players): array {
         'first_player' => $first_player,
         'market_deck' => $market_deck,
         'marketplace' => $marketplace,
-        'mission_decks' => $mission_decks,
-        'mission_grid' => $mission_grid,
+        'ops_deck' => $ops_deck,
+        'ops_grid' => $ops_grid,
         'players' => $player_states,
         'version' => 1,
         'log' => ['Game started!', $player_states[$first_player]['name'] . ' goes first.'],

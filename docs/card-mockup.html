@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Segment Mission Card Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  h1 { color: #ffd700; margin-bottom: 8px; font-size: 20px; }
+  h2 { color: #e040fb; font-size: 15px; margin-bottom: 6px; font-weight: 600; }
+  p.note { color: #888; font-size: 12px; margin-bottom: 18px; }
+
+  section { margin-bottom: 48px; }
+
+  .cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  /* ─── Base card shell (matches game style) ─────────────────────── */
+  .card {
+    --card-color: #e040fb;
+    background: linear-gradient(90deg,
+      var(--card-color) 0px,
+      var(--card-color) 3px,
+      rgba(8, 8, 20, 0.97) 3px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    font-size: 11px;
+    color: #e0e0e0;
+    position: relative;
+  }
+
+  /* ─── Tier badge (top-right corner) ────────────────────────────── */
+  .tier-badge {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 9px;
+    font-weight: bold;
+    color: var(--card-color);
+    opacity: 0.7;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ─── Card name ────────────────────────────────────────────────── */
+  .card-name {
+    font-weight: bold;
+    font-size: 12px;
+    color: #fff;
+    padding-right: 28px; /* room for tier badge */
+  }
+
+  /* ─── Reward colours ───────────────────────────────────────────── */
+  .r-money  { color: #4cff4c; font-weight: bold; }
+  .r-star   { color: #ffd700; font-weight: bold; }
+  .r-gem    { color: #00e5ff; font-weight: bold; }
+  .r-op     { color: #40c4ff; font-weight: bold; }
+  .r-icon   { font-size: 14px; }
+
+  /* ─── Segment number badge ──────────────────────────────────────── */
+  .seg-num {
+    font-size: 10px;
+    font-weight: bold;
+    color: rgba(224, 64, 251, 0.9);
+    min-width: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Completed segment */
+  .seg-done {
+    opacity: 0.38;
+  }
+  .seg-done .seg-num {
+    color: #4cff4c;
+  }
+
+  /* Arrow */
+  .seg-arrow {
+    color: #666;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Requirement icons */
+  .seg-req {
+    font-size: 16px;
+    letter-spacing: -2px;
+    flex-shrink: 0;
+  }
+
+  /* Reward area */
+  .seg-reward {
+    font-size: 12px;
+    white-space: nowrap;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  /* Divider between segments */
+  .seg-divider {
+    height: 1px;
+    background: rgba(224, 64, 251, 0.18);
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════
+     OPTION A  —  Vertical card (segments stacked as rows)
+     ══════════════════════════════════════════════════════════════════ */
+  .card-v {
+    width: 210px;
+    padding: 8px 10px 8px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .card-v .card-name {
+    margin-bottom: 7px;
+  }
+
+  .card-v .seg-divider {
+    margin: 0 -10px 0 -13px;  /* bleed to edges */
+  }
+
+  .card-v .segment {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+  }
+
+  /* push reward to the right */
+  .card-v .seg-reward {
+    margin-left: auto;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════
+     OPTION B  —  Wide card (segments as 3 columns)
+     ══════════════════════════════════════════════════════════════════ */
+  .card-h {
+    width: 390px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-h .card-header {
+    padding: 8px 10px 7px 13px;
+  }
+
+  .card-h .segments-row {
+    display: flex;
+    flex-direction: row;
+    border-top: 1px solid rgba(224, 64, 251, 0.18);
+  }
+
+  .card-h .segment-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 7px 6px;
+    text-align: center;
+    position: relative;
+  }
+
+  .card-h .segment-col + .segment-col {
+    border-left: 1px solid rgba(224, 64, 251, 0.18);
+  }
+
+  .card-h .seg-req {
+    font-size: 18px;
+    letter-spacing: -2px;
+  }
+
+  .card-h .seg-num {
+    font-size: 9px;
+    position: absolute;
+    top: 5px;
+    left: 7px;
+  }
+
+  .card-h .seg-arrow {
+    font-size: 9px;
+  }
+
+  .card-h .seg-reward {
+    font-size: 12px;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .card-h .seg-reward span {
+    line-height: 1.2;
+  }
+</style>
+</head>
+<body>
+
+<h1>Multi-Segment Mission Cards — Layout Mockup</h1>
+<p class="note" style="margin-bottom:32px">
+  Each card has 3 segments completed in sequence. Dimmed segments represent already-completed ones.
+  Icons: 💪 muscle · 🥸 disguise · 🚘 vehicle · 🔑 stealth · ❓ wild
+</p>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Option A — Vertical (stacked rows)</h2>
+  <p class="note">Fits the existing op-grid column width (~210px). Taller than current mission cards.</p>
+  <div class="cards-row">
+
+    <!-- Black Market Run -->
+    <div class="card card-v">
+      <span class="tier-badge">Tier II</span>
+      <div class="card-name">Black Market Run</div>
+
+      <div class="seg-divider"></div>
+      <div class="segment seg-done">
+        <span class="seg-num">✓</span>
+        <span class="seg-req">🚘💪</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-money">$1</span></span>
+      </div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">②</span>
+        <span class="seg-req">💪💪</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-gem">2💎</span></span>
+      </div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">③</span>
+        <span class="seg-req">🚘🥸💪</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-op">+1✖️</span><span class="r-star">2⭐</span></span>
+      </div>
+    </div>
+
+    <!-- Double Agent -->
+    <div class="card card-v">
+      <span class="tier-badge">Tier II</span>
+      <div class="card-name">Double Agent</div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">①</span>
+        <span class="seg-req">🥸🔑</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-star">1⭐</span></span>
+      </div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">②</span>
+        <span class="seg-req">💪🥸</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-money">$2</span></span>
+      </div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">③</span>
+        <span class="seg-req">🥸🥸🔑</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-star">4⭐</span></span>
+      </div>
+    </div>
+
+    <!-- Nuclear Retrieval -->
+    <div class="card card-v">
+      <span class="tier-badge">Tier III</span>
+      <div class="card-name">Nuclear Retrieval</div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">①</span>
+        <span class="seg-req">💪💪🚘</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-gem">2💎</span></span>
+      </div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">②</span>
+        <span class="seg-req">🔑🔑🥸</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-money">$3</span></span>
+      </div>
+
+      <div class="seg-divider"></div>
+      <div class="segment">
+        <span class="seg-num">③</span>
+        <span class="seg-req">🥸🥸💪🔑</span>
+        <span class="seg-arrow">→</span>
+        <span class="seg-reward"><span class="r-op">+1✖️</span><span class="r-star">9⭐</span></span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section>
+  <h2>Option B — Wide (3 columns)</h2>
+  <p class="note">Segments side by side. Similar width to existing mission cards (~390px).</p>
+  <div class="cards-row">
+
+    <!-- Black Market Run -->
+    <div class="card card-h">
+      <div class="card-header">
+        <span class="tier-badge">Tier II</span>
+        <div class="card-name">Black Market Run</div>
+      </div>
+      <div class="segments-row">
+        <div class="segment-col seg-done">
+          <span class="seg-num">✓</span>
+          <span class="seg-req">🚘💪</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-money">$1</span></div>
+        </div>
+        <div class="segment-col">
+          <span class="seg-num">②</span>
+          <span class="seg-req">💪💪</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-gem">2💎</span></div>
+        </div>
+        <div class="segment-col">
+          <span class="seg-num">③</span>
+          <span class="seg-req">🚘🥸💪</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-op">+1✖️</span><span class="r-star">2⭐</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Double Agent -->
+    <div class="card card-h">
+      <div class="card-header">
+        <span class="tier-badge">Tier II</span>
+        <div class="card-name">Double Agent</div>
+      </div>
+      <div class="segments-row">
+        <div class="segment-col">
+          <span class="seg-num">①</span>
+          <span class="seg-req">🥸🔑</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-star">1⭐</span></div>
+        </div>
+        <div class="segment-col">
+          <span class="seg-num">②</span>
+          <span class="seg-req">💪🥸</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-money">$2</span></div>
+        </div>
+        <div class="segment-col">
+          <span class="seg-num">③</span>
+          <span class="seg-req">🥸🥸🔑</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-star">4⭐</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nuclear Retrieval -->
+    <div class="card card-h">
+      <div class="card-header">
+        <span class="tier-badge">Tier III</span>
+        <div class="card-name">Nuclear Retrieval</div>
+      </div>
+      <div class="segments-row">
+        <div class="segment-col">
+          <span class="seg-num">①</span>
+          <span class="seg-req">💪💪🚘</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-gem">2💎</span></div>
+        </div>
+        <div class="segment-col">
+          <span class="seg-num">②</span>
+          <span class="seg-req">🔑🔑🥸</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-money">$3</span></div>
+        </div>
+        <div class="segment-col">
+          <span class="seg-num">③</span>
+          <span class="seg-req">🥸🥸💪🔑</span>
+          <span class="seg-arrow">→</span>
+          <div class="seg-reward"><span class="r-op">+1✖️</span><span class="r-star">9⭐</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>

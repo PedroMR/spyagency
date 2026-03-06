@@ -301,7 +301,13 @@ const UI = {
         //document.getElementById('gems-display').style.display = (me.gems > 0 || s.is_my_turn) ? 'inline' : 'none';
         document.getElementById('stars-display').textContent = `⭐ ${me.stars}`;
         const endTurnBtn = document.getElementById('btn-end-turn');
-        endTurnBtn.style.display = 'inline-block';
+        const trashBtn = document.getElementById('btn-use-trash');
+        const pending = s.is_my_turn ? (me.pending_trashes || 0) : 0;
+        if (trashBtn) {
+            trashBtn.style.display = pending > 0 ? 'inline-block' : 'none';
+            trashBtn.textContent = pending > 1 ? `✖️ Trash (×${pending})` : '✖️ Trash';
+        }
+        endTurnBtn.style.display = pending > 0 ? 'none' : 'inline-block';
         endTurnBtn.disabled = !s.is_my_turn || s.attack_pending;
         const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
         document.getElementById('debug-buttons').style.display = (isLocal && !s.ended) ? 'flex' : 'none';
@@ -429,38 +435,53 @@ const UI = {
         </div>`;
     },
 
+    formatSegReward(seg) {
+        const parts = [];
+        if (seg.stars)   parts.push(`<span class="r-star">${seg.stars}⭐</span>`);
+        if (seg.gems)    parts.push(`<span class="r-gem">${seg.gems}💎</span>`);
+        if (seg.money)   parts.push(`<span class="r-money">$${seg.money}</span>`);
+        if (seg.cards)   parts.push(`<span class="r-card">${seg.cards}🎴</span>`);
+        if (seg.trashes) parts.push(`<span class="r-trash">${seg.trashes}✖️</span>`);
+        return parts.join(' ');
+    },
+
+    renderSegments(card) {
+        const segs = card.segments || [];
+        const segNums = ['①', '②', '③'];
+        return segs.map((seg, i) => {
+            const req = this.formatReqIcons(seg.requirements || []);
+            const rew = this.formatSegReward(seg);
+            return `<div class="seg-divider"></div>
+                    <div class="segment">
+                      <span class="seg-num">${segNums[i]}</span>
+                      <span class="seg-req">${req}</span>
+                      <span class="seg-arrow">→</span>
+                      <span class="seg-reward">${rew}</span>
+                    </div>`;
+        }).join('');
+    },
+
     renderMissionGrid() {
         const container = document.getElementById('mission-grid');
-        let html = '';
-        for (const tier of [1, 2, 3]) {
-            const deckCount = this.state.mission_deck_counts[tier];
-            html += `<div class="mission-tier"><h4>Tier ${tier} <span class="deck-count">(${deckCount} left)</span></h4><div class="mission-tier-cards">`;
-            const missions = this.state.mission_grid[tier] || [];
-            const missionCounts = (this.state.mission_grid_counts || {})[tier] || [];
-            for (let mi = 0; mi < missions.length; mi++) {
-                const mId = missions[mi];
-                if (!mId) continue;
-                const card = this.catalog[mId];
-                if (!card) continue;
-                const reqIcons = this.formatReqIcons(card.requirements);
-                const stars = card.stars ? `${card.stars}⭐ ` : '';
-                const rewardParts = [];
-                if (card.value) rewardParts.push(`$${card.value}/turn`);
-                if (card.extra_mission) rewardParts.push('+1 op/turn');
-                if (card.extra_buy) rewardParts.push('+1 buy/turn');
-                if (card.icons && card.icons.length) rewardParts.push(this.formatReqIcons(card.icons));
-                const money = rewardParts.join(' ');
-                const count = missionCounts[mi] || 1;
-                const countBadge = count > 1 ? `<div class="stack-count">×${count}</div>` : '';
-                html += `<div class="card mission-card" style="--card-color:${this.getCardColor(card)}" onclick="UI.showMissionDialog('${mId}')">
-                    <div class="card-name">${esc(card.name)}</div>
-                    <div class="card-req">${reqIcons}</div>
-                    <div class="card-reward">${stars}${money}</div>
-                    ${countBadge}
-                </div>`;
-            }
-            html += '</div></div>';
+        const ops = this.state.ops_grid || [];
+        const opsCounts = this.state.ops_grid_counts || [];
+        const deckCount = this.state.ops_deck_count ?? 0;
+        let html = `<div class="ops-deck-count">Ops deck: ${deckCount} remaining</div><div class="mission-tier-cards">`;
+        for (let mi = 0; mi < ops.length; mi++) {
+            const mId = ops[mi];
+            if (!mId) continue;
+            const card = this.catalog[mId];
+            if (!card) continue;
+            const count = opsCounts[mi] || 1;
+            const countBadge = count > 1 ? `<div class="stack-count">×${count}</div>` : '';
+            const segHtml = this.renderSegments(card);
+            html += `<div class="card mission-card card-v" style="--card-color:${this.getCardColor(card)}" onclick="UI.showMissionDialog('${mId}')">
+                <div class="card-name">${esc(card.name)}</div>
+                ${segHtml}
+                ${countBadge}
+            </div>`;
         }
+        html += '</div>';
         container.innerHTML = html;
     },
 
@@ -553,12 +574,10 @@ const UI = {
 
     renderHeist() {
         const card = this.catalog['heist'];
-        const reqIcons = this.formatReqIcons(card.requirements);
         const el = document.getElementById('heist-mission');
         el.style.setProperty('--card-color', '#e040fb');
-        el.innerHTML = `<div class="card-name">${esc(card.name)}</div>
-            <div class="card-req">${reqIcons}</div>
-            <div class="card-reward">💎 1–3</div>`;
+        el.classList.add('card-v');
+        el.innerHTML = `<div class="card-name">${esc(card.name)}</div>${this.renderSegments(card)}`;
     },
 
     renderOpponents() {
@@ -1129,6 +1148,40 @@ const UI = {
         this.showModal(html);
     },
 
+    showOpTrashDialog() {
+        const me = this.state.players[this.state.my_index];
+        if ((me.pending_trashes || 0) <= 0) return;
+        const areas = [
+            {key: 'hand',      label: 'Hand',       cards: me.hand},
+            {key: 'play_area', label: 'Play Area',   cards: me.play_area},
+            {key: 'discard',   label: 'Discard',     cards: me.discard || []},
+        ];
+        let html = '<h3>✖️ Trash a card (op reward)</h3>';
+        let hasAny = false;
+        for (const area of areas) {
+            if (area.cards.length === 0) continue;
+            html += `<h4>${area.label}</h4>`;
+            const seen = new Set();
+            for (const cid of area.cards) {
+                if (seen.has(cid)) continue;
+                seen.add(cid);
+                const c = this.catalog[cid];
+                if (!c) continue;
+                hasAny = true;
+                html += `<button class="btn-modal" onclick="Actions.useTrash('${cid}', '${area.key}'); UI.closeModal()">
+                    ${esc(c.name)}
+                </button>`;
+            }
+        }
+        if (!hasAny) {
+            this.showError('No cards to trash!');
+            return;
+        }
+        html += '<button class="btn-modal" style="background:#b03000;border-color:#ff7043" onclick="Actions.skipTrash();UI.closeModal()">Skip (forfeit)</button>';
+        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
+        this.showModal(html);
+    },
+
     showBackupDialog(plotCardId) {
         const me = this.state.players[this.state.my_index];
         const agents = me.hand.filter(cid => cid !== plotCardId && this.catalog[cid].type === 'agent');
@@ -1232,20 +1285,31 @@ const UI = {
             return;
         }
 
-        const reqIcons = this.formatReqIcons(mission.requirements);
-        const isHeist = (mission.gems || 0) > 0;
-
+        const segs = mission.segments || [];
         let html = `<h3>Run: ${esc(mission.name)}</h3>`;
-        html += `<p>Requires: ${reqIcons}</p>`;
-        if (isHeist) {
-            html += `<table class="heist-table">
-                <tr><th>Icons</th><th>Gems</th></tr>
-                <tr><td>1-2</td><td>💎 1</td></tr>
-                <tr><td>3-4</td><td>💎 2</td></tr>
-                <tr><td>5+</td><td>💎 3</td></tr>
-            </table>`;
-        }
-        // Show icons contributed by completed ops in mission area
+
+        // Segment selector
+        html += '<p>Run up to segment:</p>';
+        const segNums = ['①', '②', '③'];
+        segs.forEach((seg, i) => {
+            const cumReqs = segs.slice(0, i + 1).flatMap(s => s.requirements || []);
+            const cumRewParts = [];
+            for (let j = 0; j <= i; j++) {
+                const s = segs[j];
+                if (s.stars)   cumRewParts.push(`${s.stars}⭐`);
+                if (s.gems)    cumRewParts.push(`${s.gems}💎`);
+                if (s.money)   cumRewParts.push(`$${s.money}`);
+                if (s.cards)   cumRewParts.push(`${s.cards}🎴`);
+                if (s.trashes) cumRewParts.push(`${s.trashes}✖️`);
+            }
+            const cumRew = cumRewParts.join(' ');
+            html += `<label class="mission-select-item seg-option" data-seg="${i + 1}">
+                <input type="radio" name="mission-seg" value="${i + 1}" ${i === segs.length - 1 ? 'checked' : ''}>
+                ${segNums[i]} ${this.formatReqIcons(cumReqs)} → ${cumRew}
+            </label>`;
+        });
+
+        // Show icons from mission area (backward compat)
         const missionAreaIcons = [...new Set(me.mission_area || [])].flatMap(mid => this.catalog[mid]?.icons || []);
         if (missionAreaIcons.length > 0) {
             html += `<p>From completed ops: ${this.formatReqIcons(missionAreaIcons)}</p>`;
@@ -1307,7 +1371,7 @@ const UI = {
 
         // Wire up live requirement checking
         const onChange = () => UI._updateRunOpButton(missionId);
-        document.querySelectorAll('input[name="mission-agent"], input[name="mission-tech"]')
+        document.querySelectorAll('input[name="mission-agent"], input[name="mission-tech"], input[name="mission-seg"]')
             .forEach(el => el.addEventListener('change', onChange));
     },
 
@@ -1316,6 +1380,10 @@ const UI = {
         if (!btn) return;
         const mission = this.catalog[missionId];
         const me = this.state.players[this.state.my_index];
+        const segs = mission.segments || [];
+
+        // Get selected segment
+        const targetSeg = parseInt(document.querySelector('input[name="mission-seg"]:checked')?.value || segs.length, 10);
 
         // Collect selected card IDs
         const selectedAgent = document.querySelector('input[name="mission-agent"]:checked')?.value || null;
@@ -1324,6 +1392,9 @@ const UI = {
         const agentIds = (!useBase && selectedAgent) ? [selectedAgent] : [];
 
         if (!selectedAgent) { btn.disabled = true; return; }
+
+        // Build cumulative requirements for chosen segment
+        const cumReqs = segs.slice(0, targetSeg).flatMap(s => s.requirements || []);
 
         // Build icon pool
         const pool = [];
@@ -1336,19 +1407,19 @@ const UI = {
         if (me.backup_agent) {
             (this.catalog[me.backup_agent]?.icons || []).forEach(ic => pool.push(ic));
         }
-        // Icons from completed ops count once per unique op name
+        // Icons from completed ops (mission area)
         [...new Set(me.mission_area || [])].forEach(mid => (this.catalog[mid]?.icons || []).forEach(ic => pool.push(ic)));
 
         // Check requirements: satisfy specific icons first, then 'any' with remainder
         const remaining = [...pool];
         let ok = true;
-        for (const req of (mission.requirements || [])) {
+        for (const req of cumReqs) {
             if (req === 'any') continue;
             const idx = remaining.indexOf(req);
             if (idx === -1) { ok = false; break; }
             remaining.splice(idx, 1);
         }
-        const anyNeeded = (mission.requirements || []).filter(r => r === 'any').length;
+        const anyNeeded = cumReqs.filter(r => r === 'any').length;
         if (ok && remaining.length < anyNeeded) ok = false;
 
         btn.disabled = !ok;
@@ -1386,7 +1457,8 @@ const UI = {
             return;
         }
 
-        Actions.completeMission(missionId, agentIds, techIds, useBaseAgent);
+        const targetSegment = parseInt(document.querySelector('input[name="mission-seg"]:checked')?.value || '3', 10);
+        Actions.completeMission(missionId, agentIds, techIds, useBaseAgent, targetSegment);
         this.closeModal();
     },
 

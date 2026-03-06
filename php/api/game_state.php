@@ -80,6 +80,7 @@ foreach ($game['players'] as $i => $p) {
             'backup_agent' => $p['backup_agent'] ?? null,
             'extra_missions' => $p['extra_missions'] ?? 0,
             'missions_this_turn' => $p['missions_this_turn'] ?? 0,
+            'pending_trashes' => $p['pending_trashes'] ?? 0,
             'base' => normalize_base_for_client($p['base'] ?? null),
             'mission_area' => $p['mission_area'] ?? [],
         ];
@@ -128,19 +129,15 @@ $state = [
     'marketplace' => array_map(fn($stack) => !empty($stack) ? $stack[0] : null, $game['marketplace']),
     'marketplace_counts' => array_map(fn($stack) => count($stack), $game['marketplace']),
     'market_deck_count' => count($game['market_deck']),
-    'mission_grid' => array_map(fn($tier_slots) => array_map(
+    'ops_grid' => array_map(
         fn($slot) => is_array($slot) ? ($slot[0] ?? null) : $slot,
-        $tier_slots
-    ), $game['mission_grid']),
-    'mission_grid_counts' => array_map(fn($tier_slots) => array_map(
+        $game['ops_grid']
+    ),
+    'ops_grid_counts' => array_map(
         fn($slot) => is_array($slot) ? count($slot) : 1,
-        $tier_slots
-    ), $game['mission_grid']),
-    'mission_deck_counts' => [
-        1 => count($game['mission_decks'][1]),
-        2 => count($game['mission_decks'][2]),
-        3 => count($game['mission_decks'][3]),
-    ],
+        $game['ops_grid']
+    ),
+    'ops_deck_count' => count($game['ops_deck']),
     'players' => $players_data,
     'log' => array_slice($game['log'], -2000),
     'status' => $game['status'],

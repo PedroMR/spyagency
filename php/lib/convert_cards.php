@@ -90,14 +90,14 @@ function parse_mission_rewards(string $desc): array {
     if (preg_match('/(\d+)\s*⭐/', $desc, $m)) {
         $stars = (int)$m[1];
     }
-    // Extract money value: "$4" means the mission card itself is worth $4
+    // Extract money value: "$4"
     $value = 0;
     if (preg_match('/\$(\d+)/', $desc, $m)) {
         $value = (int)$m[1];
     }
-    // Extract gems: "💎1" or "💎3"
+    // Extract gems: "2💎" or "1💎" (number before emoji)
     $gems = 0;
-    if (preg_match('/💎(\d+)/u', $desc, $m)) {
+    if (preg_match('/(\d+)\s*💎/u', $desc, $m)) {
         $gems = (int)$m[1];
     }
     return [$stars, $value, $gems];
@@ -128,6 +128,12 @@ while (($row = fgetcsv($fh)) !== false) {
         'ability'      => col($row, $col, 'ability'),
         'special'      => col($row, $col, 'special'),
         'max_tech'     => col($row, $col, 'max tech') !== '' ? (int)col($row, $col, 'max tech') : null,
+        'req1'         => col($row, $col, 'req1'),
+        'reward1'      => col($row, $col, 'reward1'),
+        'req2'         => col($row, $col, 'req2'),
+        'reward2'      => col($row, $col, 'reward2'),
+        'req3'         => col($row, $col, 'req3'),
+        'reward3'      => col($row, $col, 'reward3'),
     ];
 }
 fclose($fh);
@@ -135,7 +141,7 @@ fclose($fh);
 // Build card entries
 $cards = [];
 $market_counts = []; // slug => count for non-always-available agents, tech, plots
-$mission_counts = [1 => [], 2 => [], 3 => []]; // tier => [slug => count]
+$mission_counts = []; // slug => count (flat, no tiers)
 
 // Always include money cards (not in CSV)
 $cards['money_1'] = [
@@ -260,46 +266,50 @@ foreach ($rows as $row) {
 
         case 'mission':
             $entry['cost'] = 0;
-            $entry['requirements'] = parse_mission_requirements($row['requirements'], $emoji_to_icon);
-            [$stars, $value, $gems] = parse_mission_rewards($row['effect']);
-            // Heist uses "💎1-3" — just needs gems > 0 as a flag
-            if ($gems === 0 && preg_match('/💎/u', $row['effect'])) $gems = 1;
-            $entry['stars'] = $stars;
-            $entry['value'] = $value;
-            $entry['gems'] = $gems;
             $entry['always_available'] = stripos($row['special'], 'permanently available') !== false
                                       || stripos($row['special'], 'always available') !== false;
-            if (preg_match('/\+\s*1\s*(mission|op)/i', $row['effect'])) {
-                $entry['extra_mission'] = true;
+            // Parse segments from Req1/Reward1 … Req3/Reward3 columns
+            $segments = [];
+            for ($s = 1; $s <= 3; $s++) {
+                $req_raw = $row["req{$s}"] ?? '';
+                $rew_raw = $row["reward{$s}"] ?? '';
+                if ($req_raw === '' && $rew_raw === '') continue;
+                $reqs = parse_mission_requirements($req_raw, $emoji_to_icon);
+                [$seg_stars, $seg_money, $seg_gems] = parse_mission_rewards($rew_raw);
+                $seg_cards   = substr_count($rew_raw, '🎴');
+                $seg_trashes = preg_match_all('/✖️/u', $rew_raw, $_unused);
+                $segments[] = [
+                    'requirements' => $reqs,
+                    'stars'   => $seg_stars,
+                    'money'   => $seg_money,
+                    'gems'    => $seg_gems,
+                    'cards'   => $seg_cards,
+                    'trashes' => $seg_trashes,
+                ];
             }
-            if (preg_match('/\+\s*1\s*buy/i', $row['effect'])) {
-                $entry['extra_buy'] = true;
+            $entry['segments'] = $segments;
+            // Legacy fields cleared — segments hold all reward data now
+            $entry['requirements'] = [];
+            $entry['stars'] = 0;
+            $entry['value'] = 0;
+            $entry['gems'] = 0;
+            // Build description
+            $desc_parts = [];
+            foreach ($segments as $si => $seg) {
+                $seg_rew = [];
+                if ($seg['stars'])   $seg_rew[] = "{$seg['stars']}⭐";
+                if ($seg['money'])   $seg_rew[] = "\${$seg['money']}";
+                if ($seg['gems'])    $seg_rew[] = "{$seg['gems']}💎";
+                if ($seg['cards'])   $seg_rew[] = "{$seg['cards']}🎴";
+                if ($seg['trashes']) $seg_rew[] = "{$seg['trashes']}✖️";
+                if (!empty($seg_rew)) $desc_parts[] = 'Seg' . ($si + 1) . ': ' . implode(' ', $seg_rew);
             }
-            // Parse icon rewards from effect field (icons the op contributes to future ops)
-            $icon_rewards = array_values(array_filter(
-                parse_icons_field($row['effect'], $emoji_to_icon),
-                fn($i) => is_string($i) && $i !== 'any'
-            ));
-            if (!empty($icon_rewards)) {
-                $entry['icons'] = $icon_rewards;
-            }
-            $req_display = $row['requirements'];
-            $reward_parts = [];
-            if ($stars > 0) $reward_parts[] = "{$stars}⭐";
-            if ($value > 0) $reward_parts[] = "\${$value}/turn";
-            if ($entry['extra_mission'] ?? false) $reward_parts[] = '+1 op/turn';
-            if ($entry['extra_buy'] ?? false) $reward_parts[] = '+1 buy/turn';
-            if (!empty($icon_rewards)) {
-                $icon_to_emoji = array_flip($emoji_to_icon);
-                $reward_parts[] = implode('', array_map(fn($i) => $icon_to_emoji[$i] ?? $i, $icon_rewards));
-            }
-            $reward_str = implode(' ', $reward_parts);
-            $entry['description'] = "Requires: {$req_display} — Reward: {$reward_str}";
+            $entry['description'] = implode(' | ', $desc_parts);
             if ($entry['always_available']) {
-                $entry['description'] .= '. Always available.';
+                $entry['description'] .= ' Always available.';
             }
-            if (!$entry['always_available'] && $row['tier'] >= 1 && $row['tier'] <= 3) {
-                $mission_counts[$row['tier']][$id] = $row['count'];
+            if (!$entry['always_available'] && $row['count'] > 0) {
+                $mission_counts[$id] = $row['count'];
             }
             break;
     }
@@ -367,29 +377,21 @@ $output .= "    shuffle(\$deck);\n";
 $output .= "    return \$deck;\n";
 $output .= "}\n\n";
 
-// Generate build_mission_decks
-$output .= "function build_mission_decks(): array {\n";
-$output .= "    \$missions = [\n";
-foreach ($mission_counts as $tier => $missions) {
-    $output .= "        {$tier} => [\n";
-    foreach ($missions as $id => $count) {
-        $output .= "            " . var_export($id, true) . " => {$count},\n";
-    }
-    $output .= "        ],\n";
+// Generate build_ops_deck
+$output .= "function build_ops_deck(): array {\n";
+$output .= "    \$ops = [\n";
+foreach ($mission_counts as $id => $count) {
+    $output .= "        " . var_export($id, true) . " => {$count},\n";
 }
 $output .= "    ];\n";
-$output .= "    \$decks = [];\n";
-$output .= "    foreach (\$missions as \$tier => \$cards) {\n";
-$output .= "        \$deck = [];\n";
-$output .= "        foreach (\$cards as \$id => \$count) {\n";
-$output .= "            for (\$i = 0; \$i < \$count; \$i++) {\n";
-$output .= "                \$deck[] = \$id;\n";
-$output .= "            }\n";
+$output .= "    \$deck = [];\n";
+$output .= "    foreach (\$ops as \$id => \$count) {\n";
+$output .= "        for (\$i = 0; \$i < \$count; \$i++) {\n";
+$output .= "            \$deck[] = \$id;\n";
 $output .= "        }\n";
-$output .= "        shuffle(\$deck);\n";
-$output .= "        \$decks[\$tier] = \$deck;\n";
 $output .= "    }\n";
-$output .= "    return \$decks;\n";
+$output .= "    shuffle(\$deck);\n";
+$output .= "    return \$deck;\n";
 $output .= "}\n\n";
 
 // Generate get_starter_deck

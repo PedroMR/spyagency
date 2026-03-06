@@ -27,24 +27,100 @@ function ai_all_subsets(array $arr, int $max_size): array {
 
 /**
  * Score a card for purchase desirability (higher = better to buy).
+ * $needed_icons: icon => weight map from ai_needed_icons(), used to boost
+ * cards that address gaps in the available op grid.
  */
-function ai_card_score(array $card): int {
+function ai_card_score(array $card, array $needed_icons = []): int {
     if (empty($card)) return -99;
     $score = 0;
     $score += ($card['stars'] ?? 0) * 20;
     $score += count($card['icons'] ?? []) * 3;
     $score += $card['cost'] ?? 0;
     if ($card['type'] === TYPE_MONEY) $score -= 10;
+    if ($card['type'] === 'hazard') $score -= 20;
     if ($card['type'] === TYPE_PLOT && ($card['effect'] ?? '') === 'none') $score -= 15;
+    // Bonus for icons that help complete ops currently in the grid
+    foreach ($card['icons'] ?? [] as $icon) {
+        $score += (int)(($needed_icons[$icon] ?? 0) * 4);
+    }
     return $score;
 }
 
 /**
+ * Survey the mission grid and return a map of icon => need-weight, where weight
+ * is the total mission value (stars * 10 + income) of grid missions that are
+ * blocked by a shortage of that icon, given the AI's current icon pool.
+ * Icons already covered by the AI's hand/base/mission-area don't count.
+ */
+function ai_needed_icons(array $game, int $pi, array $catalog): array {
+    $p = $game['players'][$pi];
+
+    // Build the AI's current icon pool from all sources
+    $pool = [];
+    foreach (array_unique($p['mission_area'] ?? []) as $mid) {
+        foreach ($catalog[$mid]['icons'] ?? [] as $ic) $pool[] = $ic;
+    }
+    $base = $p['base'] ?? null;
+    if (is_array($base) && ($base['agent'] ?? null)) {
+        foreach ($catalog[$base['agent']]['icons'] ?? [] as $ic) $pool[] = $ic;
+        foreach ($base['tech'] ?? [] as $tid) {
+            foreach ($catalog[$tid]['icons'] ?? [] as $ic) $pool[] = $ic;
+        }
+    }
+    if ($p['backup_agent'] ?? null) {
+        foreach ($catalog[$p['backup_agent']]['icons'] ?? [] as $ic) $pool[] = $ic;
+    }
+    foreach ($p['hand'] as $cid) {
+        if (!isset($catalog[$cid])) continue;
+        foreach ($catalog[$cid]['icons'] ?? [] as $ic) $pool[] = $ic;
+    }
+
+    $needed = [];
+
+    foreach ($game['ops_grid'] as $slot) {
+        $mid = is_array($slot) ? ($slot[0] ?? null) : $slot;
+        if (!$mid || !isset($catalog[$mid])) continue;
+        $mission = $catalog[$mid];
+        $segments = $mission['segments'] ?? [];
+
+        // Use segment 1 requirements for icon-need analysis (minimum investment)
+        $seg1_reqs = $segments[0]['requirements'] ?? [];
+        $seg1_reward = ($segments[0]['stars'] ?? 0) * 10 + ($segments[0]['gems'] ?? 0) * 2 + 1;
+
+        // Greedily consume pool icons against specific requirements
+        $remaining = $pool;
+        $missing = [];
+        foreach ($seg1_reqs as $req) {
+            if ($req === 'any') continue;
+            $options = is_array($req) ? $req : [$req];
+            $found = false;
+            foreach ($options as $opt) {
+                $idx = array_search($opt, $remaining);
+                if ($idx !== false) {
+                    array_splice($remaining, $idx, 1);
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                foreach ($options as $opt) $missing[] = $opt;
+            }
+        }
+
+        foreach ($missing as $icon) {
+            $needed[$icon] = ($needed[$icon] ?? 0) + $seg1_reward;
+        }
+    }
+
+    return $needed;
+}
+
+/**
  * Find a valid agent+tech combo from the player's hand (and optionally base) that
- * satisfies the given mission's requirements.
+ * satisfies the given cumulative requirements array.
  * Returns ['agent_ids' => [...], 'tech_ids' => [...], 'use_base_agent' => bool] or null.
  */
-function ai_find_mission_combo(array $player, array $mission, array $catalog): ?array {
+function ai_find_mission_combo_for_reqs(array $player, array $requirements, array $catalog): ?array {
     $agents = array_values(array_filter(
         $player['hand'] ?? [],
         fn($id) => isset($catalog[$id]) && $catalog[$id]['type'] === TYPE_AGENT
@@ -62,17 +138,13 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
         $base_tech_ids = $base['tech'] ?? [];
     }
 
-    // Icons from completed ops count once per unique op (mirrors action_complete_mission)
     $mission_area_ids = array_unique($player['mission_area'] ?? []);
-
-    // Backup agent already in play (e.g. from Reinforcements played earlier this turn)
     $backup_id = $player['backup_agent'] ?? null;
 
-    // Try without base agent first, then with
     foreach ([false, true] as $use_base) {
         if ($use_base && !$base_agent_id) continue;
 
-        $agent_subsets = ai_all_subsets($agents, 1); // only one hand agent allowed per op
+        $agent_subsets = ai_all_subsets($agents, 1);
         foreach ($agent_subsets as $hand_agents) {
             if (empty($hand_agents) && !$use_base) continue;
 
@@ -96,7 +168,7 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
                     $all_cards[] = $backup_id;
                 }
                 $check_cards = array_merge($all_cards, $mission_area_ids);
-                $resolution = auto_resolve_choices($mission['requirements'], $check_cards, $catalog);
+                $resolution = auto_resolve_choices($requirements, $check_cards, $catalog);
                 if ($resolution !== null) {
                     return [
                         'agent_ids' => $hand_agents,
@@ -112,6 +184,47 @@ function ai_find_mission_combo(array $player, array $mission, array $catalog): ?
 }
 
 /**
+ * Find the best segment the AI can reach for a given mission.
+ * Returns ['combo' => [...], 'target_segment' => int, 'score' => int] or null.
+ */
+function ai_find_mission_combo(array $player, array $mission, array $catalog): ?array {
+    $segments = $mission['segments'] ?? [];
+    if (empty($segments)) return null;
+
+    $best_combo = null;
+    $best_segment = 0;
+    $best_score = 0;
+
+    for ($seg_num = count($segments); $seg_num >= 1; $seg_num--) {
+        $cumulative_reqs = [];
+        foreach (array_slice($segments, 0, $seg_num) as $seg) {
+            $cumulative_reqs = array_merge($cumulative_reqs, $seg['requirements'] ?? []);
+        }
+        $combo = ai_find_mission_combo_for_reqs($player, $cumulative_reqs, $catalog);
+        if ($combo !== null) {
+            // Score rewards for segments 0..seg_num-1
+            $score = 0;
+            foreach (array_slice($segments, 0, $seg_num) as $seg) {
+                $score += ($seg['stars']   ?? 0) * 10;
+                $score += ($seg['gems']    ?? 0) * 2;
+                $score += ($seg['cards']   ?? 0) * 3;
+                $score += ($seg['trashes'] ?? 0) * 2;
+                $score += ($seg['money']   ?? 0);
+            }
+            // Prefer completing all segments (op removed from grid = one less for opponents)
+            if ($seg_num === count($segments)) $score += 5;
+            $best_combo = $combo;
+            $best_segment = $seg_num;
+            $best_score = $score;
+            break; // highest reachable segment found
+        }
+    }
+
+    if (!$best_combo) return null;
+    return array_merge($best_combo, ['target_segment' => $best_segment, '_score' => $best_score]);
+}
+
+/**
  * Pick the best mission the AI can complete this turn.
  * Returns params array for action_complete_mission, or null.
  */
@@ -124,28 +237,27 @@ function ai_pick_best_mission(array &$game, int $pi, array $catalog): ?array {
     $best = null;
     $best_score = -1;
 
-    // Check mission grid
-    foreach ($game['mission_grid'] as $tier => $slots) {
-        foreach ($slots as $slot) {
-            $mid = is_array($slot) ? ($slot[0] ?? null) : $slot;
-            if (!$mid || !isset($catalog[$mid])) continue;
-            $mission = $catalog[$mid];
-            $combo = ai_find_mission_combo($p, $mission, $catalog);
-            if (!$combo) continue;
-            // Score: stars are best, then money value
-            $score = ($mission['stars'] ?? 0) * 10 + ($mission['value'] ?? 0);
-            if ($score > $best_score) {
-                $best_score = $score;
-                $best = array_merge(['mission_id' => $mid], $combo);
-            }
+    // Check ops grid
+    foreach ($game['ops_grid'] as $slot) {
+        $mid = is_array($slot) ? ($slot[0] ?? null) : $slot;
+        if (!$mid || !isset($catalog[$mid])) continue;
+        $mission = $catalog[$mid];
+        $result = ai_find_mission_combo($p, $mission, $catalog);
+        if (!$result) continue;
+        $score = $result['_score'] ?? 0;
+        if ($score > $best_score) {
+            $best_score = $score;
+            $best = array_merge(['mission_id' => $mid], $result);
+            unset($best['_score']);
         }
     }
 
-    // Try Heist if no starred mission is available
+    // Try Heist if no good mission is available
     if ($best_score <= 0 && isset($catalog['heist'])) {
-        $combo = ai_find_mission_combo($p, $catalog['heist'], $catalog);
-        if ($combo) {
-            $best = array_merge(['mission_id' => 'heist'], $combo);
+        $result = ai_find_mission_combo($p, $catalog['heist'], $catalog);
+        if ($result) {
+            $best = array_merge(['mission_id' => 'heist'], $result);
+            unset($best['_score']);
         }
     }
 
@@ -279,6 +391,9 @@ function ai_pick_best_buy(array &$game, int $pi, array $catalog): ?array {
     $money = $p['money'] + ($p['gems'] ?? 0);
     if ($money <= 0) return null;
 
+    // What icons are currently missing from completable grid missions
+    $needed_icons = ai_needed_icons($game, $pi, $catalog);
+
     $best = null;
     $best_score = -99;
 
@@ -290,7 +405,7 @@ function ai_pick_best_buy(array &$game, int $pi, array $catalog): ?array {
         if ($catalog[$cid]['always_available'] ?? false) continue;
         $cost = $catalog[$cid]['cost'] ?? 0;
         if ($cost > $money) continue;
-        $score = ai_card_score($catalog[$cid]);
+        $score = ai_card_score($catalog[$cid], $needed_icons);
         if ($score > $best_score) {
             $best_score = $score;
             $best = ['card_id' => $cid, 'slot' => $slot];
@@ -421,6 +536,23 @@ function run_ai_turn(array &$game, int $pi, array $catalog): void {
         $mission_params = ai_pick_best_mission($game, $pi, $catalog);
         if (!$mission_params) break;
         $result = action_complete_mission($game, $pi, $mission_params);
+        if (!($result['ok'] ?? false)) break;
+    }
+
+    // 4b. Use any pending trashes — trash the weakest card from hand/discard
+    while (($game['players'][$pi]['pending_trashes'] ?? 0) > 0) {
+        $p = $game['players'][$pi];
+        $candidates = [];
+        foreach (['hand', 'discard'] as $area) {
+            foreach ($p[$area] as $cid) {
+                if (!isset($catalog[$cid])) continue;
+                $candidates[] = ['id' => $cid, 'area' => $area, 'score' => ai_card_score($catalog[$cid])];
+            }
+        }
+        if (empty($candidates)) break;
+        usort($candidates, fn($a, $b) => $a['score'] - $b['score']);
+        $worst = $candidates[0];
+        $result = action_use_trash($game, $pi, ['target_card' => $worst['id'], 'target_area' => $worst['area']]);
         if (!($result['ok'] ?? false)) break;
     }
 

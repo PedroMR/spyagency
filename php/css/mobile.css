@@ -249,32 +249,13 @@ body.mobile .card {
     font-size: 10px;
 }
 
-/* Mission cards as full-width horizontal strips */
-body.mobile .mission-card {
+/* Mission cards — full-width on mobile */
+body.mobile .mission-card.card-v {
     width: 100%;
     min-width: unset;
     max-width: unset;
     clip-path: none;
     border-radius: 4px;
-    border-left: 3px solid var(--card-color, #e040fb);
-    padding: 6px 8px 6px 10px;
-    background: linear-gradient(90deg, var(--card-color, #e040fb) 0px, var(--card-color, #e040fb) 3px, rgba(8, 8, 20, 0.97) 3px);
-}
-
-body.mobile .mission-card .card-name {
-    width: auto;
-    flex: 0 0 auto;
-    min-width: 60px;
-    max-width: 100px;
-    font-size: 10px;
-}
-
-body.mobile .mission-card .card-req {
-    font-size: 15px;
-}
-
-body.mobile .mission-card .card-reward {
-    font-size: 11px;
 }
 
 body.mobile .mission-tier-cards {

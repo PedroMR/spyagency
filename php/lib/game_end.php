@@ -18,6 +18,7 @@ function calculate_scores(array &$game): array {
         $all_cards = array_merge($p['deck'], $p['hand'], $p['discard'], $p['play_area'], $p['mission_area'] ?? [], $base_cards);
         foreach ($all_cards as $card_id) {
             if (!isset($catalog[$card_id])) continue;
+            // Add any card-embedded stars (currently all 0, but handles future cards)
             if (($catalog[$card_id]['stars'] ?? 0) > 0) {
                 $stars += $catalog[$card_id]['stars'];
             }
@@ -25,8 +26,9 @@ function calculate_scores(array &$game): array {
                 $missions++;
             }
         }
-        $p['stars'] = $stars;
-        $scores[] = ['name' => $p['name'], 'stars' => $stars, 'missions' => $missions];
+        // $p['stars'] already contains accumulated segment rewards — do NOT overwrite
+        $total_stars = ($p['stars'] ?? 0) + $stars;
+        $scores[] = ['name' => $p['name'], 'stars' => $total_stars, 'missions' => $missions];
     }
     // Sort: most stars first; tiebreaker: fewest missions
     usort($scores, function ($a, $b) {
@@ -42,11 +44,8 @@ function check_game_end(array &$game): bool {
     if (empty($game['market_deck'])) {
         $trigger = true;
     }
-    foreach ($game['mission_decks'] as $tier => $deck) {
-        // Deck is empty AND the grid for that tier has been depleted
-        if (empty($deck)) {
-            $trigger = true;
-        }
+    if (empty($game['ops_deck'])) {
+        $trigger = true;
     }
 
     if ($trigger && !$game['final_round']) {

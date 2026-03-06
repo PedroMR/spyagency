@@ -353,27 +353,22 @@ function refill_marketplace(array &$game): void {
     }
 }
 
-function refill_mission_grid(array &$game): void {
-    foreach ([1, 2, 3] as $tier) {
-        // Remove empty stacks
-        $game['mission_grid'][$tier] = array_values(array_filter(
-            $game['mission_grid'][$tier],
-            fn($slot) => !empty($slot)
-        ));
-        while (count($game['mission_grid'][$tier]) < 3 && !empty($game['mission_decks'][$tier])) {
-            $drawn = array_shift($game['mission_decks'][$tier]);
-            $stacked = false;
-            foreach ($game['mission_grid'][$tier] as &$slot) {
-                if (!empty($slot) && $slot[0] === $drawn) {
-                    $slot[] = $drawn;
-                    $stacked = true;
-                    break;
-                }
+function refill_ops_grid(array &$game): void {
+    // Remove empty stacks
+    $game['ops_grid'] = array_values(array_filter($game['ops_grid'], fn($slot) => !empty($slot)));
+    while (count($game['ops_grid']) < 3 && !empty($game['ops_deck'])) {
+        $drawn = array_shift($game['ops_deck']);
+        $stacked = false;
+        foreach ($game['ops_grid'] as &$slot) {
+            if (!empty($slot) && $slot[0] === $drawn) {
+                $slot[] = $drawn;
+                $stacked = true;
+                break;
             }
-            unset($slot);
-            if (!$stacked) {
-                $game['mission_grid'][$tier][] = [$drawn];
-            }
+        }
+        unset($slot);
+        if (!$stacked) {
+            $game['ops_grid'][] = [$drawn];
         }
     }
 }
@@ -661,23 +656,19 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         return ['ok' => false, 'error' => 'No more ops allowed this turn'];
     }
 
-    // Find mission in grid or check always-available
-    $found_tier = null;
+    // Find op in grid or check always-available
     $found_idx = null;
     $is_always = $catalog[$mission_id]['always_available'] ?? false;
 
     if (!$is_always) {
-        foreach ($game['mission_grid'] as $tier => $slots) {
-            foreach ($slots as $idx => $slot) {
-                $top = is_array($slot) ? ($slot[0] ?? null) : $slot;
-                if ($top === $mission_id) {
-                    $found_tier = $tier;
-                    $found_idx = $idx;
-                    break 2;
-                }
+        foreach ($game['ops_grid'] as $idx => $slot) {
+            $top = is_array($slot) ? ($slot[0] ?? null) : $slot;
+            if ($top === $mission_id) {
+                $found_idx = $idx;
+                break;
             }
         }
-        if ($found_tier === null) {
+        if ($found_idx === null) {
             return ['ok' => false, 'error' => 'Op not available in grid'];
         }
     }
@@ -761,11 +752,25 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         $all_card_ids = array_merge($all_card_ids, $base_tech_ids);
     }
 
+    // Target segment (1–3): player announces how far they want to run
+    $target_segment = max(1, min(3, (int)($params['target_segment'] ?? 3)));
+    $segments = $mission['segments'] ?? [];
+    if (empty($segments)) {
+        return ['ok' => false, 'error' => 'Op has no segments defined'];
+    }
+    $target_segment = min($target_segment, count($segments));
+
+    // Build cumulative requirements from segments 0..target_segment-1
+    $cumulative_reqs = [];
+    foreach (array_slice($segments, 0, $target_segment) as $seg) {
+        $cumulative_reqs = array_merge($cumulative_reqs, $seg['requirements'] ?? []);
+    }
+
     // For requirement checking, include mission area icons — but only once per unique op
     $check_card_ids = array_merge($all_card_ids, array_unique($game['players'][$pi]['mission_area'] ?? []));
 
-    // Auto-resolve icon choices
-    $resolution = auto_resolve_choices($mission['requirements'], $check_card_ids, $catalog);
+    // Auto-resolve cumulative icon requirements
+    $resolution = auto_resolve_choices($cumulative_reqs, $check_card_ids, $catalog);
     if ($resolution === null) {
         return ['ok' => false, 'error' => 'Cards do not meet mission requirements'];
     }
@@ -795,16 +800,16 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         $game['players'][$pi]['base']['tech'] = [];
     }
 
-    // Remove mission from grid (pop from stack, remove slot if empty)
-    if (!$is_always && $found_tier !== null) {
-        $slot = &$game['mission_grid'][$found_tier][$found_idx];
+    // Remove op from grid only when all segments completed (and not always-available)
+    if (!$is_always && $found_idx !== null && $target_segment === count($segments)) {
+        $slot = &$game['ops_grid'][$found_idx];
         if (is_array($slot)) {
             array_shift($slot);
             if (empty($slot)) {
-                array_splice($game['mission_grid'][$found_tier], $found_idx, 1);
+                array_splice($game['ops_grid'], $found_idx, 1);
             }
         } else {
-            array_splice($game['mission_grid'][$found_tier], $found_idx, 1);
+            array_splice($game['ops_grid'], $found_idx, 1);
         }
         unset($slot);
     }
@@ -828,44 +833,71 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     }
     $used_str = !empty($used_names) ? ' using ' . implode(', ', $used_names) : '';
 
-    // Handle Heist: award gems, card does NOT go into deck
-    $mission_gems = $mission['gems'] ?? 0;
-    if ($mission_gems > 0) {
-        // Count total icons committed
-        $total_icons = 0;
-        foreach ($all_card_ids as $cid) {
-            $total_icons += count($catalog[$cid]['icons'] ?? []);
-        }
-        // 1-2 icons → 1 gem, 3-4 icons → 2 gems, 5+ icons → 3 gems
-        if ($total_icons >= 5) {
-            $gems_awarded = 3;
-        } elseif ($total_icons >= 3) {
-            $gems_awarded = 2;
-        } else {
-            $gems_awarded = 1;
-        }
-        $game['players'][$pi]['gems'] = ($game['players'][$pi]['gems'] ?? 0) + $gems_awarded;
-        $game['log'][] = $game['players'][$pi]['name'] . " completed Heist{$used_str} ({$total_icons} icons) and earned {$gems_awarded} gem(s)!";
-    } else {
-        // Normal mission: add mission card to mission area (provides recurring income)
-        $game['players'][$pi]['mission_area'][] = $mission_id;
-        $game['log'][] = $game['players'][$pi]['name'] . " completed {$mission['name']}{$used_str}";
-        // Apply mission bonus immediately (including the turn it was completed)
-        if (($mission['value'] ?? 0) > 0) {
-            $game['players'][$pi]['money'] += $mission['value'];
-        }
-        if ($mission['extra_mission'] ?? false) {
-            $game['players'][$pi]['extra_missions'] = ($game['players'][$pi]['extra_missions'] ?? 0) + 1;
-        }
-        if ($mission['extra_buy'] ?? false) {
-            $game['players'][$pi]['extra_buys'] = ($game['players'][$pi]['extra_buys'] ?? 0) + 1;
-        }
+    // Award cumulative rewards from segments 0..target_segment-1
+    $total_stars = 0; $total_gems = 0; $total_cards = 0; $total_trashes = 0; $total_money = 0;
+    foreach (array_slice($segments, 0, $target_segment) as $seg) {
+        $total_stars   += $seg['stars']   ?? 0;
+        $total_gems    += $seg['gems']    ?? 0;
+        $total_cards   += $seg['cards']   ?? 0;
+        $total_trashes += $seg['trashes'] ?? 0;
+        $total_money   += $seg['money']   ?? 0;
     }
+    $game['players'][$pi]['stars'] = ($game['players'][$pi]['stars'] ?? 0) + $total_stars;
+    $game['players'][$pi]['gems']  = ($game['players'][$pi]['gems']  ?? 0) + $total_gems;
+    $game['players'][$pi]['money'] = ($game['players'][$pi]['money'] ?? 0) + $total_money;
+    if ($total_cards > 0) {
+        $game['players'][$pi]['extra_draws'] = ($game['players'][$pi]['extra_draws'] ?? 0) + $total_cards;
+    }
+    if ($total_trashes > 0) {
+        $game['players'][$pi]['pending_trashes'] = ($game['players'][$pi]['pending_trashes'] ?? 0) + $total_trashes;
+    }
+
+    $reward_log = [];
+    if ($total_stars)   $reward_log[] = "{$total_stars}⭐";
+    if ($total_gems)    $reward_log[] = "{$total_gems}💎";
+    if ($total_money)   $reward_log[] = "\${$total_money}";
+    if ($total_cards)   $reward_log[] = "{$total_cards} card draw(s)";
+    if ($total_trashes) $reward_log[] = "{$total_trashes} trash(es)";
+    $reward_str = !empty($reward_log) ? ' → ' . implode(', ', $reward_log) : '';
+    $seg_label = "segment {$target_segment}";
+    $game['log'][] = $game['players'][$pi]['name'] . " ran {$mission['name']} to {$seg_label}{$used_str}{$reward_str}";
 
     $game['players'][$pi]['missions_this_turn'] = $missions_completed + 1;
 
     check_game_end($game);
 
+    return ['ok' => true];
+}
+
+/**
+ * Use a pending trash from an op segment reward.
+ * Params: target_card, target_area ('hand'|'play_area'|'discard')
+ */
+function action_skip_trash(array &$game, int $pi, array $params): array {
+    $game['players'][$pi]['pending_trashes'] = 0;
+    return ['ok' => true];
+}
+
+function action_use_trash(array &$game, int $pi, array $params): array {
+    $p = &$game['players'][$pi];
+    if (($p['pending_trashes'] ?? 0) <= 0) {
+        return ['ok' => false, 'error' => 'No pending trashes'];
+    }
+    $target_card = $params['target_card'] ?? '';
+    $target_area = $params['target_area'] ?? '';
+    $catalog = get_card_catalog();
+    $valid_areas = ['hand', 'play_area', 'discard'];
+    if (!in_array($target_area, $valid_areas)) {
+        return ['ok' => false, 'error' => 'Invalid area'];
+    }
+    if (!isset($catalog[$target_card])) {
+        return ['ok' => false, 'error' => 'Card not found'];
+    }
+    if (!remove_from_array($p[$target_area], $target_card)) {
+        return ['ok' => false, 'error' => 'Card not found in ' . $target_area];
+    }
+    $p['pending_trashes']--;
+    $game['log'][] = $p['name'] . ' trashed ' . ($catalog[$target_card]['name'] ?? $target_card) . ' (op reward)';
     return ['ok' => true];
 }
 
@@ -893,11 +925,14 @@ function action_end_turn(array &$game, int $pi, array $params): array {
     // Refill marketplace
     refill_marketplace($game);
 
-    // Refill mission grid (with stacking: if drawn card matches existing, stack and draw again)
-    refill_mission_grid($game);
+    // Refill ops grid (with stacking: if drawn card matches existing, stack and draw again)
+    refill_ops_grid($game);
 
-    // Draw 5 cards
-    player_draw_cards($p, 5);
+    // Draw 5 cards (+ bonus draws from segment rewards)
+    $extra_draws = $p['extra_draws'] ?? 0;
+    $p['extra_draws'] = 0;
+    $p['pending_trashes'] = 0; // trashes are optional; expire at end of turn
+    player_draw_cards($p, 5 + $extra_draws);
 
     check_game_end($game);
 
@@ -1272,6 +1307,8 @@ function process_action(array &$game, string $token, string $action, array $para
         'buy_gem' => action_buy_gem($game, $pi, $params),
         'cash_gems' => action_cash_gems($game, $pi, $params),
         'complete_mission' => action_complete_mission($game, $pi, $params),
+        'use_trash' => action_use_trash($game, $pi, $params),
+        'skip_trash' => action_skip_trash($game, $pi, $params),
         'put_agent_in_base' => action_put_agent_in_base($game, $pi, $params),
         'add_tech_to_base' => action_add_tech_to_base($game, $pi, $params),
         'discard_base_agent' => action_discard_base_agent($game, $pi, $params),

@@ -115,6 +115,7 @@
         <button class="mob-tab-btn" data-tab="market" onclick="UI.switchTab('market')">🛒<br>Market</button>
         <button class="mob-tab-btn" data-tab="ops" onclick="UI.switchTab('ops')">🎯<br>Ops</button>
         <button class="mob-tab-btn" data-tab="log" onclick="UI.switchTab('log')">📋<br>Log</button>
+        <button id="btn-use-trash" class="mob-end-turn-btn" onclick="UI.showOpTrashDialog()" style="display:none;background:#b03000;border-color:#ff7043">✖️<br>Trash</button>
         <button id="btn-end-turn" class="mob-end-turn-btn" onclick="UI.onEndTurnClick()" disabled>⏹<br>End Turn</button>
     </div>
 

@@ -44,15 +44,21 @@ Whenever a player _gains_ a card it is added to their Discard Pile. However, if 
 
 ### Agents and Ops
 
-Agents are played from hand in order to complete an op. Tech cards can be played with an Agent, but only up to the limit of how many that Agent can hold (it's listed in the card as a number of _tech slots_).
+Agents are played from hand in order to run an op. Tech cards can be played with an Agent, but only up to the limit of how many that Agent can hold (it's listed in the card as a number of _tech slots_).
 
-Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to complete an op or be discarded as a whole in order to clear space for another agent.
+Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to run an op or be discarded as a whole in order to clear space for another agent.
 
-To complete an op the player plays exactly one Agent with Tech, and has the option of using the agent and tech in their base. The icons in the Agent and all of their Tech, plus the icons in the player's Op Area, need to match or exceed the requirement of the op. The op card itself is added to the player's op area. Every turn it will grant the player the specified bonus or effect, including the turn when it was purchased.
+Each op card has three segments. Each segment has a requirement and a reward. To run an op the player plays exactly one Agent with Tech, and has the option of using the agent and tech in their base. The icons in the Agent and all of their Tech, plus the icons in the player's Op Area, need to match or exceed the requirement of the op. When running an op, the player announces up to which segment they're running. In order to run a segment the agent must satisfy all the previous segments' requirements. The player then gathers the rewards for all the segments they were able to complete.
 
-All agents and tech used to complete an op are left in the play area. They will be discarded at the end of the turn, but not before (w  e don't want agents being used in an op and then coming back the same turn due to a deck out of cards).
+All agents and tech used to run an op are left in the play area. They will be discarded at the end of the turn, but not before (w  e don't want agents being used in an op and then coming back the same turn due to a deck out of cards).
+
+If the op is completed (run to segment 3) it is discarded and replaced at the end of the turn. Otherwise it stays on the grid.
 
 Some ops and plots will reward the Player with gems (💎). Gems are kept between turns, and may be cashed in for the same amount in money ($). 1 gem = 1 money. This is done "just in time", at the moment of purchase.
+
+Some ops reward cards (🎴). For each one obtained, the player will draw an extra card at the end of the turn.
+
+Some ops reward trashes (✖️). For each of these, the player may immediately trash (remove from the game) one card in their hand, play area, or discard.
 
 ### Heists and Gems
 

@@ -92,6 +92,7 @@
                 </div>
 
                 <div class="end-turn-column">
+                    <button id="btn-use-trash" onclick="UI.showOpTrashDialog()" style="display:none;height:100%;background:#b03000;border-color:#ff7043">✖️ Trash</button>
                     <button id="btn-end-turn" onclick="UI.onEndTurnClick()" style="height:100%" disabled>End Turn</button>
                 </div>
             </div>

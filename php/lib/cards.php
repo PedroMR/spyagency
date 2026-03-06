@@ -223,32 +223,23 @@ function get_card_catalog(): array {
             'tier' => 0,
             'stars' => 0,
         ],
-        'slap' => [
-            'id' => 'slap',
-            'name' => 'Slap Contest',
-            'type' => 'mission',
-            'tier' => 1,
-            'stars' => 0,
-            'cost' => 0,
-            'requirements' => ['muscle', 'muscle'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'icons' => ['disguise'],
-            'description' => 'Requires: 💪💪 — Reward: 🥸',
-        ],
         'getaway' => [
             'id' => 'getaway',
             'name' => 'Narrow Getaway',
             'type' => 'mission',
             'tier' => 1,
-            'stars' => 1,
+            'stars' => 0,
             'cost' => 0,
-            'requirements' => ['drive', 'muscle'],
-            'value' => 1,
-            'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🚘💪 — Reward: 1⭐ $1/turn',
+            'segments' => [
+                ['requirements' => ['drive', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['drive', 'disguise'], 'stars' => 1, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['key', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
+            ],
+            'requirements' => [],
+            'value' => 0,
+            'gems' => 0,
+            'description' => 'Seg1: 2💎 | Seg2: 1⭐ 1🎴 | Seg3: 5⭐ 2💎',
         ],
         'wrestling' => [
             'id' => 'wrestling',
@@ -257,146 +248,70 @@ function get_card_catalog(): array {
             'tier' => 1,
             'stars' => 0,
             'cost' => 0,
-            'requirements' => ['muscle', 'disguise'],
-            'value' => 1,
-            'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 💪🥸 — Reward: $1/turn',
+            'segments' => [
+                ['requirements' => ['muscle', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['disguise', 'muscle'], 'stars' => 1, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['drive', 'muscle'], 'stars' => 4, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
+            ],
+            'requirements' => [],
+            'value' => 0,
+            'gems' => 0,
+            'description' => 'Seg1: 2💎 | Seg2: 1⭐ 1💎 | Seg3: 4⭐ 2💎',
         ],
         'convent' => [
             'id' => 'convent',
             'name' => 'Convent Secrets',
             'type' => 'mission',
             'tier' => 1,
-            'stars' => 1,
+            'stars' => 0,
             'cost' => 0,
-            'requirements' => ['disguise', 'key'],
-            'value' => 1,
-            'gems' => 0,
             'always_available' => false,
-            'description' => 'Requires: 🥸🔑 — Reward: 1⭐ $1/turn',
+            'segments' => [
+                ['requirements' => ['key', 'disguise'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['disguise', 'muscle'], 'stars' => 2, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['drive', 'disguise'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
+            ],
+            'requirements' => [],
+            'value' => 0,
+            'gems' => 0,
+            'description' => 'Seg1: 1🎴 | Seg2: 2⭐ 1🎴 | Seg3: 5⭐ 1✖️',
         ],
         'gate' => [
             'id' => 'gate',
             'name' => 'Gate Hacking',
             'type' => 'mission',
             'tier' => 1,
-            'stars' => 2,
+            'stars' => 0,
             'cost' => 0,
-            'requirements' => ['key', 'drive'],
+            'always_available' => false,
+            'segments' => [
+                ['requirements' => ['key', 'drive'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1],
+                ['requirements' => ['disguise', 'key'], 'stars' => 2, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
+            ],
+            'requirements' => [],
             'value' => 0,
             'gems' => 0,
-            'always_available' => false,
-            'icons' => ['disguise'],
-            'description' => 'Requires: 🔑🚘 — Reward: 2⭐ 🥸',
+            'description' => 'Seg1: 1✖️ | Seg2: 2⭐ 1🎴 | Seg3: 5⭐ 1✖️',
         ],
         'hijinx' => [
             'id' => 'hijinx',
             'name' => 'Train Hijinx',
             'type' => 'mission',
-            'tier' => 2,
-            'stars' => 4,
+            'tier' => 1,
+            'stars' => 0,
             'cost' => 0,
-            'requirements' => ['drive', 'drive', 'disguise', 'any'],
+            'always_available' => false,
+            'segments' => [
+                ['requirements' => ['drive', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['key', 'drive'], 'stars' => 3, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 3, 'cards' => 0, 'trashes' => 0]
+            ],
+            'requirements' => [],
             'value' => 0,
             'gems' => 0,
-            'always_available' => false,
-            'icons' => ['key'],
-            'description' => 'Requires: 🚘🚘🥸❓ — Reward: 4⭐ 🔑',
-        ],
-        'duel' => [
-            'id' => 'duel',
-            'name' => 'Fencing Duel',
-            'type' => 'mission',
-            'tier' => 2,
-            'stars' => 4,
-            'cost' => 0,
-            'requirements' => ['muscle', 'muscle', 'key', 'any'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'icons' => ['disguise'],
-            'description' => 'Requires: 💪💪🔑❓ — Reward: 4⭐ 🥸',
-        ],
-        'troupe' => [
-            'id' => 'troupe',
-            'name' => 'Traveling Troupe',
-            'type' => 'mission',
-            'tier' => 2,
-            'stars' => 4,
-            'cost' => 0,
-            'requirements' => ['disguise', 'disguise', 'drive', 'any'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'icons' => ['drive'],
-            'description' => 'Requires: 🥸🥸🚘❓ — Reward: 4⭐ 🚘',
-        ],
-        'retinal' => [
-            'id' => 'retinal',
-            'name' => 'Retinal Scan',
-            'type' => 'mission',
-            'tier' => 2,
-            'stars' => 4,
-            'cost' => 0,
-            'requirements' => ['key', 'key', 'disguise', 'any'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'icons' => ['key'],
-            'description' => 'Requires: 🔑🔑🥸❓ — Reward: 4⭐ 🔑',
-        ],
-        'cargo' => [
-            'id' => 'cargo',
-            'name' => 'Cargo Interception',
-            'type' => 'mission',
-            'tier' => 3,
-            'stars' => 9,
-            'cost' => 0,
-            'requirements' => ['drive', 'drive', 'drive', 'key', 'muscle', 'any'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'description' => 'Requires: 🚘🚘🚘🔑💪❓ — Reward: 9⭐',
-        ],
-        'rooftop' => [
-            'id' => 'rooftop',
-            'name' => 'Rooftop Showdown',
-            'type' => 'mission',
-            'tier' => 3,
-            'stars' => 9,
-            'cost' => 0,
-            'requirements' => ['muscle', 'muscle', 'muscle', 'drive', 'drive', 'any'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'description' => 'Requires: 💪💪💪🚘🚘❓ — Reward: 9⭐',
-        ],
-        'megastar' => [
-            'id' => 'megastar',
-            'name' => 'Megastar Machinations',
-            'type' => 'mission',
-            'tier' => 3,
-            'stars' => 9,
-            'cost' => 0,
-            'requirements' => ['disguise', 'disguise', 'disguise', 'muscle', 'key', 'any'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'description' => 'Requires: 🥸🥸🥸💪🔑❓ — Reward: 9⭐',
-        ],
-        'embassy' => [
-            'id' => 'embassy',
-            'name' => 'Embassy Safe',
-            'type' => 'mission',
-            'tier' => 3,
-            'stars' => 9,
-            'cost' => 0,
-            'requirements' => ['key', 'key', 'key', 'disguise', 'drive', 'any'],
-            'value' => 0,
-            'gems' => 0,
-            'always_available' => false,
-            'description' => 'Requires: 🔑🔑🔑🥸🚘❓ — Reward: 9⭐',
+            'description' => 'Seg1: 1🎴 | Seg2: 3⭐ 1🎴 | Seg3: 5⭐ 3💎',
         ],
         'heist' => [
             'id' => 'heist',
@@ -405,11 +320,16 @@ function get_card_catalog(): array {
             'tier' => 0,
             'stars' => 0,
             'cost' => 0,
-            'requirements' => ['any'],
-            'value' => 0,
-            'gems' => 1,
             'always_available' => true,
-            'description' => 'Requires: ❓ — Reward: . Always available.',
+            'segments' => [
+                ['requirements' => ['any'], 'stars' => 0, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['any', 'any'], 'stars' => 0, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['any', 'any'], 'stars' => 0, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0]
+            ],
+            'requirements' => [],
+            'value' => 0,
+            'gems' => 0,
+            'description' => 'Seg1: 1💎 | Seg2: 1💎 | Seg3: 1💎 Always available.',
         ],
         'offshore' => [
             'id' => 'offshore',
@@ -669,40 +589,22 @@ function build_market_deck(): array {
     return $deck;
 }
 
-function build_mission_decks(): array {
-    $missions = [
-        1 => [
-            'slap' => 0,
-            'getaway' => 5,
-            'wrestling' => 5,
-            'convent' => 5,
-            'gate' => 5,
-        ],
-        2 => [
-            'hijinx' => 3,
-            'duel' => 3,
-            'troupe' => 3,
-            'retinal' => 3,
-        ],
-        3 => [
-            'cargo' => 2,
-            'rooftop' => 2,
-            'megastar' => 2,
-            'embassy' => 2,
-        ],
+function build_ops_deck(): array {
+    $ops = [
+        'getaway' => 1,
+        'wrestling' => 1,
+        'convent' => 1,
+        'gate' => 1,
+        'hijinx' => 1,
     ];
-    $decks = [];
-    foreach ($missions as $tier => $cards) {
-        $deck = [];
-        foreach ($cards as $id => $count) {
-            for ($i = 0; $i < $count; $i++) {
-                $deck[] = $id;
-            }
+    $deck = [];
+    foreach ($ops as $id => $count) {
+        for ($i = 0; $i < $count; $i++) {
+            $deck[] = $id;
         }
-        shuffle($deck);
-        $decks[$tier] = $deck;
     }
-    return $decks;
+    shuffle($deck);
+    return $deck;
 }
 
 function get_starter_deck(): array {
