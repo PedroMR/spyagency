@@ -311,12 +311,23 @@ function get_card_catalog(): array {
             'gems' => 0,
             'description' => 'Seg1: 1⭐ 1🎴 | Seg2: 5⭐ 1🎴 | Seg3: 5⭐ 3💎',
         ],
-        'fortress_infiltration' => [
-            'id' => 'fortress_infiltration',
+        'fortress' => [
+            'id' => 'fortress',
             'name' => 'Fortress Infiltration',
-            'type' => '',
-            'tier' => 0,
+            'type' => 'mission',
+            'tier' => 1,
             'stars' => 0,
+            'cost' => 0,
+            'always_available' => false,
+            'segments' => [
+                ['requirements' => ['key', 'muscle'], 'stars' => 2, 'money' => 0, 'gems' => 3, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['key', 'drive'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['key', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
+            ],
+            'requirements' => [],
+            'value' => 0,
+            'gems' => 0,
+            'description' => 'Seg1: 2⭐ 3💎 | Seg2: 5⭐ 1🎴 | Seg3: 5⭐ 1✖️',
         ],
         'heist' => [
             'id' => 'heist',
@@ -405,7 +416,7 @@ function get_card_catalog(): array {
             'tier' => 2,
             'stars' => 0,
             'cost' => 6,
-            'effect' => 'none',
+            'effect' => 'multitask',
             'description' => '$2, +1 op ($6)',
         ],
         'training' => [
@@ -601,6 +612,7 @@ function build_ops_deck(): array {
         'convent' => 1,
         'embassy' => 1,
         'hijinx' => 1,
+        'fortress' => 1,
     ];
     $deck = [];
     foreach ($ops as $id => $count) {

@@ -230,7 +230,7 @@ foreach ($rows as $row) {
                 $entry['effect'] = 'paperwork';
             } elseif (stripos($desc_lower, 'discard down to') !== false) {
                 $entry['effect'] = 'burglary';
-            } elseif (stripos($desc_lower, 'additional op') !== false) {
+            } elseif (stripos($desc_lower, 'additional op') !== false || stripos($desc_lower, '+1 op') !== false) {
                 $entry['effect'] = 'multitask';
             } else {
                 $entry['effect'] = 'none';
