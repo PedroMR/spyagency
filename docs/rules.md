@@ -46,13 +46,11 @@ Whenever a player _gains_ a card it is added to their Discard Pile. However, if 
 
 Agents are played from hand in order to run an op. Tech cards can be played with an Agent, but only up to the limit of how many that Agent can hold (it's listed in the card as a number of _tech slots_).
 
-Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to run an op or be discarded as a whole in order to clear space for another agent.
-
 Players may use up to 2 agents to run an op. They add their icons together, including any tech they get allocated with.
 
-Each op card has three segments. Each segment has a requirement and a reward. To run an op the player plays exactly one Agent with Tech, and has the option of using the agent and tech in their base. The icons in the Agent and all of their Tech, plus the icons in the player's Op Area, need to match or exceed the requirement of the op. When running an op, the player announces up to which segment they're running. In order to run a segment the agent must satisfy all the previous segments' requirements. The player then gathers the rewards for all the segments they were able to complete.
+Each op card has three segments. Each segment has a requirement and a reward. To run an op the player plays up to two Agents with Tech. The icons in the Agent and all of their Tech, plus the icons in the player's Op Area, need to match or exceed the requirement of the op. When running an op, the player announces up to which segment they're running. In order to run a segment the agent must satisfy all the previous segments' requirements. The player then gathers the rewards for all the segments they were able to complete.
 
-All agents and tech used to run an op are left in the play area. They will be discarded at the end of the turn, but not before (w  e don't want agents being used in an op and then coming back the same turn due to a deck out of cards).
+All agents and tech used to run an op are left in the play area. They will be discarded at the end of the turn, but not before (we don't want agents being used in an op and then coming back the same turn due to a deck out of cards).
 
 If the op is completed (run to segment 3) it is discarded and replaced at the end of the turn. Otherwise it stays on the grid.
 
@@ -87,7 +85,7 @@ After the player is done playing their turn the Op Grid and the Market are refil
 
 When refilling both the Op Grid and the Market, if a card drawn to refill it matches a card already in it, place the new card on top of the existing stack and draw again.
 
-Now the player discards all the cards in their play area as well as whatever may be left in their hand. Note that Agents in Bases who were not deployed to complete an op are not discarded; they remain in the player's play area, as well as any Tech equipped onto them.
+Now the player discards all the cards in their play area as well as whatever may be left in their hand.
 
 The player then discards their whole hand and draws 5 cards. If there are no cards left in the deck the player shuffles their discard pile to make a new deck and resumes drawing.
 

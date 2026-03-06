@@ -169,7 +169,6 @@ const UI = {
             }
         }
         this.renderMissionArea();
-        this.renderBase();
         this.renderDeck();
         this.renderDiscardPile();
         this.renderLog();
@@ -258,12 +257,11 @@ const UI = {
         });
         if (hasPlayable) return false;
 
-        // Can complete any mission? (have agents in hand or base)
+        // Can complete any mission? (have agents in hand)
         const agents = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent');
-        const baseAgent = me.base && me.base.agent;
         const missionsAllowed = 1 + (me.extra_missions || 0);
         const missionsDone = me.missions_this_turn || 0;
-        if ((agents.length > 0 || baseAgent) && missionsDone < missionsAllowed) return false;
+        if (agents.length > 0 && missionsDone < missionsAllowed) return false;
 
         // Can buy anything? (have buys left and can afford something)
         const buyLimit = 1 + (me.extra_buys || 0);
@@ -701,207 +699,6 @@ const UI = {
         }
     },
 
-    renderBase() {
-        const me = this.state.players[this.state.my_index];
-        const container = document.getElementById('my-base');
-        const base = me.base;
-        if (!base || !this.catalog[base.card]) {
-            container.innerHTML = '';
-            return;
-        }
-        const baseCard = this.catalog[base.card];
-        const clickable = this.state.is_my_turn && !this.state.attack_pending;
-        const clickAttr = clickable ? 'onclick="UI.onBaseClick()"' : '';
-        const hoverClass = clickable ? ' clickable' : '';
-
-        let agentHtml = '';
-        if (base.agent && this.catalog[base.agent]) {
-            const agent = this.catalog[base.agent];
-            agentHtml = `<div class="card played-card" style="--card-color:${this.getCardColor(agent)};margin-top:4px">
-                <div class="card-name">${esc(agent.name)}</div>
-                <div class="card-type">${agent.type}</div>
-                ${this.getOwnedCardInfo(agent)}
-            </div>`;
-            if (base.tech && base.tech.length > 0) {
-                for (const tid of base.tech) {
-                    const tech = this.catalog[tid];
-                    if (tech) {
-                        agentHtml += `<div class="card played-card" style="--card-color:${this.getCardColor(tech)};margin-top:2px;font-size:0.85em">
-                            <div class="card-name">${esc(tech.name)}</div>
-                            ${this.getOwnedCardInfo(tech)}
-                        </div>`;
-                    }
-                }
-            }
-        } else {
-            agentHtml = `<div class="base-empty-slot">${clickable ? 'Click to place agent' : 'Empty'}</div>`;
-        }
-
-        container.innerHTML = `<div class="base-slot${hoverClass}" ${clickAttr}>
-            <div class="base-header">Base: ${esc(baseCard.name)}</div>
-            ${agentHtml}
-        </div>`;
-    },
-
-    onBaseClick() {
-        if (!this.state.is_my_turn || this.state.attack_pending) return;
-        const me = this.state.players[this.state.my_index];
-        const base = me.base;
-        if (base && base.agent) {
-            this.showBaseAgentDialog();
-        } else {
-            this.showPlaceAgentDialog();
-        }
-    },
-
-    showBaseAgentDialog() {
-        const me = this.state.players[this.state.my_index];
-        const base = me.base;
-        const agent = this.catalog[base.agent];
-        const icons = this.getCardIcons(agent);
-        const maxTech = agent.max_tech || 0;
-        const currentTech = base.tech ? base.tech.length : 0;
-        const slotsRemaining = maxTech - currentTech;
-
-        let html = `<h3>Base Agent: ${esc(agent.name)}</h3>`;
-        html += `<p>${icons} [tech slots: ${currentTech}/${maxTech}]</p>`;
-        if (base.tech && base.tech.length > 0) {
-            const techNames = base.tech.map(t => {
-                const c = this.catalog[t];
-                return c ? `${esc(c.name)} (${this.getCardIcons(c)})` : t;
-            }).join(', ');
-            html += `<p>Tech: ${techNames}</p>`;
-        }
-
-        const handTech = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'tech');
-        if (slotsRemaining > 0 && handTech.length > 0) {
-            html += `<button class="btn-modal" onclick="UI.showAddTechToBaseDialog()">Add tech (${slotsRemaining} slot${slotsRemaining !== 1 ? 's' : ''} free)</button>`;
-        }
-
-        const handAgents = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent');
-        if (handAgents.length > 0) {
-            html += `<button class="btn-modal" onclick="UI.showPlaceAgentDialog()">Replace with agent from hand</button>`;
-        }
-        html += `<button class="btn-modal btn-cancel" onclick="UI.discardBaseAgent()">Discard agent from base</button>`;
-        html += '<button class="btn-modal" onclick="UI.closeModal()">Cancel</button>';
-        this.showModal(html);
-    },
-
-    showAddTechToBaseDialog() {
-        const me = this.state.players[this.state.my_index];
-        const base = me.base;
-        const agent = this.catalog[base.agent];
-        const maxTech = agent.max_tech || 0;
-        const slotsRemaining = maxTech - (base.tech ? base.tech.length : 0);
-        const handTech = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'tech');
-
-        let html = `<h3>Add Tech to ${esc(agent.name)}</h3>`;
-        html += `<p>Select up to ${slotsRemaining} tech card(s):</p>`;
-        const unique = [...new Set(handTech)];
-        unique.forEach(cid => {
-            const c = this.catalog[cid];
-            const count = handTech.filter(x => x === cid).length;
-            for (let i = 0; i < count; i++) {
-                html += `<label class="mission-select-item">
-                    <input type="checkbox" name="add-base-tech" value="${cid}">
-                    ${esc(c.name)} (${this.getCardIcons(c)})
-                </label>`;
-            }
-        });
-        html += `<button class="btn-modal" style="margin-top:12px" onclick="UI.submitAddTechToBase(${slotsRemaining})">Add Tech</button>`;
-        html += '<button class="btn-modal btn-cancel" onclick="UI.showBaseAgentDialog()">Back</button>';
-        this.showModal(html);
-    },
-
-    submitAddTechToBase(slotsRemaining) {
-        const techBoxes = document.querySelectorAll('input[name="add-base-tech"]:checked');
-        const techIds = Array.from(techBoxes).map(cb => cb.value);
-        if (techIds.length === 0) {
-            this.showError('Select at least one tech card.');
-            return;
-        }
-        if (techIds.length > slotsRemaining) {
-            this.showError(`Too many tech cards (max ${slotsRemaining}).`);
-            return;
-        }
-        Actions.addTechToBase(techIds);
-        this.closeModal();
-    },
-
-    showPlaceAgentDialog() {
-        const me = this.state.players[this.state.my_index];
-        const handAgents = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'agent');
-        if (handAgents.length === 0) {
-            this.showError('No agents in hand to place in base.');
-            return;
-        }
-        let html = '<h3>Place Agent in Base</h3>';
-        html += '<p>Select an agent to hold in your base for future turns:</p>';
-        const unique = [...new Set(handAgents)];
-        unique.forEach(cid => {
-            const c = this.catalog[cid];
-            const count = handAgents.filter(x => x === cid).length;
-            for (let i = 0; i < count; i++) {
-                const icons = this.getCardIcons(c);
-                html += `<button class="btn-modal" onclick="UI.showSelectTechForBase('${cid}')">
-                    ${esc(c.name)} ${icons ? '(' + icons + ')' : ''} [tech slots: ${c.max_tech || 0}]
-                </button>`;
-            }
-        });
-        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
-        this.showModal(html);
-    },
-
-    showSelectTechForBase(agentId) {
-        const me = this.state.players[this.state.my_index];
-        const agent = this.catalog[agentId];
-        const maxTech = agent.max_tech || 0;
-        const handTech = me.hand.filter(cid => this.catalog[cid] && this.catalog[cid].type === 'tech');
-
-        if (maxTech === 0 || handTech.length === 0) {
-            Actions.putAgentInBase(agentId, []);
-            this.closeModal();
-            return;
-        }
-
-        let html = `<h3>Equip Tech for ${esc(agent.name)}</h3>`;
-        html += `<p>Select up to ${maxTech} tech card(s) to bring into base (optional):</p>`;
-        const unique = [...new Set(handTech)];
-        unique.forEach(cid => {
-            const c = this.catalog[cid];
-            const count = handTech.filter(x => x === cid).length;
-            for (let i = 0; i < count; i++) {
-                html += `<label class="mission-select-item">
-                    <input type="checkbox" name="base-tech" value="${cid}">
-                    ${esc(c.name)} (${this.getCardIcons(c)})
-                </label>`;
-            }
-        });
-        html += `<button class="btn-modal" style="margin-top:12px" onclick="UI.submitPlaceInBase('${agentId}', ${maxTech})">Place in Base</button>`;
-        html += '<button class="btn-modal btn-cancel" onclick="UI.closeModal()">Cancel</button>';
-        this.showModal(html);
-    },
-
-    submitPlaceInBase(agentId, maxTech) {
-        const techBoxes = document.querySelectorAll('input[name="base-tech"]:checked');
-        const techIds = Array.from(techBoxes).map(cb => cb.value);
-        if (techIds.length > maxTech) {
-            this.showError(`Too many tech cards (max ${maxTech}).`);
-            return;
-        }
-        Actions.putAgentInBase(agentId, techIds);
-        this.closeModal();
-    },
-
-    discardBaseAgent() {
-        this.showConfirm(
-            'Discard the agent (and tech) from your base?',
-            () => Actions.discardBaseAgent(),
-            () => this.showBaseAgentDialog(),
-            'Discard', true
-        );
-    },
-
     renderDeck() {
         const me = this.state.players[this.state.my_index];
         const el = document.getElementById('my-deck-count');
@@ -1205,12 +1002,10 @@ const UI = {
 
     showTrainingDialog(plotCardId) {
         const me = this.state.players[this.state.my_index];
-        const baseAgent = me.base && me.base.agent ? [me.base.agent] : [];
         const areas = [
             { key: 'hand', label: 'Hand', cards: me.hand.filter(cid => cid !== plotCardId) },
             { key: 'play_area', label: 'Play Area', cards: me.play_area },
             { key: 'discard', label: 'Discard', cards: me.discard },
-            { key: 'base', label: 'Base', cards: baseAgent },
         ];
         let hasAny = false;
         let html = '<h3>Training Procedure: Select agent to trash</h3>';
@@ -1278,10 +1073,8 @@ const UI = {
         // Find agents and tech in hand
         const handAgents = me.hand.filter(cid => this.catalog[cid].type === 'agent');
         const handTech = me.hand.filter(cid => this.catalog[cid].type === 'tech');
-        const base = me.base;
-        const baseAgent = base && base.agent && this.catalog[base.agent] ? this.catalog[base.agent] : null;
 
-        if (handAgents.length === 0 && !baseAgent) {
+        if (handAgents.length === 0) {
             this.showError('No agents available to attempt ops!');
             return;
         }
@@ -1318,7 +1111,6 @@ const UI = {
 
         html += '<p>Select agents (up to 2):</p>';
 
-        // Hand agents as checkboxes (up to 2); base agent is mutually exclusive
         const uniqueAgents = [...new Set(handAgents)];
         uniqueAgents.forEach(cid => {
             const c = this.catalog[cid];
@@ -1331,21 +1123,6 @@ const UI = {
                 </label>`;
             }
         });
-        if (baseAgent) {
-            const baseIcons = this.getCardIcons(baseAgent);
-            const baseTechDesc = base.tech && base.tech.length > 0
-                ? ' + ' + base.tech.map(t => {
-                    const c = this.catalog[t];
-                    return c ? `${esc(c.name)} (${this.getCardIcons(c)})` : t;
-                }).join(', ')
-                : '';
-            const baseTech = base.tech ? base.tech.reduce((s, t) => s + (this.catalog[t]?.max_tech || 0), 0) : 0;
-            const baseMaxTech = (baseAgent.max_tech || 0) + baseTech;
-            html += `<label class="mission-select-item">
-                <input type="checkbox" name="mission-base" value="__base__" data-max-tech="${baseMaxTech}" onchange="UI._onAgentChange()">
-                ${esc(baseAgent.name)} (${baseIcons})${baseTechDesc} <em style="color:#888">(from base)</em>
-            </label>`;
-        }
 
         // Checkboxes for tech
         if (handTech.length > 0) {
@@ -1372,24 +1149,20 @@ const UI = {
 
         // Wire up live requirement checking
         const onChange = () => UI._updateRunOpButton(missionId);
-        document.querySelectorAll('input[name="mission-agent"], input[name="mission-base"], input[name="mission-tech"], input[name="mission-seg"]')
+        document.querySelectorAll('input[name="mission-agent"], input[name="mission-tech"], input[name="mission-seg"]')
             .forEach(el => el.addEventListener('change', onChange));
     },
 
     _onAgentChange() {
         const handChecked = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked'));
-        const baseChecked = document.querySelector('input[name="mission-base"]:checked');
-        // Enforce mutual exclusivity: hand agents vs base agent
-        document.querySelectorAll('input[name="mission-agent"]').forEach(cb => {
-            cb.disabled = !!baseChecked;
-        });
-        document.querySelectorAll('input[name="mission-base"]').forEach(cb => {
-            cb.disabled = handChecked.length > 0;
-        });
-        // Enforce max 2 hand agents: disable unchecked when 2 already selected
+        // Enforce max 2 agents: disable unchecked when 2 already selected
         if (handChecked.length >= 2) {
             document.querySelectorAll('input[name="mission-agent"]:not(:checked)').forEach(cb => {
                 cb.disabled = true;
+            });
+        } else {
+            document.querySelectorAll('input[name="mission-agent"]').forEach(cb => {
+                if (!cb.checked) cb.disabled = false;
             });
         }
     },
@@ -1407,9 +1180,8 @@ const UI = {
         // Collect selected card IDs
         const agentIds = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked')).map(cb => cb.value);
         const techIds = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
-        const useBase = document.querySelector('input[name="mission-base"]:checked') !== null;
 
-        if (agentIds.length === 0 && !useBase) { btn.disabled = true; return; }
+        if (agentIds.length === 0) { btn.disabled = true; return; }
 
         // Build cumulative requirements for chosen segment
         const cumReqs = segs.slice(0, targetSeg).flatMap(s => s.requirements || []);
@@ -1418,10 +1190,6 @@ const UI = {
         const pool = [];
         agentIds.forEach(aid => (this.catalog[aid]?.icons || []).forEach(ic => pool.push(ic)));
         techIds.forEach(tid => (this.catalog[tid]?.icons || []).forEach(ic => pool.push(ic)));
-        if (useBase && me.base?.agent) {
-            (this.catalog[me.base.agent]?.icons || []).forEach(ic => pool.push(ic));
-            (me.base.tech || []).forEach(tid => (this.catalog[tid]?.icons || []).forEach(ic => pool.push(ic)));
-        }
         if (me.backup_agent) {
             (this.catalog[me.backup_agent]?.icons || []).forEach(ic => pool.push(ic));
         }
@@ -1446,9 +1214,8 @@ const UI = {
     submitMission(missionId) {
         const agentIds = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked')).map(cb => cb.value);
         const techIds = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
-        const useBaseAgent = document.querySelector('input[name="mission-base"]:checked') !== null;
 
-        if (agentIds.length === 0 && !useBaseAgent) {
+        if (agentIds.length === 0) {
             this.showError('Select at least one agent.');
             return;
         }
@@ -1459,15 +1226,8 @@ const UI = {
             totalMaxTech += (this.catalog[aid].max_tech || 0);
         });
         const me = this.state.players[this.state.my_index];
-        // Add backup agent tech slots if present
         if (me.backup_agent) {
             totalMaxTech += (this.catalog[me.backup_agent].max_tech || 0);
-        }
-        // Add base agent's remaining open slots (max_tech minus already-equipped tech)
-        if (useBaseAgent && me.base && me.base.agent) {
-            const baseAgentCard = this.catalog[me.base.agent];
-            const baseTechUsed = (me.base.tech || []).length;
-            totalMaxTech += Math.max(0, (baseAgentCard.max_tech || 0) - baseTechUsed);
         }
         if (techIds.length > totalMaxTech) {
             this.showError(`Too many tech cards (max ${totalMaxTech} for selected agents).`);
@@ -1475,7 +1235,7 @@ const UI = {
         }
 
         const targetSegment = parseInt(document.querySelector('input[name="mission-seg"]:checked')?.value || '3', 10);
-        Actions.completeMission(missionId, agentIds, techIds, useBaseAgent, targetSegment);
+        Actions.completeMission(missionId, agentIds, techIds, targetSegment);
         this.closeModal();
     },
 
@@ -1530,19 +1290,6 @@ const UI = {
             html += `<button class="btn-modal" onclick="Actions.defendAttack('discard', '${cid}')">
                 Discard ${esc(c.name)} (${this.getCardIcons(c)})
             </button>`;
-        }
-
-        // Discard agent from base
-        if (me.base && me.base.agent) {
-            const baseAgent = this.catalog[me.base.agent];
-            const baseIcons = baseAgent.icons || [];
-            const baseEligible = !isBurglary || baseIcons.includes('muscle') || baseIcons.includes('drive');
-            if (baseEligible) {
-                const techNote = (me.base.tech && me.base.tech.length > 0) ? ' + tech' : '';
-                html += `<button class="btn-modal" onclick="Actions.defendAttack('discard', '${me.base.agent}', null, 'base')">
-                    Discard ${esc(baseAgent.name)} from base${techNote} (${this.getCardIcons(baseAgent)})
-                </button>`;
-            }
         }
 
         // Suffer option

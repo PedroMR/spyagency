@@ -55,7 +55,6 @@
             <div class="section play-area-section">
                 <h3>Play Area</h3>
                 <div id="play-area" class="card-row"></div>
-                <div id="my-base"></div>
             </div>
             <div class="section hand-section">
                 <h3>Your Hand</h3>

@@ -2,13 +2,6 @@
 require_once __DIR__ . '/cards.php';
 require_once __DIR__ . '/game_end.php';
 
-function normalize_base(array &$player): void {
-    $base = $player['base'] ?? 'safe_house';
-    if (is_string($base)) {
-        $player['base'] = ['card' => $base, 'agent' => null, 'tech' => []];
-    }
-}
-
 function find_player_index(array &$game, string $token): int {
     foreach ($game['players'] as $i => $p) {
         if ($p['token'] === $token) return $i;
@@ -193,41 +186,24 @@ function action_play_plot(array &$game, int $pi, array $params): array {
             break;
 
         case 'training':
-            // Training Procedure: trash an agent from hand, play area, discard, or base
             $trash_agent = $params['trash_agent'] ?? '';
-            $trash_from = $params['trash_from'] ?? 'hand'; // 'hand', 'play_area', 'discard', or 'base'
+            $trash_from = $params['trash_from'] ?? 'hand'; // 'hand', 'play_area', or 'discard'
             $gain_agent = $params['gain_agent'] ?? '';
             $gain_slot = $params['gain_slot'] ?? -1;
             if (!$trash_agent || !isset($catalog[$trash_agent]) || $catalog[$trash_agent]['type'] !== TYPE_AGENT) {
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Must specify an agent to trash'];
             }
-            $valid_areas = ['hand', 'play_area', 'discard', 'base'];
+            $valid_areas = ['hand', 'play_area', 'discard'];
             if (!in_array($trash_from, $valid_areas)) {
                 $game['players'][$pi]['hand'][] = $card_id;
                 return ['ok' => false, 'error' => 'Invalid trash area'];
             }
 
             // Remove agent from the chosen area
-            if ($trash_from === 'base') {
-                normalize_base($game['players'][$pi]);
-                $base = &$game['players'][$pi]['base'];
-                if ($base['agent'] !== $trash_agent) {
-                    $game['players'][$pi]['hand'][] = $card_id;
-                    return ['ok' => false, 'error' => 'Agent not found in base'];
-                }
-                // Discard any tech attached to the base agent
-                foreach ($base['tech'] as $tid) {
-                    $game['players'][$pi]['discard'][] = $tid;
-                }
-                $base['agent'] = null;
-                $base['tech'] = [];
-                unset($base);
-            } else {
-                if (!remove_from_array($game['players'][$pi][$trash_from], $trash_agent)) {
-                    $game['players'][$pi]['hand'][] = $card_id;
-                    return ['ok' => false, 'error' => 'Agent not found in ' . str_replace('_', ' ', $trash_from)];
-                }
+            if (!remove_from_array($game['players'][$pi][$trash_from], $trash_agent)) {
+                $game['players'][$pi]['hand'][] = $card_id;
+                return ['ok' => false, 'error' => 'Agent not found in ' . str_replace('_', ' ', $trash_from)];
             }
 
             $trash_cost = $catalog[$trash_agent]['cost'] ?? 0;
@@ -502,137 +478,6 @@ function check_requirements(array $requirements, array $available): bool {
     return true;
 }
 
-function action_put_agent_in_base(array &$game, int $pi, array $params): array {
-    $agent_id = $params['agent_id'] ?? '';
-    $tech_ids = $params['tech_ids'] ?? [];
-    $catalog = get_card_catalog();
-    $p = &$game['players'][$pi];
-
-    normalize_base($p);
-    $base = &$p['base'];
-
-    if (!$agent_id || !isset($catalog[$agent_id]) || $catalog[$agent_id]['type'] !== TYPE_AGENT) {
-        return ['ok' => false, 'error' => 'Not a valid agent'];
-    }
-    if (!in_array($agent_id, $p['hand'])) {
-        return ['ok' => false, 'error' => 'Agent not in hand'];
-    }
-
-    $max_tech = $catalog[$agent_id]['max_tech'] ?? 0;
-    if (count($tech_ids) > $max_tech) {
-        return ['ok' => false, 'error' => "Too many tech cards (max {$max_tech} for this agent)"];
-    }
-
-    // Validate tech in hand
-    $hand_copy = $p['hand'];
-    remove_from_array($hand_copy, $agent_id);
-    foreach ($tech_ids as $tid) {
-        if (!isset($catalog[$tid]) || $catalog[$tid]['type'] !== TYPE_TECH) {
-            return ['ok' => false, 'error' => "{$tid} is not a tech card"];
-        }
-        if (!remove_from_array($hand_copy, $tid)) {
-            return ['ok' => false, 'error' => 'Tech not in hand'];
-        }
-    }
-
-    // Discard existing base agent if any
-    if ($base['agent']) {
-        $old_name = $catalog[$base['agent']]['name'] ?? $base['agent'];
-        $p['discard'][] = $base['agent'];
-        foreach ($base['tech'] as $tid) {
-            $p['discard'][] = $tid;
-        }
-        $game['log'][] = $p['name'] . " removed {$old_name} from base";
-    }
-
-    // Remove from hand
-    remove_from_array($p['hand'], $agent_id);
-    foreach ($tech_ids as $tid) {
-        remove_from_array($p['hand'], $tid);
-    }
-
-    // Place in base
-    $base['agent'] = $agent_id;
-    $base['tech'] = array_values($tech_ids);
-
-    $agent_name = $catalog[$agent_id]['name'];
-    $log = $p['name'] . " placed {$agent_name} in base";
-    if (!empty($tech_ids)) {
-        $tech_names = array_map(fn($t) => $catalog[$t]['name'] ?? $t, $tech_ids);
-        $log .= " with " . implode(', ', $tech_names);
-    }
-    $game['log'][] = $log;
-
-    return ['ok' => true];
-}
-
-function action_add_tech_to_base(array &$game, int $pi, array $params): array {
-    $tech_ids = $params['tech_ids'] ?? [];
-    $catalog = get_card_catalog();
-    $p = &$game['players'][$pi];
-
-    normalize_base($p);
-    $base = &$p['base'];
-
-    if (!$base['agent']) {
-        return ['ok' => false, 'error' => 'No agent in base to add tech to'];
-    }
-    if (empty($tech_ids)) {
-        return ['ok' => false, 'error' => 'No tech cards specified'];
-    }
-
-    $agent = $catalog[$base['agent']];
-    $max_tech = $agent['max_tech'] ?? 0;
-    $slots_remaining = $max_tech - count($base['tech']);
-
-    if (count($tech_ids) > $slots_remaining) {
-        return ['ok' => false, 'error' => "Only {$slots_remaining} tech slot(s) remaining for {$agent['name']}"];
-    }
-
-    $hand_copy = $p['hand'];
-    foreach ($tech_ids as $tid) {
-        if (!isset($catalog[$tid]) || $catalog[$tid]['type'] !== TYPE_TECH) {
-            return ['ok' => false, 'error' => "{$tid} is not a tech card"];
-        }
-        if (!remove_from_array($hand_copy, $tid)) {
-            return ['ok' => false, 'error' => 'Tech not in hand'];
-        }
-    }
-
-    foreach ($tech_ids as $tid) {
-        remove_from_array($p['hand'], $tid);
-        $base['tech'][] = $tid;
-    }
-
-    $tech_names = array_map(fn($t) => $catalog[$t]['name'] ?? $t, $tech_ids);
-    $game['log'][] = $p['name'] . " equipped " . implode(', ', $tech_names) . " to {$agent['name']} in base";
-
-    return ['ok' => true];
-}
-
-function action_discard_base_agent(array &$game, int $pi, array $params): array {
-    $p = &$game['players'][$pi];
-    normalize_base($p);
-    $base = &$p['base'];
-
-    if (!$base['agent']) {
-        return ['ok' => false, 'error' => 'No agent in base'];
-    }
-
-    $catalog = get_card_catalog();
-    $agent_name = $catalog[$base['agent']]['name'] ?? $base['agent'];
-
-    $p['discard'][] = $base['agent'];
-    foreach ($base['tech'] as $tid) {
-        $p['discard'][] = $tid;
-    }
-    $base['agent'] = null;
-    $base['tech'] = [];
-
-    $game['log'][] = $p['name'] . " discarded {$agent_name} from base";
-    return ['ok' => true];
-}
-
 /**
  * Complete a mission by playing agents + tech from hand.
  * Params: mission_id, agent_ids (array), tech_ids (array)
@@ -676,32 +521,12 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     // Also include backup agent if one was played via Got Your Back!
     $backup = $game['players'][$pi]['backup_agent'] ?? null;
 
-    // Also optionally use the base agent
-    $use_base_agent = !empty($params['use_base_agent']);
-    $base_agent_id = null;
-    $base_tech_ids = [];
-    if ($use_base_agent) {
-        normalize_base($game['players'][$pi]);
-        $base = $game['players'][$pi]['base'];
-        if (!$base['agent']) {
-            return ['ok' => false, 'error' => 'No agent in base to use'];
-        }
-        $base_agent_id = $base['agent'];
-        $base_tech_ids = $base['tech'] ?? [];
-        if (!isset($catalog[$base_agent_id]) || $catalog[$base_agent_id]['type'] !== TYPE_AGENT) {
-            return ['ok' => false, 'error' => 'Base agent is invalid'];
-        }
-    }
-
-    // Must have at least one agent (from hand or base), and at most two hand agents
-    if (empty($agent_ids) && !$base_agent_id) {
+    // Must have at least one agent, and at most two hand agents
+    if (empty($agent_ids)) {
         return ['ok' => false, 'error' => 'Must commit at least one agent'];
     }
     if (count($agent_ids) > 2) {
         return ['ok' => false, 'error' => 'At most two agents can run an op together'];
-    }
-    if (!empty($agent_ids) && $base_agent_id) {
-        return ['ok' => false, 'error' => 'Cannot use both a hand agent and the base agent in the same op'];
     }
 
     // Validate all agent_ids are agents in hand
@@ -723,11 +548,6 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     if ($backup) {
         $total_max_tech += $catalog[$backup]['max_tech'] ?? 0;
     }
-    // Base agent's remaining open slots (max_tech minus already-equipped tech)
-    if ($base_agent_id) {
-        $base_slots_remaining = ($catalog[$base_agent_id]['max_tech'] ?? 0) - count($base_tech_ids);
-        $total_max_tech += max(0, $base_slots_remaining);
-    }
 
     if (count($tech_ids) > $total_max_tech) {
         return ['ok' => false, 'error' => "Too many tech cards (max {$total_max_tech} for these agents)"];
@@ -746,10 +566,6 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     $all_card_ids = array_merge($agent_ids, $tech_ids);
     if ($backup) {
         $all_card_ids[] = $backup;
-    }
-    if ($base_agent_id) {
-        $all_card_ids[] = $base_agent_id;
-        $all_card_ids = array_merge($all_card_ids, $base_tech_ids);
     }
 
     // Target segment (1–3): player announces how far they want to run
@@ -790,16 +606,6 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
         $game['players'][$pi]['backup_agent'] = null;
     }
 
-    // Clear base agent if used
-    if ($base_agent_id) {
-        $game['players'][$pi]['discard'][] = $base_agent_id;
-        foreach ($base_tech_ids as $tid) {
-            $game['players'][$pi]['discard'][] = $tid;
-        }
-        $game['players'][$pi]['base']['agent'] = null;
-        $game['players'][$pi]['base']['tech'] = [];
-    }
-
     // Remove op from grid only when all segments completed (and not always-available)
     if (!$is_always && $found_idx !== null && $target_segment === count($segments)) {
         $slot = &$game['ops_grid'][$found_idx];
@@ -822,14 +628,8 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
     if ($backup) {
         $used_names[] = ($catalog[$backup]['name'] ?? $backup) . ' (backup)';
     }
-    if ($base_agent_id) {
-        $used_names[] = ($catalog[$base_agent_id]['name'] ?? $base_agent_id) . ' (base)';
-    }
     foreach ($tech_ids as $tid) {
         $used_names[] = $catalog[$tid]['name'] ?? $tid;
-    }
-    foreach ($base_tech_ids as $tid) {
-        $used_names[] = ($catalog[$tid]['name'] ?? $tid) . ' (base)';
     }
     $used_str = !empty($used_names) ? ' using ' . implode(', ', $used_names) : '';
 
@@ -1172,7 +972,6 @@ function action_defend_attack(array &$game, int $pi, array $params): array {
             break;
 
         case 'discard':
-            $discard_from = $params['discard_from'] ?? 'hand'; // 'hand' or 'base'
             if (!$card_id || !isset($catalog[$card_id]) || $catalog[$card_id]['type'] !== 'agent') {
                 return ['ok' => false, 'error' => 'Must specify a valid agent to discard'];
             }
@@ -1183,22 +982,8 @@ function action_defend_attack(array &$game, int $pi, array $params): array {
                     return ['ok' => false, 'error' => 'Agent must have 💪 or 🚘 to defend against Burglary'];
                 }
             }
-            if ($discard_from === 'base') {
-                normalize_base($game['players'][$pi]);
-                $base = &$game['players'][$pi]['base'];
-                if ($base['agent'] !== $card_id) {
-                    return ['ok' => false, 'error' => 'Agent not in base'];
-                }
-                foreach ($base['tech'] as $tid) {
-                    $game['players'][$pi]['discard'][] = $tid;
-                }
-                $base['agent'] = null;
-                $base['tech'] = [];
-                unset($base);
-            } else {
-                if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
-                    return ['ok' => false, 'error' => 'Agent not in hand'];
-                }
+            if (!remove_from_array($game['players'][$pi]['hand'], $card_id)) {
+                return ['ok' => false, 'error' => 'Agent not in hand'];
             }
             $game['players'][$pi]['discard'][] = $card_id;
             $attack['responses'][$pi] = 'discard:' . $card_id;
@@ -1309,9 +1094,6 @@ function process_action(array &$game, string $token, string $action, array $para
         'complete_mission' => action_complete_mission($game, $pi, $params),
         'use_trash' => action_use_trash($game, $pi, $params),
         'skip_trash' => action_skip_trash($game, $pi, $params),
-        'put_agent_in_base' => action_put_agent_in_base($game, $pi, $params),
-        'add_tech_to_base' => action_add_tech_to_base($game, $pi, $params),
-        'discard_base_agent' => action_discard_base_agent($game, $pi, $params),
         'end_turn' => action_end_turn($game, $pi, $params),
         default => ['ok' => false, 'error' => 'Unknown action: ' . $action],
     };

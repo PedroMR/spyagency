@@ -69,7 +69,6 @@ function get_card_catalog(): array {
             'max_tech' => 1,
             'icons' => ['muscle'],
             'always_available' => true,
-            'primed' => true,
             'description' => '💪 — Always available ($3)',
         ],
         'shadow' => [
@@ -82,7 +81,6 @@ function get_card_catalog(): array {
             'max_tech' => 1,
             'icons' => ['disguise'],
             'always_available' => true,
-            'primed' => true,
             'description' => '🥸 — Always available ($4)',
         ],
         'doorkicker' => [
@@ -251,7 +249,7 @@ function get_card_catalog(): array {
             'always_available' => false,
             'segments' => [
                 ['requirements' => ['muscle', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
-                ['requirements' => ['disguise', 'muscle'], 'stars' => 1, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['disguise', 'disguise'], 'stars' => 1, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0],
                 ['requirements' => ['drive', 'muscle'], 'stars' => 4, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
             ],
             'requirements' => [],
@@ -279,7 +277,7 @@ function get_card_catalog(): array {
         ],
         'gate' => [
             'id' => 'gate',
-            'name' => 'Gate Hacking',
+            'name' => 'Embassy Safe',
             'type' => 'mission',
             'tier' => 1,
             'stars' => 0,
@@ -288,7 +286,7 @@ function get_card_catalog(): array {
             'segments' => [
                 ['requirements' => ['muscle', 'drive'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1],
                 ['requirements' => ['disguise', 'key'], 'stars' => 2, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
-                ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
+                ['requirements' => ['key', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
             ],
             'requirements' => [],
             'value' => 0,
@@ -305,7 +303,7 @@ function get_card_catalog(): array {
             'always_available' => false,
             'segments' => [
                 ['requirements' => ['disguise', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
-                ['requirements' => ['key', 'drive'], 'stars' => 3, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['drive', 'drive'], 'stars' => 3, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 3, 'cards' => 0, 'trashes' => 0]
             ],
             'requirements' => [],
