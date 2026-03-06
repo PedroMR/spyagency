@@ -33,9 +33,9 @@ if ($my_index < 0) {
     send_json(json_error('Player not in game'));
 }
 
-// Compute live star count for a player from all owned cards
+// Compute live star count for a player from runtime counter + card-embedded stars
 function compute_stars(array $player, array $catalog): int {
-    $stars = 0;
+    $stars = $player['stars'] ?? 0; // segment rewards accumulated at runtime
     $all = array_merge($player['deck'], $player['hand'], $player['discard'], $player['play_area'], $player['mission_area'] ?? []);
     // Include cards in base
     $base = $player['base'] ?? null;

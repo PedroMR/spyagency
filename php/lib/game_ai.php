@@ -144,7 +144,7 @@ function ai_find_mission_combo_for_reqs(array $player, array $requirements, arra
     foreach ([false, true] as $use_base) {
         if ($use_base && !$base_agent_id) continue;
 
-        $agent_subsets = ai_all_subsets($agents, 1);
+        $agent_subsets = ai_all_subsets($agents, 2); // up to two hand agents per op
         foreach ($agent_subsets as $hand_agents) {
             if (empty($hand_agents) && !$use_base) continue;
 

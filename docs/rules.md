@@ -48,6 +48,8 @@ Agents are played from hand in order to run an op. Tech cards can be played with
 
 Every player has a single Base slot. They may play Agent and Tech cards here in order to hold them for future rounds. An agent (and their tech) in a Base can either be used to run an op or be discarded as a whole in order to clear space for another agent.
 
+Players may use up to 2 agents to run an op. They add their icons together, including any tech they get allocated with.
+
 Each op card has three segments. Each segment has a requirement and a reward. To run an op the player plays exactly one Agent with Tech, and has the option of using the agent and tech in their base. The icons in the Agent and all of their Tech, plus the icons in the player's Op Area, need to match or exceed the requirement of the op. When running an op, the player announces up to which segment they're running. In order to run a segment the agent must satisfy all the previous segments' requirements. The player then gathers the rewards for all the segments they were able to complete.
 
 All agents and tech used to run an op are left in the play area. They will be discarded at the end of the turn, but not before (w  e don't want agents being used in an op and then coming back the same turn due to a deck out of cards).

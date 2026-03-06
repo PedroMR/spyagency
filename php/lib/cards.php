@@ -286,7 +286,7 @@ function get_card_catalog(): array {
             'cost' => 0,
             'always_available' => false,
             'segments' => [
-                ['requirements' => ['key', 'drive'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1],
+                ['requirements' => ['muscle', 'drive'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1],
                 ['requirements' => ['disguise', 'key'], 'stars' => 2, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
             ],
@@ -304,7 +304,7 @@ function get_card_catalog(): array {
             'cost' => 0,
             'always_available' => false,
             'segments' => [
-                ['requirements' => ['drive', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['disguise', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['key', 'drive'], 'stars' => 3, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 3, 'cards' => 0, 'trashes' => 0]
             ],

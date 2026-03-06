@@ -447,7 +447,8 @@ const UI = {
 
     renderSegments(card) {
         const segs = card.segments || [];
-        const segNums = ['①', '②', '③'];
+        // const segNums = ['①', '②', '③'];
+        const segNums = ['1)', '2)', '3)'];
         return segs.map((seg, i) => {
             const req = this.formatReqIcons(seg.requirements || []);
             const rew = this.formatSegReward(seg);
@@ -1304,7 +1305,7 @@ const UI = {
             }
             const cumRew = cumRewParts.join(' ');
             html += `<label class="mission-select-item seg-option" data-seg="${i + 1}">
-                <input type="radio" name="mission-seg" value="${i + 1}" ${i === segs.length - 1 ? 'checked' : ''}>
+                <input type="radio" name="mission-seg" value="${i + 1}" ${i === 0 ? 'checked' : ''}>
                 ${segNums[i]} ${this.formatReqIcons(cumReqs)} → ${cumRew}
             </label>`;
         });
@@ -1315,9 +1316,9 @@ const UI = {
             html += `<p>From completed ops: ${this.formatReqIcons(missionAreaIcons)}</p>`;
         }
 
-        html += '<p>Select an agent:</p>';
+        html += '<p>Select agents (up to 2):</p>';
 
-        // All agents as a single radio group (hand + base)
+        // Hand agents as checkboxes (up to 2); base agent is mutually exclusive
         const uniqueAgents = [...new Set(handAgents)];
         uniqueAgents.forEach(cid => {
             const c = this.catalog[cid];
@@ -1325,8 +1326,8 @@ const UI = {
             const icons = this.getCardIcons(c);
             for (let i = 0; i < count; i++) {
                 html += `<label class="mission-select-item">
-                    <input type="radio" name="mission-agent" value="${cid}" data-max-tech="${c.max_tech || 0}">
-                    ${esc(c.name)} (${icons}) [tech slots: ${c.max_tech || 0}]
+                    <input type="checkbox" name="mission-agent" value="${cid}" data-max-tech="${c.max_tech || 0}" onchange="UI._onAgentChange()">
+                    ${esc(c.name)} (${icons}) [tech: ${c.max_tech || 0}]
                 </label>`;
             }
         });
@@ -1341,7 +1342,7 @@ const UI = {
             const baseTech = base.tech ? base.tech.reduce((s, t) => s + (this.catalog[t]?.max_tech || 0), 0) : 0;
             const baseMaxTech = (baseAgent.max_tech || 0) + baseTech;
             html += `<label class="mission-select-item">
-                <input type="radio" name="mission-agent" value="__base__" data-max-tech="${baseMaxTech}">
+                <input type="checkbox" name="mission-base" value="__base__" data-max-tech="${baseMaxTech}" onchange="UI._onAgentChange()">
                 ${esc(baseAgent.name)} (${baseIcons})${baseTechDesc} <em style="color:#888">(from base)</em>
             </label>`;
         }
@@ -1371,8 +1372,26 @@ const UI = {
 
         // Wire up live requirement checking
         const onChange = () => UI._updateRunOpButton(missionId);
-        document.querySelectorAll('input[name="mission-agent"], input[name="mission-tech"], input[name="mission-seg"]')
+        document.querySelectorAll('input[name="mission-agent"], input[name="mission-base"], input[name="mission-tech"], input[name="mission-seg"]')
             .forEach(el => el.addEventListener('change', onChange));
+    },
+
+    _onAgentChange() {
+        const handChecked = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked'));
+        const baseChecked = document.querySelector('input[name="mission-base"]:checked');
+        // Enforce mutual exclusivity: hand agents vs base agent
+        document.querySelectorAll('input[name="mission-agent"]').forEach(cb => {
+            cb.disabled = !!baseChecked;
+        });
+        document.querySelectorAll('input[name="mission-base"]').forEach(cb => {
+            cb.disabled = handChecked.length > 0;
+        });
+        // Enforce max 2 hand agents: disable unchecked when 2 already selected
+        if (handChecked.length >= 2) {
+            document.querySelectorAll('input[name="mission-agent"]:not(:checked)').forEach(cb => {
+                cb.disabled = true;
+            });
+        }
     },
 
     _updateRunOpButton(missionId) {
@@ -1386,12 +1405,11 @@ const UI = {
         const targetSeg = parseInt(document.querySelector('input[name="mission-seg"]:checked')?.value || segs.length, 10);
 
         // Collect selected card IDs
-        const selectedAgent = document.querySelector('input[name="mission-agent"]:checked')?.value || null;
+        const agentIds = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked')).map(cb => cb.value);
         const techIds = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
-        const useBase = selectedAgent === '__base__';
-        const agentIds = (!useBase && selectedAgent) ? [selectedAgent] : [];
+        const useBase = document.querySelector('input[name="mission-base"]:checked') !== null;
 
-        if (!selectedAgent) { btn.disabled = true; return; }
+        if (agentIds.length === 0 && !useBase) { btn.disabled = true; return; }
 
         // Build cumulative requirements for chosen segment
         const cumReqs = segs.slice(0, targetSeg).flatMap(s => s.requirements || []);
@@ -1426,10 +1444,9 @@ const UI = {
     },
 
     submitMission(missionId) {
-        const selectedAgent = document.querySelector('input[name="mission-agent"]:checked')?.value || null;
+        const agentIds = Array.from(document.querySelectorAll('input[name="mission-agent"]:checked')).map(cb => cb.value);
         const techIds = Array.from(document.querySelectorAll('input[name="mission-tech"]:checked')).map(cb => cb.value);
-        const useBaseAgent = selectedAgent === '__base__';
-        const agentIds = (!useBaseAgent && selectedAgent) ? [selectedAgent] : [];
+        const useBaseAgent = document.querySelector('input[name="mission-base"]:checked') !== null;
 
         if (agentIds.length === 0 && !useBaseAgent) {
             this.showError('Select at least one agent.');
