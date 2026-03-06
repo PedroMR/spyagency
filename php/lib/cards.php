@@ -230,14 +230,14 @@ function get_card_catalog(): array {
             'cost' => 0,
             'always_available' => false,
             'segments' => [
-                ['requirements' => ['drive', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
-                ['requirements' => ['muscle', 'key'], 'stars' => 1, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
-                ['requirements' => ['key', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
+                ['requirements' => ['drive', 'muscle'], 'stars' => 1, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['key', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
             ],
             'requirements' => [],
             'value' => 0,
             'gems' => 0,
-            'description' => 'Seg1: 2💎 | Seg2: 1⭐ 1🎴 | Seg3: 5⭐ 2💎',
+            'description' => 'Seg1: 1⭐ 2💎 | Seg2: 5⭐ 1🎴 | Seg3: 5⭐ 2💎',
         ],
         'wrestling' => [
             'id' => 'wrestling',
@@ -248,14 +248,14 @@ function get_card_catalog(): array {
             'cost' => 0,
             'always_available' => false,
             'segments' => [
-                ['requirements' => ['muscle', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
-                ['requirements' => ['disguise', 'disguise'], 'stars' => 1, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0],
-                ['requirements' => ['drive', 'muscle'], 'stars' => 4, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
+                ['requirements' => ['muscle', 'muscle'], 'stars' => 1, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['disguise', 'disguise'], 'stars' => 4, 'money' => 0, 'gems' => 1, 'cards' => 0, 'trashes' => 0],
+                ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 2, 'cards' => 0, 'trashes' => 0]
             ],
             'requirements' => [],
             'value' => 0,
             'gems' => 0,
-            'description' => 'Seg1: 2💎 | Seg2: 1⭐ 1💎 | Seg3: 4⭐ 2💎',
+            'description' => 'Seg1: 1⭐ 2💎 | Seg2: 4⭐ 1💎 | Seg3: 5⭐ 2💎',
         ],
         'convent' => [
             'id' => 'convent',
@@ -266,14 +266,14 @@ function get_card_catalog(): array {
             'cost' => 0,
             'always_available' => false,
             'segments' => [
-                ['requirements' => ['key', 'disguise'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
-                ['requirements' => ['disguise', 'muscle'], 'stars' => 2, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['key', 'disguise'], 'stars' => 2, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['disguise', 'muscle'], 'stars' => 4, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['drive', 'disguise'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
             ],
             'requirements' => [],
             'value' => 0,
             'gems' => 0,
-            'description' => 'Seg1: 1🎴 | Seg2: 2⭐ 1🎴 | Seg3: 5⭐ 1✖️',
+            'description' => 'Seg1: 2⭐ 1🎴 | Seg2: 4⭐ 1🎴 | Seg3: 5⭐ 1✖️',
         ],
         'embassy' => [
             'id' => 'embassy',
@@ -284,14 +284,14 @@ function get_card_catalog(): array {
             'cost' => 0,
             'always_available' => false,
             'segments' => [
-                ['requirements' => ['muscle', 'drive'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1],
-                ['requirements' => ['disguise', 'key'], 'stars' => 2, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['muscle', 'drive'], 'stars' => 1, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1],
+                ['requirements' => ['key', 'disguise'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['key', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 0, 'trashes' => 1]
             ],
             'requirements' => [],
             'value' => 0,
             'gems' => 0,
-            'description' => 'Seg1: 1✖️ | Seg2: 2⭐ 1🎴 | Seg3: 5⭐ 1✖️',
+            'description' => 'Seg1: 1⭐ 1✖️ | Seg2: 5⭐ 1🎴 | Seg3: 5⭐ 1✖️',
         ],
         'hijinx' => [
             'id' => 'hijinx',
@@ -302,14 +302,21 @@ function get_card_catalog(): array {
             'cost' => 0,
             'always_available' => false,
             'segments' => [
-                ['requirements' => ['disguise', 'muscle'], 'stars' => 0, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
-                ['requirements' => ['drive', 'drive'], 'stars' => 3, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['disguise', 'muscle'], 'stars' => 1, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
+                ['requirements' => ['drive', 'drive'], 'stars' => 5, 'money' => 0, 'gems' => 0, 'cards' => 1, 'trashes' => 0],
                 ['requirements' => ['drive', 'muscle'], 'stars' => 5, 'money' => 0, 'gems' => 3, 'cards' => 0, 'trashes' => 0]
             ],
             'requirements' => [],
             'value' => 0,
             'gems' => 0,
-            'description' => 'Seg1: 1🎴 | Seg2: 3⭐ 1🎴 | Seg3: 5⭐ 3💎',
+            'description' => 'Seg1: 1⭐ 1🎴 | Seg2: 5⭐ 1🎴 | Seg3: 5⭐ 3💎',
+        ],
+        'fortress_infiltration' => [
+            'id' => 'fortress_infiltration',
+            'name' => 'Fortress Infiltration',
+            'type' => '',
+            'tier' => 0,
+            'stars' => 0,
         ],
         'heist' => [
             'id' => 'heist',
