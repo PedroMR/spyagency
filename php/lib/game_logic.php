@@ -608,16 +608,10 @@ function action_complete_mission(array &$game, int $pi, array $params): array {
 
     // Remove op from grid only when all segments completed (and not always-available)
     if (!$is_always && $found_idx !== null && $target_segment === count($segments)) {
-        $slot = &$game['ops_grid'][$found_idx];
-        if (is_array($slot)) {
-            array_shift($slot);
-            if (empty($slot)) {
-                array_splice($game['ops_grid'], $found_idx, 1);
-            }
-        } else {
+        array_shift($game['ops_grid'][$found_idx]);
+        if (empty($game['ops_grid'][$found_idx])) {
             array_splice($game['ops_grid'], $found_idx, 1);
         }
-        unset($slot);
     }
 
     // Build agent/tech used description for logging

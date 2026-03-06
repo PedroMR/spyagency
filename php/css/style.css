@@ -289,7 +289,7 @@ input[type="text"] {
 .card-v .segment { display: flex; align-items: center; gap: 6px; padding: 5px 0; }
 .card-v .seg-num { font-size: 10px; font-weight: bold; color: rgba(224,64,251,0.9); min-width: 14px; }
 .card-v .seg-req { font-size: 15px; letter-spacing: -2px; }
-.card-v .seg-arrow { color: #666; font-size: 10px; }
+.card-v .seg-arrow { color: #BBB; font-size: 10px; display: none; margin-left: auto;}
 .card-v .seg-reward { margin-left: auto; font-size: 12px; display: flex; gap: 4px; white-space: nowrap; }
 .tier-badge { position: absolute; top: 5px; right: 10px; font-size: 9px; font-weight: bold;
               color: var(--card-color); opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; }
